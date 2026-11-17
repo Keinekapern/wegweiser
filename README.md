@@ -85,7 +85,8 @@ Für ein eigenes openrouteservice bleibt `ORS_API_KEY` leer. Getestet ist das f�
 **Datenschutz:**
 
 - An die externen Dienste gehen nur Adressen und Koordinaten von Standorten und Zielen. Namen oder andere Angaben zu Bewohnerinnen und Bewohnern gehören nicht in Wegweiser, auch nicht in die Notizfelder.
-- Adressen von Unterkünften sind schutzbedürftig. Die Instanz soll deshalb nur im internen Netz oder per VPN erreichbar sein.
+- Große, öffentlich bekannte Unterkünfte sind unkritisch. Dezentrale oder geschützte Unterkünfte (zum Beispiel für Frauen) sind es nicht: Eine Instanz mit solchen Standorten soll nur im internen Netz oder per VPN erreichbar sein.
+- Wegweiser hat keine eigene Anmeldung. Von außerhalb des internen Netzes nur über VPN oder hinter einer Zugangskontrolle erreichbar machen, etwa einem Cloudflare Tunnel mit Cloudflare Access (siehe [Zugriff von außen](#zugriff-von-außen)).
 - Wer Fehler meldet oder Screenshots teilt, nimmt Beispieldaten statt echter Standorte.
 
 **Sicherung:** Alle Daten stehen in einer einzigen Datei, `./data/wegweiser.sqlite`. Eine konsistente Kopie im laufenden Betrieb erstellt `sqlite3 data/wegweiser.sqlite ".backup sicherung.sqlite"`. Die Kopie kann man auf einem zweiten Datenträger oder in einem Cloud-Speicher ablegen.
@@ -104,6 +105,18 @@ Die Oberfläche ist danach unter `http://<host>:${APP_PORT:-8420}/` erreichbar. 
 - Die SQLite-Datenbank liegt unter `./data/` (Volume). Der Container läuft als UID 1000 und macht `./data` beim Start für sich beschreibbar.
 - Die Zeitzone für Datumsangaben auf dem Ausdruck ist `Europe/Berlin` (über `TZ` änderbar).
 - Nach Änderungen an `.env` den Container neu erzeugen: `docker compose up -d`.
+
+### Zugriff von außen
+
+Wegweiser hat keine eigene Anmeldung. Für Zugriff von außerhalb des internen Netzes deshalb entweder ein VPN nutzen oder einen Cloudflare Tunnel **zusammen mit Cloudflare Access**: Dann meldet man sich mit einem Code per E-Mail an, nur freigegebene Adressen kommen durch, und am Router wird kein Port geöffnet. Voraussetzung ist eine eigene Domain, deren DNS bei Cloudflare liegt; Cloudflare Zero Trust ist bis 50 Nutzer kostenlos.
+
+1. **Zuerst den Zugangsschutz:** Im Zero-Trust-Dashboard unter Access eine Anwendung vom Typ „Self-hosted“ für den gewünschten Hostnamen anlegen (z. B. `wegweiser.example.org`), mit einer Regel „Allow“ für die E-Mail-Adressen der Nutzerinnen und Nutzer und der Anmeldung per „One-time PIN“.
+2. **Dann den Tunnel:** Unter Networks → Tunnels einen Tunnel mit cloudflared anlegen, das Token in `.env` als `CLOUDFLARE_TUNNEL_TOKEN` eintragen. Als öffentlichen Hostnamen denselben Namen wie in Schritt 1 eintragen, Dienst `HTTP`, Adresse `wegweiser:8000`.
+3. In `.env` `FORWARDED_ALLOW_IPS=*` setzen, damit Links mit `https://` entstehen.
+4. `docker compose --profile tunnel up -d`
+5. **Prüfen:** Den Hostnamen in einem privaten Browserfenster öffnen. Es muss die Anmeldeseite von Cloudflare erscheinen, nicht Wegweiser.
+
+Die Bezeichnungen im Cloudflare-Dashboard ändern sich gelegentlich. Der Tunnel leitet nur diesen einen Hostnamen weiter; andere Dienste auf demselben Rechner bleiben unerreichbar.
 
 ## Entwicklung
 

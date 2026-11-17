@@ -4,11 +4,11 @@
 Ein kleines, selbst gehostetes Web-Tool, das **druckfertige Wegbeschreibungen** (A4) von festen Standorten zu Einrichtungen (Krankenhäuser, Arztpraxen, Behörden usw.) erzeugt.
 Es ersetzt den bisherigen Ablauf: Google-Maps-Druckansicht → Screenshot in Word-Vorlage → Überschrift anpassen → QR-Code einfügen.
 
-Open-Source-Projekt (EUPL-1.2). Jede Organisation betreibt ihre eigene Instanz; es gibt keinen zentralen Dienst. Keine öffentliche Erreichbarkeit der Instanzen.
+Open-Source-Projekt (EUPL-1.2). Jede Organisation betreibt ihre eigene Instanz; es gibt keinen zentralen Dienst. Instanzen sind nie ohne Zugangskontrolle aus dem Internet erreichbar.
 
 ## Zielplattform
 - Kleiner Linux-Server, NAS oder alter Rechner mit Docker; dort laufen oft andere Dienste → Ressourcen schonen, Ports nicht kollidieren lassen
-- Zugriff nur im internen Netz bzw. per VPN – **keine Portfreigabe ins Internet**
+- Zugriff im internen Netz, per VPN oder über einen Tunnel mit Zugangskontrolle (z. B. Cloudflare Tunnel + Access) – **keine Portfreigabe ins Internet**, nie ohne Login erreichbar
 - Private Angaben zum eigenen Server stehen in `CLAUDE.local.md` (nicht im Repo)
 - Deployment über `docker compose`
 
@@ -94,7 +94,7 @@ Dockerfile
 - Externe APIs in Tests mocken; keine echten API-Aufrufe in automatisierten Tests
 - Secrets niemals committen; `.env` steht in `.gitignore`
 - Bei Unsicherheit über aktuelle API-Details (Endpunkte, Parameter, Limits) die offizielle Doku bzw. OpenAPI-Spezifikation prüfen statt raten
-- **Keine echten Adressen von Unterkünften** (Standorten) in Code, Tests, Screenshots, Commits oder Issues – nur Beispieldaten; Adressen von Unterkünften für Geflüchtete sind schutzbedürftig
+- **Keine echten Adressen von Unterkünften** (Standorten) in Code, Tests, Screenshots, Commits oder Issues – nur Beispieldaten; nicht jede Unterkunft ist öffentlich bekannt (dezentrale oder geschützte Unterkünfte), und im öffentlichen Repo soll das niemand einzeln prüfen müssen
 - Auf dem Zielserver laufen andere Dienste: keine Docker-Befehle ausführen, die fremde Container, Netzwerke oder Volumes betreffen (kein `docker system prune` o. Ä.)
 
 ## Offene Entscheidungen
