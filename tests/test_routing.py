@@ -75,8 +75,18 @@ def test_daily_limit_blocks_requests(conn):
 def test_missing_api_key(conn):
     fake = FakeNominatim(json_body=SAMPLE_ROUTE)
     with pytest.raises(RoutingError, match="ORS_API_KEY"):
-        make_router(fake, api_key="").route(conn, "driving-car", START, END)
+        make_router(fake, api_key="", base_url="https://api.heigit.org/openrouteservice"
+                    ).route(conn, "driving-car", START, END)
     assert fake.requests == []
+
+
+def test_self_hosted_without_api_key(conn):
+    fake = FakeNominatim(json_body=SAMPLE_ROUTE)
+    router = make_router(fake, api_key="", base_url="http://ors:8082/ors")
+    router.route(conn, "foot-walking", START, END)
+    (req,) = fake.requests
+    assert str(req.url) == "http://ors:8082/ors/v2/directions/foot-walking/geojson"
+    assert "authorization" not in req.headers
 
 
 def test_unknown_profile(conn):

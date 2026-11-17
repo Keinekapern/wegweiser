@@ -88,16 +88,22 @@ def _error_message(resp: httpx.Response) -> str:
         return resp.text[:200]
 
 
+HOSTED_ORS = ("api.heigit.org", "openrouteservice.org")
+
+
 class OrsClient:
     def __init__(self, base_url: str, api_key: str, daily_limit: int = 1800,
                  cache_days: int = 7, rate_limiter: RateLimiter | None = None,
                  transport: httpx.BaseTransport | None = None, timeout: float = 20.0):
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
+        # Public HeiGIT API needs a key and has a per-minute limit; a self-hosted
+        # instance (ORS_BASE_URL pointing elsewhere) usually has neither.
+        self.hosted = any(h in self.base_url for h in HOSTED_ORS)
         self.daily_limit = daily_limit
         self.cache_days = cache_days
         # Free plan: 40 directions/minute
-        self.rate_limiter = rate_limiter or RateLimiter(1.5)
+        self.rate_limiter = rate_limiter or (RateLimiter(1.5) if self.hosted else None)
         self._http = httpx.Client(
             transport=transport,
             timeout=timeout,
@@ -125,7 +131,7 @@ class OrsClient:
         if cached is not None:
             return parse_route(profile, json.loads(cached)), True
 
-        if not self.api_key:
+        if not self.api_key and self.hosted:
             raise RoutingError(Msg("Kein openrouteservice-API-Key konfiguriert (ORS_API_KEY in .env)."))
         if db.usage_today(conn, SERVICE) >= self.daily_limit:
             raise RoutingError(Msg(
@@ -141,13 +147,14 @@ class OrsClient:
             "instructions": True,
             "radiuses": [350, 350],
         }
-        self.rate_limiter.wait()
+        if self.rate_limiter:
+            self.rate_limiter.wait()
         db.usage_increment(conn, SERVICE)
         try:
             resp = self._http.post(
                 f"{self.base_url}/v2/directions/{profile}/geojson",
                 json=body,
-                headers={"Authorization": self.api_key},
+                headers={"Authorization": self.api_key} if self.api_key else {},
             )
         except httpx.HTTPError as exc:
             log.warning("ORS request failed: %s", exc)

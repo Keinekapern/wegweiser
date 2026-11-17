@@ -80,7 +80,7 @@ Wegweiser ist Software zum Selbstbetrieb. Es gibt keinen zentralen Dienst: Jede 
 - Routen über ein selbst betriebenes [openrouteservice](https://github.com/GIScience/openrouteservice) (`ORS_BASE_URL`) oder einen kommerziellen Plan bei HeiGIT.
 - Kartenkacheln von einem kommerziellen Anbieter oder einem eigenen Kachelserver.
 
-Zurzeit gibt es dabei zwei Einschränkungen: Die Kachel-URL ist noch fest eingetragen, und ohne `ORS_API_KEY` werden keine Routen berechnet, auch nicht bei einem eigenen Server.
+Für ein eigenes openrouteservice bleibt `ORS_API_KEY` leer. Getestet ist das für ganz Baden-Württemberg (MOTIS 2.11 mit NVBW-GTFS, openrouteservice 10.1, Profile Auto und zu Fuß): Der einmalige Import dauert rund 15 Minuten und braucht kurzzeitig etwa 6 GB Arbeitsspeicher. Im Betrieb brauchen beide Dienste zusammen gut 2 GB und rund 5 GB Speicherplatz. Die Ergebnisse stimmten in Stichproben mit Transitous und HeiGIT überein. Zurzeit gibt es noch Einschränkungen: Die Kachel-URL und die Quellenangabe „Transitous“ auf dem Ausdruck sind fest eingetragen, und der NVBW-Fahrplan enthält keine Linienfarben.
 
 **Datenschutz:**
 

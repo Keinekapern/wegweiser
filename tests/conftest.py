@@ -71,7 +71,7 @@ SAMPLE_ROUTE = {
 
 def make_router(fake: FakeNominatim, api_key="test-key", **kwargs) -> OrsClient:
     return OrsClient(
-        base_url="https://ors.test/openrouteservice",
+        base_url=kwargs.pop("base_url", "https://ors.test/openrouteservice"),
         api_key=api_key,
         rate_limiter=kwargs.pop("rate_limiter", RateLimiter(0)),
         transport=httpx.MockTransport(fake),
