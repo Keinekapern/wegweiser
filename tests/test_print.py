@@ -182,3 +182,23 @@ def test_ride_arrow_follows_reading_direction(client, fake_transit):
     assert f"→ {stop_name('Uni-Kliniken Berg')}" in ltr
     # right-to-left: names are isolated, the arrow points in reading direction
     assert f"← {stop_name('Uni-Kliniken Berg')}" in rtl and "→ <span" not in rtl
+
+
+def test_self_hosted_sources_and_tiles(client, fake_transit, monkeypatch):
+    monkeypatch.setenv("TRANSIT_ATTRIBUTION", "NVBW (ODbL)")
+    monkeypatch.setenv("TRANSIT_ATTRIBUTION_URL", "https://www.nvbw.de/open-data/fahrplandaten/")
+    monkeypatch.setenv("ROUTE_ATTRIBUTION", "openrouteservice")
+    monkeypatch.setenv("TILE_URL", "https://tiles.example.org/{z}/{x}/{y}.png")
+    monkeypatch.setenv("TILE_ATTRIBUTION", "&copy; Example Tiles")
+    _setup(client)
+    params = {"location_id": 1, "destination_id": 1, "profile": "transit", "lang": "en"}
+    page = client.get("/directions/print", params=params).text
+    assert "Timetable data: NVBW (ODbL) (www.nvbw.de/open-data/fahrplandaten)" in page
+    assert "Transitous" not in page
+    assert '"url": "https://tiles.example.org/{z}/{x}/{y}.png"' in page
+    assert "Example Tiles" in page
+    screen = client.get("/directions", params=params).text
+    assert 'href="https://www.nvbw.de/open-data/fahrplandaten/"' in screen
+    assert ">NVBW (ODbL)</a>" in screen
+    foot = client.get("/directions/print", params=params | {"profile": "foot-walking"}).text
+    assert "HeiGIT" not in foot and "openrouteservice" in foot

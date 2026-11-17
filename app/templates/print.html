@@ -86,8 +86,8 @@
 
       <p class="sources">
         {{ dt("sources") }}: {{ dt("osm") }} (ODbL) ·
-        {% if route and route.profile == "transit" %}{{ dt("timetable_data") }}: Transitous (transitous.org/sources){% for c in symbol_credits %} · {{ c }}{% endfor %}
-        {%- else %}openrouteservice.org (HeiGIT){% endif %}
+        {% if route and route.profile == "transit" %}{{ dt("timetable_data") }}: {{ transit_source }} ({{ transit_sources_url|replace("https://", "")|replace("http://", "")|trim("/") }}){% for c in symbol_credits %} · {{ c }}{% endfor %}
+        {%- else %}{{ route_source }}{% endif %}
         · {{ dt("created", date=dt.date(today)) }}
       </p>
 

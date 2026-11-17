@@ -151,7 +151,7 @@
   <p class="result-actions" lang="{{ ui_lang }}" dir="ltr"><a class="button" href="/directions/print?{{ query }}">{{ t("Druckansicht") }}</a></p>
   <div id="map" class="map" aria-label="{{ t('Karte mit Route') }}"></div>
   <p class="hint small">
-    {% if route and route.profile == "transit" %}{{ dt("timetable_data") }}: <a href="{{ transit_sources_url }}" target="_blank" rel="noopener">Transitous</a> · {{ dt("osm") }}{% for c in symbol_credits %} · {{ c }}{% endfor %}
+    {% if route and route.profile == "transit" %}{{ dt("timetable_data") }}: <a href="{{ transit_sources_url }}" target="_blank" rel="noopener">{{ transit_source }}</a> · {{ dt("osm") }}{% for c in symbol_credits %} · {{ c }}{% endfor %}
     {% else %}{{ route_attribution }}{% endif %} · {{ dt("created", date=dt.date(today)) }}</p>
 
   {% include "_walk_insets.html" %}

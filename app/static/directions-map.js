@@ -1,5 +1,6 @@
 // Renders start/end markers and the route on an OSM tile map.
-// Tiles: tile.openstreetmap.org, loaded on demand only (no prefetching), attribution visible.
+// Tiles: tile.openstreetmap.org by default (TILE_URL), loaded on demand only (no prefetching),
+// attribution visible.
 (function () {
   "use strict";
 
@@ -19,10 +20,13 @@
   const map = L.map(mapEl, mapOptions);
   window.directionsMap = map;
 
-  const tileLayer = () => L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: '<a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap</a>',
-  });
+  const tileConf = data.tiles || {};
+  const tileLayer = () => L.tileLayer(
+    tileConf.url || "https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: tileConf.max_zoom || 19,
+      attribution: tileConf.attribution ||
+        '<a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap</a>',
+    });
   const tiles = tileLayer().addTo(map);
   // All tile layers (main map + detail maps), for the print view's "loaded" check
   window.directionsTileLayers = [tiles];

@@ -5,3 +5,8 @@ __pycache__/
 .venv/
 node_modules/
 CLAUDE.local.md
+selfhost/downloads/
+selfhost/motis/*
+!selfhost/motis/config.yml
+selfhost/ors/
+selfhost/*.log

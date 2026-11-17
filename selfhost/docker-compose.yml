@@ -1,0 +1,42 @@
+# Self-hosted routing for Wegweiser: MOTIS 2 (public transport) and openrouteservice
+# (walking/car routes). Prepare and update the data with ./update.sh (see README.md here).
+#
+# Wegweiser .env:  TRANSITOUS_BASE_URL=http://<host>:8421
+#                  ORS_BASE_URL=http://<host>:8422/ors   (ORS_API_KEY empty)
+name: wegweiser-selfhost
+services:
+  motis:
+    image: ghcr.io/motis-project/motis:2.11.4
+    container_name: wegweiser-motis
+    user: "${UID_GID:-1000:1000}"
+    working_dir: /data
+    command: ["/motis", "server", "/data"]
+    ports:
+      - "${MOTIS_PORT:-8421}:8080"
+    volumes:
+      - ./motis:/data
+      - ./downloads:/downloads:ro
+    mem_limit: ${MOTIS_MEM_LIMIT:-2g}   # update.sh raises it for the import (~6 GB)
+    restart: unless-stopped
+
+  ors:
+    image: openrouteservice/openrouteservice:v10.1.0
+    container_name: wegweiser-ors
+    user: "${UID_GID:-1000:1000}"
+    ports:
+      - "${ORS_PORT:-8422}:8082"
+    volumes:
+      - ./ors:/home/ors
+      - ./downloads:/home/ors/files:ro
+    # Serving Baden-Württemberg needs ~1.6 GB (heap 3 GB; 2 GB is too little).
+    # Building the graphs needs more: update.sh raises XMX for the rebuild.
+    mem_limit: ${ORS_MEM_LIMIT:-4g}
+    environment:
+      REBUILD_GRAPHS: "${ORS_REBUILD:-False}"
+      CONTAINER_LOG_LEVEL: WARNING
+      XMS: 512m
+      XMX: ${ORS_XMX:-3g}
+      ors.engine.profile_default.build.source_file: /home/ors/files/region.osm.pbf
+      ors.engine.profiles.driving-car.enabled: "true"
+      ors.engine.profiles.foot-walking.enabled: "true"
+    restart: unless-stopped

@@ -57,7 +57,7 @@ Die Person, die den Ausdruck bekommt, soll ihren Kartenanbieter selbst wählen k
 | Geocoding | Nominatim (öffentlich) oder openrouteservice/Pelias | Nominatim: max. 1 Anfrage/s, aussagekräftiger User-Agent, nur nutzerausgelöst, **Ergebnisse cachen** |
 | Auto-/Fußrouten | openrouteservice (HeiGIT), kostenloser Standard-Plan | API-Key nur serverseitig; Tageslimits beachten (ca. 2.000 Routen, 1.000 Geocodings); **aktuelle Basis-URL prüfen** (alte api.openrouteservice.org wird laut Drittquelle abgeschaltet, neu vermutlich api.heigit.org) |
 | ÖPNV | Transitous (öffentliche MOTIS-2-API, `https://api.transitous.org/api/`) | Nur nicht-kommerziell; User-Agent mit App-Name, Version und Kontakt; > 720 `/plan`-Anfragen pro Tag nur nach Absprache; Antworten cachen; aktuelle API-Version aus der OpenAPI-Spezifikation nehmen |
-| ÖPNV (später, selbst gehostet) | NVBW-GTFS „bwgesamt“ (ODbL) mit MOTIS oder OpenTripPlanner | Lizenzhinweis ODbL / NVBW |
+| ÖPNV (selbst gehostet) | NVBW-GTFS „bwgesamt“ mit MOTIS | Datenlizenz Deutschland – Namensnennung 2.0: „Datensatz der NVBW GmbH“ mit Link auf https://www.nvbw.de/open-data; Fahrplan gilt jeweils nur bis zum nächsten Fahrplanwechsel |
 
 - Externe APIs **nur über das Backend** aufrufen (Keys geheim halten, zentral cachen und drosseln)
 - Keine personenbezogenen Daten (z. B. Patientendaten) an externe Dienste senden – nur Adressen und Einrichtungen

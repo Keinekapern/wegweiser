@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app import categories, db
+from app import categories, config, db
 from app.category_names import category_name
 from app.deps import DB, templates
 from app.i18n import (DirectionsText, Msg, directions_language_options, get_ui_lang,
@@ -15,7 +15,7 @@ from app.i18n import (DirectionsText, Msg, directions_language_options, get_ui_l
 from app.services import line_symbols
 from app.services.qr import map_links
 from app.services.routing import ATTRIBUTION, PROFILES, OrsClient, RoutingError, get_router
-from app.services.transit import (MODE_GROUP_LABELS, SOURCES_URL, WEEKDAYS, TransitError,
+from app.services.transit import (MODE_GROUP_LABELS, WEEKDAYS, TransitError,
                                   TransitousClient, TransitSettings, common_place, get_transit,
                                   stop_icon, without_place,
                                   load_defaults, save_defaults)
@@ -106,6 +106,8 @@ def build_context(conn: Connection, router_: OrsClient, transit: TransitousClien
             "route": route.to_dict() if route else None,
             "walk_details": [d.to_dict() for d in details],
             "attribution": dt("osm"),
+            "tiles": {"url": config.tile_url(), "attribution": config.tile_attribution(),
+                      "max_zoom": config.tile_max_zoom()},
         }
 
     selected = {"location_id": loc_id, "destination_id": dest_id, "profile": profile,
@@ -127,9 +129,12 @@ def build_context(conn: Connection, router_: OrsClient, transit: TransitousClien
         "map_data": map_data,
         "dt": dt,
         "today": date.today(),
-        "route_attribution": ATTRIBUTION,
+        "route_attribution": ATTRIBUTION.replace("openrouteservice.org (HeiGIT)",
+                                                 config.route_attribution()),
+        "route_source": config.route_attribution(),
+        "transit_source": config.transit_attribution(),
         "transit_settings": transit_settings,
-        "transit_sources_url": SOURCES_URL,
+        "transit_sources_url": config.transit_attribution_url(),
         "symbol_credits": symbol_credits,
         "dest_category": categories.get(destination.category) if destination else None,
         "dest_subtitle": destination_subtitle(conn, destination, doc_lang) if destination else "",

@@ -1,0 +1,8 @@
+# Manual matches for line colours (see line_colors.py).
+# NVBW agency name (as in agency.txt), Traewelling shortOperatorName(s) joined by "|";
+# empty = never colour this agency. Line names coloured differently by the listed groups
+# stay uncoloured.
+Freiburger Verkehrs AG,rvf-vag-stadtbahn
+DB AG,db-regio-ag-baden-wurttemberg|vvs-db-sbs|vrn-sbahn-rn|rvf-sbahn|kvv-avg
+DB Regio AG Baden-Württemberg,db-regio-ag-baden-wurttemberg
+Arverio Baden-Württemberg,arverio-bw

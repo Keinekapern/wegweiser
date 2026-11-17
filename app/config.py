@@ -62,3 +62,31 @@ def ors_daily_limit() -> int:
 
 def route_cache_days() -> int:
     return int(os.environ.get("ROUTE_CACHE_DAYS", "7"))
+
+
+# Attribution shown on page and printout. Defaults fit the public services;
+# a self-hosted MOTIS/ORS must name its own data source (e.g. NVBW, ODbL).
+def transit_attribution() -> str:
+    return os.environ.get("TRANSIT_ATTRIBUTION", "").strip() or "Transitous"
+
+
+def transit_attribution_url() -> str:
+    return os.environ.get("TRANSIT_ATTRIBUTION_URL", "").strip() or "https://transitous.org/sources/"
+
+
+def route_attribution() -> str:
+    return os.environ.get("ROUTE_ATTRIBUTION", "").strip() or "openrouteservice.org (HeiGIT)"
+
+
+# Map tiles, loaded by the browser. Attribution is HTML and must stay visible.
+def tile_url() -> str:
+    return os.environ.get("TILE_URL", "").strip() or "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+
+def tile_attribution() -> str:
+    return (os.environ.get("TILE_ATTRIBUTION", "").strip()
+            or '<a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap</a>')
+
+
+def tile_max_zoom() -> int:
+    return int(os.environ.get("TILE_MAX_ZOOM", "").strip() or "19")
