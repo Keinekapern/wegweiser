@@ -41,7 +41,7 @@
                   data-address="{{ d.address }}" data-category="{{ t(group_label) }}"
                   {%- if cat %} data-icon="{{ url_for('static', path=cat.image) }}"{% endif %}
                   {%- if d.id == selected.destination_id %} selected{% endif %}
-                  {%- if not offered and d.id != selected.destination_id %} hidden disabled{% endif %}>{{ d.name }}</option>
+                  {%- if not offered and d.id != selected.destination_id %} hidden disabled{% endif %}>{{ d.name }}{% if d.pending %} ({{ t("unbestätigt") }}){% endif %}</option>
           {% endfor %}
         </optgroup>
         {% endfor %}
@@ -118,7 +118,7 @@
       </div>
     </div>
     <p class="hint small">{{ t("Gesucht wird eine Verbindung am nächsten {weekday} gegen {time} Uhr. Auf dem Ausdruck steht der Takt, keine Abfahrtszeiten.", weekday=t(weekdays[ts.weekday]), time=ts.time) }}</p>
-    <button type="submit" class="secondary" formaction="/directions/transit-defaults" formmethod="post">{{ t("Als Standard speichern") }}</button>
+    {% if admin %}<button type="submit" class="secondary" formaction="/directions/transit-defaults" formmethod="post">{{ t("Als Standard speichern") }}</button>{% endif %}
     </details>
   </div>
 

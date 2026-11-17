@@ -178,6 +178,26 @@ MIGRATIONS: list[str] = [
         PRIMARY KEY (destination_id, lang)
     );
     """,
+    # 11: admin accounts + sessions; destinations created without login wait for approval.
+    # creator_token = SHA-256 of the creating browser's random cookie (lets the creator
+    # correct a pending destination), approved_by = admin username.
+    """
+    CREATE TABLE admins (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        username      TEXT NOT NULL UNIQUE COLLATE NOCASE,
+        password_hash TEXT NOT NULL,
+        created_at    TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE admin_sessions (
+        token_hash TEXT PRIMARY KEY,
+        admin_id   INTEGER NOT NULL REFERENCES admins(id) ON DELETE CASCADE,
+        expires_at TEXT NOT NULL
+    );
+    ALTER TABLE destinations ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'
+        CHECK (status IN ('approved', 'pending'));
+    ALTER TABLE destinations ADD COLUMN creator_token TEXT;
+    ALTER TABLE destinations ADD COLUMN approved_by TEXT NOT NULL DEFAULT '';
+    """,
 ]
 
 
@@ -301,6 +321,12 @@ class Destination:
     osm_type: str | None = None
     osm_id: int | None = None
     category: str = ""
+    # set by the approval workflow, not by the destination form
+    status: str = "approved"
+
+    @property
+    def pending(self) -> bool:
+        return self.status == "pending"
 
     @property
     def osm_url(self) -> str | None:
@@ -309,13 +335,15 @@ class Destination:
         return None
 
 
-_DEST_COLUMNS = [f.name for f in fields(Destination) if f.name != "id"]
+# Columns written by the destination form (status only via create/approve)
+_DEST_COLUMNS = [f.name for f in fields(Destination) if f.name not in ("id", "status")]
+_DEST_SELECT = ", ".join(["id", *_DEST_COLUMNS, "status"])
 
 
 def list_destinations(conn: sqlite3.Connection,
                       location_id: int | None = None) -> list[Destination]:
     """All destinations, or those offered for a location (assigned to it or unassigned)."""
-    sql = f"SELECT id, {', '.join(_DEST_COLUMNS)} FROM destinations d"
+    sql = f"SELECT {_DEST_SELECT} FROM destinations d"
     params: tuple = ()
     if location_id is not None:
         sql += (" WHERE NOT EXISTS (SELECT 1 FROM destination_locations dl"
@@ -368,21 +396,118 @@ def set_destination_names(conn: sqlite3.Connection, destination_id: int,
 
 def get_destination(conn: sqlite3.Connection, destination_id: int) -> Destination | None:
     row = conn.execute(
-        f"SELECT id, {', '.join(_DEST_COLUMNS)} FROM destinations WHERE id = ?",
+        f"SELECT {_DEST_SELECT} FROM destinations WHERE id = ?",
         (destination_id,),
     ).fetchone()
     return Destination(**dict(row)) if row else None
 
 
-def create_destination(conn: sqlite3.Connection, dest: Destination) -> int:
+def create_destination(conn: sqlite3.Connection, dest: Destination, *,
+                       pending: bool = False, creator_token: str | None = None) -> int:
+    """pending: created without admin login, waits for approval; creator_token = hash
+    of the creating browser's cookie."""
     values = asdict(dest)
-    placeholders = ", ".join("?" for _ in _DEST_COLUMNS)
+    columns = [*_DEST_COLUMNS, "status", "creator_token"]
+    placeholders = ", ".join("?" for _ in columns)
     with conn:
         cur = conn.execute(
-            f"INSERT INTO destinations ({', '.join(_DEST_COLUMNS)}) VALUES ({placeholders})",
-            [values[c] for c in _DEST_COLUMNS],
+            f"INSERT INTO destinations ({', '.join(columns)}) VALUES ({placeholders})",
+            [values[c] for c in _DEST_COLUMNS]
+            + ["pending" if pending else "approved", creator_token if pending else None],
         )
     return cur.lastrowid
+
+
+def approve_destination(conn: sqlite3.Connection, destination_id: int, admin: str) -> bool:
+    with conn:
+        cur = conn.execute(
+            "UPDATE destinations SET status = 'approved', creator_token = NULL, approved_by = ?,"
+            " updated_at = datetime('now') WHERE id = ? AND status = 'pending'",
+            (admin, destination_id))
+    return cur.rowcount > 0
+
+
+def destination_creator_token(conn: sqlite3.Connection, destination_id: int) -> str | None:
+    row = conn.execute("SELECT creator_token FROM destinations WHERE id = ?",
+                       (destination_id,)).fetchone()
+    return row[0] if row else None
+
+
+def list_pending_destinations(conn: sqlite3.Connection) -> list[tuple[Destination, str]]:
+    """Pending destinations with their creation time (UTC), oldest first."""
+    rows = conn.execute(f"SELECT {_DEST_SELECT}, created_at FROM destinations"
+                        " WHERE status = 'pending' ORDER BY created_at, id").fetchall()
+    result = []
+    for r in rows:
+        data = dict(r)
+        created = data.pop("created_at")
+        result.append((Destination(**data), created))
+    return result
+
+
+def count_pending_destinations(conn: sqlite3.Connection) -> int:
+    return conn.execute("SELECT COUNT(*) FROM destinations WHERE status = 'pending'").fetchone()[0]
+
+
+# --- admins ---
+
+@dataclass
+class Admin:
+    id: int
+    username: str
+
+
+def admin_count(conn: sqlite3.Connection) -> int:
+    return conn.execute("SELECT COUNT(*) FROM admins").fetchone()[0]
+
+
+def list_admins(conn: sqlite3.Connection) -> list[Admin]:
+    rows = conn.execute("SELECT id, username FROM admins ORDER BY username COLLATE NOCASE")
+    return [Admin(r["id"], r["username"]) for r in rows]
+
+
+def get_admin_credentials(conn: sqlite3.Connection, username: str) -> tuple[Admin, str] | None:
+    row = conn.execute("SELECT id, username, password_hash FROM admins WHERE username = ?",
+                       (username,)).fetchone()
+    return (Admin(row["id"], row["username"]), row["password_hash"]) if row else None
+
+
+def create_admin(conn: sqlite3.Connection, username: str, password_hash: str) -> int:
+    with conn:
+        cur = conn.execute("INSERT INTO admins (username, password_hash) VALUES (?, ?)",
+                           (username, password_hash))
+    return cur.lastrowid
+
+
+def set_admin_password(conn: sqlite3.Connection, admin_id: int, password_hash: str) -> None:
+    with conn:
+        conn.execute("UPDATE admins SET password_hash = ? WHERE id = ?", (password_hash, admin_id))
+        conn.execute("DELETE FROM admin_sessions WHERE admin_id = ?", (admin_id,))
+
+
+def delete_admin(conn: sqlite3.Connection, admin_id: int) -> bool:
+    with conn:
+        cur = conn.execute("DELETE FROM admins WHERE id = ?", (admin_id,))
+    return cur.rowcount > 0
+
+
+def create_session(conn: sqlite3.Connection, token_hash: str, admin_id: int, hours: int) -> None:
+    with conn:
+        conn.execute("DELETE FROM admin_sessions WHERE expires_at < datetime('now')")
+        conn.execute("INSERT INTO admin_sessions (token_hash, admin_id, expires_at)"
+                     " VALUES (?, ?, datetime('now', ?))", (token_hash, admin_id, f"+{hours} hours"))
+
+
+def session_admin(conn: sqlite3.Connection, token_hash: str) -> Admin | None:
+    row = conn.execute(
+        "SELECT a.id, a.username FROM admin_sessions s JOIN admins a ON a.id = s.admin_id"
+        " WHERE s.token_hash = ? AND s.expires_at > datetime('now')", (token_hash,)).fetchone()
+    return Admin(row["id"], row["username"]) if row else None
+
+
+def delete_session(conn: sqlite3.Connection, token_hash: str) -> None:
+    with conn:
+        conn.execute("DELETE FROM admin_sessions WHERE token_hash = ?", (token_hash,))
 
 
 def update_destination(conn: sqlite3.Connection, destination_id: int, dest: Destination) -> bool:

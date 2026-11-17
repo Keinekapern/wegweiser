@@ -187,11 +187,31 @@ def fake_nominatim():
 @pytest.fixture
 def client(tmp_path, monkeypatch, fake_nominatim, fake_ors, fake_transit):
     monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "test.sqlite"))
+    from app import auth
+    monkeypatch.setattr(auth, "_N", 2 ** 8)   # fast password hashing in tests
     from app.main import app
 
     app.dependency_overrides[get_geocoder] = lambda: make_client(fake_nominatim)
     app.dependency_overrides[get_router] = lambda: make_router(fake_ors)
     app.dependency_overrides[get_transit] = lambda: make_transit(fake_transit)
     with TestClient(app) as c:
+        # Logged in as admin: most tests exercise editing; anon_client is a browser without login
+        from app import auth, db
+        with db.get_conn() as conn:
+            db.create_admin(conn, ADMIN_USER, auth.hash_password(ADMIN_PASSWORD))
+        r = c.post("/admin/login", data={"username": ADMIN_USER, "password": ADMIN_PASSWORD},
+                   follow_redirects=False)
+        assert r.status_code == 303, r.text
         yield c
     app.dependency_overrides.clear()
+
+
+ADMIN_USER = "admin"
+ADMIN_PASSWORD = "correct horse battery"
+
+
+@pytest.fixture
+def anon_client(client):
+    """Another browser on the same instance, not logged in (own cookies)."""
+    from app.main import app
+    return TestClient(app)

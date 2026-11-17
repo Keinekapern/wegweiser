@@ -25,7 +25,13 @@
       <a href="/directions" {% if request.url.path.startswith('/directions') %}aria-current="page"{% endif %}>{{ t("Wegbeschreibung") }}</a>
       <a href="/destinations" {% if request.url.path.startswith('/destinations') %}aria-current="page"{% endif %}>{{ t("Ziele") }}</a>
       <a href="/locations" {% if request.url.path.startswith('/locations') %}aria-current="page"{% endif %}>{{ t("Standorte") }}</a>
+      {% if admin %}<a href="/admin" {% if request.url.path.startswith('/admin') %}aria-current="page"{% endif %}>{{ t("Admin") }}{% if pending_count %} <span class="count" title="{{ t('Neue Ziele zur Bestätigung') }}">{{ pending_count }}</span>{% endif %}</a>{% endif %}
     </nav>
+    {% if admin %}
+    <form method="post" action="/admin/logout" class="logout"><button type="submit" class="link" title="{{ t('Angemeldet als {name}', name=admin.username) }}">{{ t("Abmelden") }}</button></form>
+    {% else %}
+    <a class="login-link" href="/admin/login?next={{ here|urlencode }}">{{ t("Admin") }}</a>
+    {% endif %}
     <button type="button" class="theme-switch" id="theme-switch"
             data-labels='{{ {"auto": t("Design: automatisch"), "light": t("Design: hell"), "dark": t("Design: dunkel")}|tojson }}'>◐</button>
     <nav class="lang-switch" aria-label="{{ t('Sprache der Oberfläche') }}">

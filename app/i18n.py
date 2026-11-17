@@ -68,6 +68,62 @@ def translator(lang: str) -> Callable[..., str]:
 # German msgid -> English. Keep sorted by area; tests check that every msgid
 # used in templates/JS exists here.
 ENGLISH: dict[str, str] = {
+    # admin / approval of new destinations
+    "Admin": "Admin",
+    "Admins": "Admins",
+    "Admin-Anmeldung": "Admin login",
+    "Als Admin anmelden": "Log in as admin",
+    "Anmelden": "Log in",
+    "Abmelden": "Log out",
+    "Angemeldet als {name}": "Logged in as {name}",
+    "angemeldet": "logged in",
+    "Benutzername": "Username",
+    "Passwort": "Password",
+    "Passwort wiederholen": "Repeat password",
+    "Bisheriges Passwort": "Current password",
+    "Neues Passwort": "New password",
+    "Passwort ändern": "Change password",
+    "Eigenes Passwort ändern": "Change own password",
+    "Passwort geändert.": "Password changed.",
+    "Nach dem Ändern werden alle anderen Anmeldungen dieses Kontos beendet.":
+        "Changing it ends all other sessions of this account.",
+    "Admin hinzufügen": "Add admin",
+    "Admin „{name}“ angelegt.": "Admin “{name}” created.",
+    "Admin „{name}“ wirklich löschen?": "Really delete admin “{name}”?",
+    "Benutzername oder Passwort ist falsch.": "Wrong username or password.",
+    "Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen.":
+        "Too many failed attempts. Please try again in 15 minutes.",
+    "Bitte einen Benutzernamen angeben.": "Please enter a username.",
+    "Diesen Benutzernamen gibt es schon.": "This username already exists.",
+    "Das Passwort muss mindestens {n} Zeichen lang sein.":
+        "The password must be at least {n} characters long.",
+    "Die Passwörter stimmen nicht überein.": "The passwords do not match.",
+    "Das bisherige Passwort ist falsch.": "The current password is wrong.",
+    "Das eigene Konto kann nicht gelöscht werden.": "You cannot delete your own account.",
+    "Es gibt noch kein Admin-Konto. Das erste Konto wird auf dem Server angelegt:":
+        "There is no admin account yet. The first one is created on the server:",
+    "Bearbeiten und Löschen von Zielen und Standorten sowie das Bestätigen neuer Ziele sind Admins vorbehalten. Neue Ziele kann jede Person anlegen.":
+        "Editing and deleting destinations and locations, and approving new destinations, "
+        "is reserved for admins. Anyone can create new destinations.",
+    "Neue Ziele zur Bestätigung": "New destinations to approve",
+    "Keine Ziele warten auf Bestätigung.": "No destinations are waiting for approval.",
+    "Diese Ziele wurden ohne Anmeldung angelegt. Sie sind schon nutzbar, werden aber erst nach der Bestätigung dauerhaft. Beim Bestätigen am besten Adresse, Kategorie und Standorte prüfen.":
+        "These destinations were created without login. They can already be used but only "
+        "become permanent once approved. Best check address, category and locations when approving.",
+    "Angelegt": "Created",
+    "Bestätigen": "Approve",
+    "Ablehnen": "Reject",
+    "Ziel „{name}“ ablehnen und löschen?": "Reject and delete destination “{name}”?",
+    "unbestätigt": "unapproved",
+    "Wartet auf Bestätigung durch einen Admin": "Waiting for approval by an admin",
+    "Ziel angelegt. Es ist sofort nutzbar und wird dauerhaft, sobald ein Admin es bestätigt.":
+        "Destination created. It can be used right away and becomes permanent once an admin approves it.",
+    "Neue Ziele sind sofort nutzbar und werden dauerhaft, sobald ein Admin sie bestätigt.":
+        "New destinations can be used right away and become permanent once an admin approves them.",
+    "Dieses Ziel ist noch unbestätigt. Bis zur Bestätigung durch einen Admin lässt es sich in diesem Browser noch korrigieren.":
+        "This destination is not approved yet. Until an admin approves it, it can still be "
+        "corrected in this browser.",
+    "Standorte anlegen und ändern können nur Admins.": "Only admins can create and change locations.",
     # navigation / general
     "Wegbeschreibung": "Directions",
     "Ziele": "Destinations",

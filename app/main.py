@@ -1,12 +1,13 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import config, db
+from app.auth import LoginRequired, login_url
 from app.deps import BASE_DIR
-from app.routes import api, destinations, directions, locations, translations, ui
+from app.routes import admin, api, destinations, directions, locations, translations, ui
 
 
 @asynccontextmanager
@@ -16,6 +17,11 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title=config.APP_NAME, lifespan=lifespan)
+
+
+@app.exception_handler(LoginRequired)
+async def login_required(_request: Request, exc: LoginRequired):
+    return RedirectResponse(login_url(exc.next_url), status_code=303)
 
 
 class RevalidatedStaticFiles(StaticFiles):
@@ -35,6 +41,7 @@ app.include_router(directions.router)
 app.include_router(api.router)
 app.include_router(ui.router)
 app.include_router(translations.router)
+app.include_router(admin.router)
 
 
 @app.get("/favicon.ico", include_in_schema=False)

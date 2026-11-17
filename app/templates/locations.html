@@ -15,14 +15,17 @@
       <td><img class="dest-icon" src="{{ url_for('static', path=location_icon) }}" alt="">{{ loc.name }}</td>
       <td>{{ loc.address }}</td>
       <td class="mono">{{ "%.6f"|format(loc.lat) }}, {{ "%.6f"|format(loc.lon) }}</td>
-      <td class="actions">
+      <td class="actions"><div class="row-actions">
+        <a class="button" href="/directions?location_id={{ loc.id }}">{{ t("Route") }}</a>
+        {% if admin %}
         <a class="button secondary" href="/locations/{{ loc.id }}/edit">{{ t("Bearbeiten") }}</a>
         <form method="post" action="/locations/{{ loc.id }}/delete"
               data-confirm="{{ t('Standort „{name}“ wirklich löschen?', name=loc.name) }}"
               onsubmit="return confirm(this.dataset.confirm);">
           <button type="submit" class="danger">{{ t("Löschen") }}</button>
         </form>
-      </td>
+        {% endif %}
+      </div></td>
     </tr>
   {% endfor %}
   </tbody>
@@ -31,6 +34,7 @@
 <p class="empty">{{ t("Noch keine Standorte angelegt.") }}</p>
 {% endif %}
 
+{% if admin %}
 <section class="card">
   <h2>{% if edit_id %}{{ t("Standort bearbeiten") }}{% else %}{{ t("Neuer Standort") }}{% endif %}</h2>
 
@@ -60,6 +64,9 @@
     </div>
   </form>
 </section>
+{% else %}
+<p class="hint">{{ t("Standorte anlegen und ändern können nur Admins.") }} <a href="/admin/login?next=/locations">{{ t("Als Admin anmelden") }}</a></p>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}<script src="{{ url_for('static', path='geosearch.js') }}"></script>{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ t("Admin") }} – {{ app_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ t("Admin") }}</h1>
+  <span class="hint">{{ t("Angemeldet als {name}", name=me.username) }}</span>
+</div>
+
+{% if errors %}<ul class="errors" role="alert">{% for e in errors %}<li>{{ t(e) }}</li>{% endfor %}</ul>{% endif %}
+{% if notice %}<p class="notice" role="status">{{ t(notice) }}</p>{% endif %}
+
+<h2>{{ t("Neue Ziele zur Bestätigung") }}</h2>
+{% if pending %}
+<p class="hint">{{ t("Diese Ziele wurden ohne Anmeldung angelegt. Sie sind schon nutzbar, werden aber erst nach der Bestätigung dauerhaft. Beim Bestätigen am besten Adresse, Kategorie und Standorte prüfen.") }}</p>
+<table class="list">
+  <thead><tr><th>{{ t("Name") }}</th><th>{{ t("Adresse") }}</th><th>{{ t("Standorte") }}</th><th>{{ t("Angelegt") }}</th><th></th></tr></thead>
+  <tbody>
+  {% for d, created in pending %}
+    <tr>
+      <td>{{ d.name }}{% if d.note %}<div class="hint small">{{ d.note }}</div>{% endif %}</td>
+      <td>{{ d.address }}</td>
+      <td class="small">
+        {% set assigned = assignments.get(d.id, []) %}
+        {% if assigned %}{% for lid in assigned %}{{ location_names[lid] }}{% if not loop.last %}, {% endif %}{% endfor %}
+        {% else %}<span class="hint">{{ t("alle") }}</span>{% endif %}
+      </td>
+      <td class="small">{{ dt_local(created) }}</td>
+      <td class="actions"><div class="row-actions">
+        <form method="post" action="/admin/destinations/{{ d.id }}/approve">
+          <button type="submit">{{ t("Bestätigen") }}</button>
+        </form>
+        <a class="button secondary" href="/destinations/{{ d.id }}/edit">{{ t("Bearbeiten") }}</a>
+        <form method="post" action="/destinations/{{ d.id }}/delete"
+              data-confirm="{{ t('Ziel „{name}“ ablehnen und löschen?', name=d.name) }}"
+              onsubmit="return confirm(this.dataset.confirm);">
+          <button type="submit" class="danger">{{ t("Ablehnen") }}</button>
+        </form>
+      </div></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">{{ t("Keine Ziele warten auf Bestätigung.") }}</p>
+{% endif %}
+
+<section class="card">
+  <h2>{{ t("Admins") }}</h2>
+  <table class="list">
+    <tbody>
+    {% for a in admins %}
+      <tr>
+        <td>{{ a.username }}{% if a.id == me.id %} <span class="badge">{{ t("angemeldet") }}</span>{% endif %}</td>
+        <td class="actions"><div class="row-actions">
+          {% if a.id != me.id %}
+          <form method="post" action="/admin/users/{{ a.id }}/delete"
+                data-confirm="{{ t('Admin „{name}“ wirklich löschen?', name=a.username) }}"
+                onsubmit="return confirm(this.dataset.confirm);">
+            <button type="submit" class="danger">{{ t("Löschen") }}</button>
+          </form>
+          {% endif %}
+      </div></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <h3>{{ t("Admin hinzufügen") }}</h3>
+  <form method="post" action="/admin/users" class="form">
+    <label>{{ t("Benutzername") }}<input name="username" required autocomplete="off"></label>
+    <label>{{ t("Passwort") }}<input name="password" type="password" required minlength="{{ min_password }}" autocomplete="new-password"></label>
+    <label>{{ t("Passwort wiederholen") }}<input name="repeat" type="password" required minlength="{{ min_password }}" autocomplete="new-password"></label>
+    <div class="buttons"><button type="submit">{{ t("Anlegen") }}</button></div>
+  </form>
+</section>
+
+<section class="card">
+  <h2>{{ t("Eigenes Passwort ändern") }}</h2>
+  <form method="post" action="/admin/password" class="form">
+    <label>{{ t("Bisheriges Passwort") }}<input name="current" type="password" required autocomplete="current-password"></label>
+    <label>{{ t("Neues Passwort") }}<input name="password" type="password" required minlength="{{ min_password }}" autocomplete="new-password"></label>
+    <label>{{ t("Passwort wiederholen") }}<input name="repeat" type="password" required minlength="{{ min_password }}" autocomplete="new-password"></label>
+    <div class="buttons"><button type="submit">{{ t("Passwort ändern") }}</button></div>
+  </form>
+  <p class="hint">{{ t("Nach dem Ändern werden alle anderen Anmeldungen dieses Kontos beendet.") }}</p>
+</section>
+{% endblock %}

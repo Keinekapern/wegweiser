@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app import categories, db
+from app import auth, categories, db
 from app.deps import DB, templates
 from app.i18n import (DIRECTIONS_LANGUAGES, directions_language_options, get_ui_lang,
                       translate)
@@ -76,6 +76,7 @@ def render_form(request: Request, conn, *, form: dict, errors=None,
     return templates.TemplateResponse(
         request, "destination_form.html",
         {"form": form, "errors": errors or [], "edit_id": edit_id, "search_query": search_query,
+         "is_admin": auth.current_admin(request) is not None,
          "locations": db.list_locations(conn), "categories": categories.CATEGORIES,
          "category_groups": categories.GROUPS, "name_languages": _name_languages(request)},
         status_code=status_code,
@@ -88,8 +89,11 @@ def destinations_page(request: Request, conn: DB, location_id: str | None = None
     filter_id = _int_or_none(location_id)
     if filter_id is not None and not any(loc.id == filter_id for loc in locations):
         filter_id = None
+    dests = db.list_destinations(conn, filter_id)
     return templates.TemplateResponse(request, "destinations.html", {
-        "destinations": db.list_destinations(conn, filter_id),
+        "destinations": dests,
+        "editable": {d.id for d in dests if auth.can_edit_destination(request, conn, d)},
+        "created_pending": request.query_params.get("created") == "pending",
         "locations": locations,
         "location_names": {loc.id: loc.name for loc in locations},
         "assignments": db.destination_location_ids(conn),
@@ -113,23 +117,48 @@ def destinations_new(request: Request, conn: DB, location_id: str | None = None,
     return render_form(request, conn, form=form, search_query=name)
 
 
+def _creator_locations(conn, location_ids: list[int]) -> list[int]:
+    """Without login, assigning destinations to locations is not allowed; only the location
+    the form was opened from is kept, so the new destination shows up there."""
+    known = {loc.id for loc in db.list_locations(conn)}
+    return [i for i in location_ids if i in known][:1]
+
+
 @router.post("", response_class=HTMLResponse)
 async def destinations_create(request: Request, conn: DB):
     form = await read_form(request)
     errors, dest = validate_destination_form(form)
     if errors:
         return render_form(request, conn, form=form, errors=errors, status_code=422)
-    dest_id = db.create_destination(conn, dest)
-    db.set_destination_locations(conn, dest_id, form["location_ids"])
+    if auth.current_admin(request) is not None:
+        dest_id = db.create_destination(conn, dest)
+        db.set_destination_locations(conn, dest_id, form["location_ids"])
+        db.set_destination_names(conn, dest_id, form["names"])
+        return RedirectResponse("/destinations", status_code=303)
+    creator, new_cookie = auth.ensure_creator_token(request)
+    dest_id = db.create_destination(conn, dest, pending=True, creator_token=creator)
+    db.set_destination_locations(conn, dest_id, _creator_locations(conn, form["location_ids"]))
     db.set_destination_names(conn, dest_id, form["names"])
-    return RedirectResponse("/destinations", status_code=303)
+    response = RedirectResponse("/destinations?created=pending", status_code=303)
+    if new_cookie:
+        auth.set_cookie(response, request, auth.CREATOR_COOKIE, new_cookie,
+                        auth.CREATOR_COOKIE_DAYS * 86400)
+    return response
+
+
+def _editable_destination(request: Request, conn, destination_id: int) -> db.Destination:
+    """The destination if this browser may change it; 404 if missing, login otherwise."""
+    dest = db.get_destination(conn, destination_id)
+    if dest is None:
+        raise HTTPException(404, translate(get_ui_lang(request), "Ziel nicht gefunden"))
+    if not auth.can_edit_destination(request, conn, dest):
+        auth.require_admin(request)   # raises LoginRequired
+    return dest
 
 
 @router.get("/{destination_id}/edit", response_class=HTMLResponse)
 def destinations_edit(request: Request, conn: DB, destination_id: int):
-    dest = db.get_destination(conn, destination_id)
-    if dest is None:
-        raise HTTPException(404, translate(get_ui_lang(request), "Ziel nicht gefunden"))
+    dest = _editable_destination(request, conn, destination_id)
     form = {f: getattr(dest, f) for f in FORM_FIELDS if hasattr(dest, f)}
     form["coords"] = f"{dest.lat}, {dest.lon}"
     form["location_ids"] = db.destination_location_ids(conn).get(destination_id, [])
@@ -139,21 +168,22 @@ def destinations_edit(request: Request, conn: DB, destination_id: int):
 
 @router.post("/{destination_id}", response_class=HTMLResponse)
 async def destinations_update(request: Request, conn: DB, destination_id: int):
-    if db.get_destination(conn, destination_id) is None:
-        raise HTTPException(404, translate(get_ui_lang(request), "Ziel nicht gefunden"))
+    _editable_destination(request, conn, destination_id)
     form = await read_form(request)
     errors, dest = validate_destination_form(form)
     if errors:
         return render_form(request, conn, form=form, errors=errors, edit_id=destination_id,
                            status_code=422)
     db.update_destination(conn, destination_id, dest)
-    db.set_destination_locations(conn, destination_id, form["location_ids"])
+    if auth.current_admin(request) is not None:   # creators cannot change the assignment
+        db.set_destination_locations(conn, destination_id, form["location_ids"])
     db.set_destination_names(conn, destination_id, form["names"])
     return RedirectResponse("/destinations", status_code=303)
 
 
 @router.post("/{destination_id}/delete")
 def destinations_delete(request: Request, conn: DB, destination_id: int):
-    if not db.delete_destination(conn, destination_id):
-        raise HTTPException(404, translate(get_ui_lang(request), "Ziel nicht gefunden"))
-    return RedirectResponse("/destinations", status_code=303)
+    _editable_destination(request, conn, destination_id)
+    db.delete_destination(conn, destination_id)
+    back = "/admin" if "/admin" in request.headers.get("referer", "") else "/destinations"
+    return RedirectResponse(back, status_code=303)

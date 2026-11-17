@@ -9,7 +9,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app import categories, config, db
 from app.category_names import category_name
-from app.deps import DB, templates
+from app.deps import DB, AdminUser, templates
 from app.i18n import (DirectionsText, Msg, directions_language_options, get_ui_lang,
                       normalize_directions_lang)
 from app.services import line_symbols
@@ -313,7 +313,7 @@ def directions_print(
 
 
 @router.post("/transit-defaults")
-async def save_transit_defaults(request: Request, conn: DB):
+async def save_transit_defaults(request: Request, conn: DB, _admin: AdminUser):
     """Save the public transport options of the form as defaults, then show the route."""
     form = await request.form()
     errors: list[Msg] = []

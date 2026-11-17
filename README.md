@@ -50,6 +50,20 @@ Standorte (Startpunkte) und Ziele werden einmal angelegt und stehen danach per A
 
 ![Liste der Ziele](docs/screenshots/destinations.png)
 
+## Admins und Rechte
+
+Ohne Anmeldung kann jede Person Wegbeschreibungen erstellen und neue Ziele anlegen. Neue Ziele sind sofort nutzbar, tragen aber den Vermerk „unbestätigt“, bis ein Admin sie auf der Admin-Seite bestätigt oder ablehnt. Bis dahin lassen sie sich im selben Browser noch korrigieren.
+
+Nur Admins können bestehende Ziele und Standorte bearbeiten oder löschen, Standorte anlegen, Ziele bestimmten Standorten zuordnen und die ÖPNV-Standardwerte speichern. Weitere Admins und das eigene Passwort verwaltet man auf der Admin-Seite.
+
+Das erste Admin-Konto wird auf dem Server angelegt (fragt nach dem Passwort):
+
+```sh
+docker compose exec -u appuser wegweiser python -m app.admin_cli create <name>
+```
+
+Ebenso `password <name>`, `delete <name>` und `list`. Passwörter werden mit scrypt gespeichert; nach fünf Fehlversuchen ist die Anmeldung für 15 Minuten gesperrt.
+
 ## Datenquellen
 
 Alle externen Dienste werden nur vom Server aus aufgerufen, gedrosselt und in SQLite zwischengespeichert. API-Schlüssel bleiben auf dem Server. An die Dienste gehen nur Adressen und Koordinaten, keine personenbezogenen Daten.

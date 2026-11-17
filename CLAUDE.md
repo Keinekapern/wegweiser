@@ -26,6 +26,7 @@ Open-Source-Projekt (EUPL-1.2). Jede Organisation betreibt ihre eigene Instanz; 
    - QR-Codes (siehe unten)
    - Erstellungsdatum und Quellenangaben (Pflicht, siehe Datenquellen)
    - Ausgabe über die Druckfunktion des Browsers („Als PDF speichern“) mit sauberem `@media print`-CSS
+5. **Rechte**: Ohne Anmeldung Wegbeschreibungen erstellen und neue Ziele anlegen (Status „pending“, sofort nutzbar, im selben Browser korrigierbar). Admins (Konten in der DB, `app/auth.py`, erstes Konto per `python -m app.admin_cli`) bestätigen neue Ziele und dürfen allein bearbeiten, löschen, Standorte anlegen, Ziele Standorten zuordnen und ÖPNV-Standardwerte speichern. Jede ändernde Aktion ist ein POST; Cookies SameSite=Lax.
 
 ### Phase 2: ÖPNV
 - ÖPNV-Verbindung vom Standort zum Ziel

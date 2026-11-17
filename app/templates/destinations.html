@@ -6,6 +6,7 @@
   <a class="button" href="/destinations/new{% if filter_id %}?location_id={{ filter_id }}{% endif %}">{{ t("Neues Ziel") }}</a>
 </div>
 <p class="hint">{{ t("Einrichtungen, zu denen Wegbeschreibungen erstellt werden.") }}</p>
+{% if created_pending %}<p class="notice" role="status">{{ t("Ziel angelegt. Es ist sofort nutzbar und wird dauerhaft, sobald ein Admin es bestätigt.") }}</p>{% endif %}
 
 {% if locations|length > 1 %}
 <form method="get" action="/destinations" class="filter">
@@ -33,6 +34,7 @@
         {% set cat = categories.get(d.category) %}
         {% if cat %}<img class="dest-icon" src="{{ url_for('static', path=cat.image) }}" alt="{{ t(cat.label) }}" title="{{ t(cat.label) }}">{% endif %}
         {{ d.name }}
+        {% if d.pending %}{% if admin %}<a href="/admin" class="badge pending" title="{{ t('Wartet auf Bestätigung durch einen Admin') }}">{{ t("unbestätigt") }}</a>{% else %}<span class="badge pending" title="{{ t('Wartet auf Bestätigung durch einen Admin') }}">{{ t("unbestätigt") }}</span>{% endif %}{% endif %}
         {% if d.note %}<div class="hint small">{{ d.note }}</div>{% endif %}
       </td>
       <td>{{ d.address }}</td>
@@ -46,15 +48,17 @@
         {% if assigned %}{% for lid in assigned %}{{ location_names[lid] }}{% if not loop.last %}, {% endif %}{% endfor %}
         {% else %}<span class="hint">{{ t("alle") }}</span>{% endif %}
       </td>
-      <td class="actions">
+      <td class="actions"><div class="row-actions">
         <a class="button" href="/directions?destination_id={{ d.id }}{% if filter_id %}&amp;location_id={{ filter_id }}{% endif %}">{{ t("Route") }}</a>
+        {% if d.id in editable %}
         <a class="button secondary" href="/destinations/{{ d.id }}/edit">{{ t("Bearbeiten") }}</a>
         <form method="post" action="/destinations/{{ d.id }}/delete"
               data-confirm="{{ t('Ziel „{name}“ wirklich löschen?', name=d.name) }}"
               onsubmit="return confirm(this.dataset.confirm);">
           <button type="submit" class="danger">{{ t("Löschen") }}</button>
         </form>
-      </td>
+        {% endif %}
+      </div></td>
     </tr>
   {% endfor %}
   </tbody>

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ t("Admin-Anmeldung") }} – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>{{ t("Admin-Anmeldung") }}</h1>
+<p class="hint">{{ t("Bearbeiten und Löschen von Zielen und Standorten sowie das Bestätigen neuer Ziele sind Admins vorbehalten. Neue Ziele kann jede Person anlegen.") }}</p>
+
+<section class="card narrow">
+  {% if error %}<ul class="errors" role="alert"><li>{{ t(error) }}</li></ul>{% endif %}
+  {% if no_admins %}
+  <p class="hint">{{ t("Es gibt noch kein Admin-Konto. Das erste Konto wird auf dem Server angelegt:") }}<br>
+    <code>docker compose exec -u appuser wegweiser python -m app.admin_cli create &lt;{{ t("Name") }}&gt;</code></p>
+  {% endif %}
+  <form method="post" action="/admin/login" class="form">
+    <input type="hidden" name="next" value="{{ next }}">
+    <label>{{ t("Benutzername") }}
+      <input name="username" required autocomplete="username" value="{{ username }}" autofocus>
+    </label>
+    <label>{{ t("Passwort") }}
+      <input name="password" type="password" required autocomplete="current-password">
+    </label>
+    <div class="buttons"><button type="submit">{{ t("Anmelden") }}</button></div>
+  </form>
+</section>
+{% endblock %}

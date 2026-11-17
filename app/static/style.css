@@ -57,8 +57,9 @@ h1 { margin-top: 0; }
 table.list { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); }
 table.list th, table.list td { text-align: left; padding: .5rem .75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
 table.list tr.editing { background: var(--highlight); }
-td.actions { display: flex; gap: .5rem; justify-content: flex-end; }
-td.actions form { margin: 0; }
+/* td.actions stays a table cell (display: flex on the td broke the row borders) */
+.row-actions { display: flex; gap: .5rem; justify-content: flex-end; }
+.row-actions form { margin: 0; }
 .card { margin-top: 2rem; padding: 1rem 1.25rem; background: var(--card); border: 1px solid var(--border); border-radius: 6px; }
 .card h2 { margin-top: 0; font-size: 1.15rem; }
 .form label { display: block; margin-bottom: .75rem; font-weight: 500; }
@@ -75,7 +76,7 @@ button.danger { background: var(--field); color: var(--danger); border-color: va
 .errors { color: var(--danger); background: var(--danger-bg); border: 1px solid var(--danger-border); border-radius: 4px; padding: .5rem 1rem .5rem 2rem; }
 @media (max-width: 640px) {
   .form .row { grid-template-columns: 1fr; }
-  td.actions { flex-direction: column; }
+  .row-actions { flex-direction: column; align-items: stretch; }
 }
 
 .small { font-size: .85em; }
@@ -313,3 +314,15 @@ a { color: var(--accent); }
 /* start/destination labels: compact like the stop labels (Leaflet default padding is 6px) */
 .leaflet-tooltip:not(.stop-label) { padding: 2px 6px; }
 .leaflet-tooltip:not(.stop-label) .dest-label img { width: 16px; height: 16px; }
+
+/* admin login/logout in the top bar, before the theme switch */
+.topbar .logout, .topbar .login-link { margin-left: auto; font-size: .85rem; }
+.topbar .login-link { opacity: .7; }
+.topbar .login-link:hover { opacity: 1; }
+.topbar .logout ~ .theme-switch, .topbar .login-link ~ .theme-switch { margin-left: 0; }
+.topbar .logout { margin-bottom: 0; }
+.topbar button.link { background: none; border: 0; padding: 0; color: #fff; font: inherit; cursor: pointer; opacity: .85; }
+.topbar button.link:hover { opacity: 1; text-decoration: underline; }
+.topbar .count { display: inline-block; min-width: 1.3em; padding: 0 .35em; border-radius: 1em; background: var(--warn); color: #000; font-size: .75rem; font-weight: 600; text-align: center; }
+.badge.pending { border-color: var(--warn); color: var(--warn); }
+.card.narrow { max-width: 28rem; }
