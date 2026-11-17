@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="{{ ui_lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', path='favicon.svg') }}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{{ url_for('static', path='apple-touch-icon.png') }}">
+  <script>
+    // Apply the stored theme before rendering (no flash). Values: light | dark | (auto)
+    try {
+      const theme = localStorage.getItem("theme");
+      if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+    } catch (e) { /* storage unavailable: follow the system */ }
+  </script>
+  {% block head %}{% endblock %}
+  <link rel="stylesheet" href="{{ url_for('static', path='fonts.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+  {% set here = request.url.path ~ ('?' ~ request.url.query if request.url.query else '') %}
+  <header class="topbar">
+    <a class="brand" href="/"><img src="{{ url_for('static', path='favicon.svg') }}" alt="" class="brand-icon">{{ app_name }}</a>
+    <nav class="tabs" aria-label="Navigation">
+      <a href="/directions" {% if request.url.path.startswith('/directions') %}aria-current="page"{% endif %}>{{ t("Wegbeschreibung") }}</a>
+      <a href="/destinations" {% if request.url.path.startswith('/destinations') %}aria-current="page"{% endif %}>{{ t("Ziele") }}</a>
+      <a href="/locations" {% if request.url.path.startswith('/locations') %}aria-current="page"{% endif %}>{{ t("Standorte") }}</a>
+    </nav>
+    <button type="button" class="theme-switch" id="theme-switch"
+            data-labels='{{ {"auto": t("Design: automatisch"), "light": t("Design: hell"), "dark": t("Design: dunkel")}|tojson }}'>◐</button>
+    <nav class="lang-switch" aria-label="{{ t('Sprache der Oberfläche') }}">
+      {% for code, label in ui_languages.items() %}
+      <a href="/ui-language/{{ code }}?next={{ here|urlencode }}" lang="{{ code }}" title="{{ label }}"
+         {% if code == ui_lang %}aria-current="true"{% endif %}>{{ code|upper }}</a>
+      {% endfor %}
+    </nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <script>
+    // Theme switch: auto -> light -> dark -> auto
+    (function () {
+      const btn = document.getElementById("theme-switch");
+      const labels = JSON.parse(btn.dataset.labels);
+      const icons = { auto: "◐", light: "☀", dark: "☾" };
+      const current = () => document.documentElement.dataset.theme || "auto";
+      const show = () => { const m = current(); btn.textContent = icons[m]; btn.title = labels[m]; btn.setAttribute("aria-label", labels[m]); };
+      btn.addEventListener("click", () => {
+        const next = { auto: "light", light: "dark", dark: "auto" }[current()];
+        if (next === "auto") delete document.documentElement.dataset.theme;
+        else document.documentElement.dataset.theme = next;
+        try { if (next === "auto") localStorage.removeItem("theme"); else localStorage.setItem("theme", next); } catch (e) { /* ignore */ }
+        show();
+      });
+      show();
+    })();
+  </script>
+  <script id="i18n" type="application/json">{{ js_strings|tojson }}</script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

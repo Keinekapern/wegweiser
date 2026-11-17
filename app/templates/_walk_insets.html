@@ -1,0 +1,16 @@
+{# Detail maps of the walks to the first / from the last stop (public transport).
+   Expects walk_details, dt; map rendering in directions-map.js (data-inset index). #}
+{% if walk_details %}
+<div class="insets" id="insets">
+  {% for w in walk_details %}
+  <figure class="inset">
+    <div class="inset-map" data-inset="{{ loop.index0 }}"></div>
+    <figcaption>
+      <span aria-hidden="true"><img class="walk-icon" src="/static/walk.svg" alt=""></span>
+      {% if w.kind == "to_stop" %}{{ dt.markup("walk_to_stop", stop=stop_name(w.stop, w.stop_mode)) }}{% else %}{{ dt("walk_to_dest") }}{% endif %}
+      <span class="dur">({{ dt.duration(w.duration_s) }}{% if w.distance_m %}, {{ dt.distance(w.distance_m) }}{% endif %})</span>
+    </figcaption>
+  </figure>
+  {% endfor %}
+</div>
+{% endif %}

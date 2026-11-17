@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Symbolübersicht</title>
+<style>
+:root { --fg:#1d2330; --muted:#5b6270; --bg:#f4f5f7; --card:#fff; --line:#d8dbe0; }
+body { margin:0; padding:16px 24px; font:15px/1.4 system-ui, sans-serif; color:var(--fg); background:var(--bg); }
+h1 { font-size:1.5rem; margin:.2rem 0 .3rem; } h2 { font-size:1.15rem; margin:1.6rem 0 .6rem; }
+p.intro { color:var(--muted); max-width:60rem; margin:0 0 1rem; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:10px; }
+.tile { margin:0; background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px; }
+.pair { display:flex; gap:8px; justify-content:center; }
+.big { width:72px; height:72px; }
+.bw { filter: grayscale(1) contrast(2.2); }
+figcaption { text-align:center; font-weight:600; margin:.4rem 0; }
+.label { display:flex; align-items:center; gap:4px; width:max-content; margin:0 auto; padding:2px 6px;
+          font:600 12px system-ui, sans-serif; background:#fff; border:1px solid #bbb; border-radius:3px; box-shadow:0 1px 3px rgba(0,0,0,.3); }
+.label img { width:18px; height:18px; }
+.lgrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:8px; }
+.ls { display:flex; align-items:center; gap:6px; background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 8px; }
+.ls small { color:var(--muted); }
+.badge { display:inline-flex; align-items:center; gap:4px; padding:3px 7px; border-radius:4px; font-weight:700; }
+.badge i { width:22px; height:22px; background:currentColor; -webkit-mask:var(--s) center/contain no-repeat; mask:var(--s) center/contain no-repeat; }
+.dark { background:#58102f; color:#fff; } .light { background:#a59fd6; color:#000; } .bwb { background:#fff; color:#000; border:1.5px solid #000; }
+</style></head><body>
+<h1>Symbolübersicht</h1>
+<p class="intro">Kategorie-Symbole: links farbig, rechts so, wie sie im Schwarz-Weiß-Druck erscheinen. Darunter in Originalgröße wie in einem Kartenlabel. Darunter die Haltestellenschilder je Verkehrsmittel und ganz unten die Liniensymbole (dunkle Linienfarbe, helle Linienfarbe, Schwarz-Weiß-Druck).</p>
+<h2>Gesundheit</h2><div class="grid"><figure class="tile">
+  <div class="pair"><img class="big" src="categories/hospital.svg" alt=""><img class="big bw" src="categories/hospital.svg" alt=""></div>
+  <figcaption>Krankenhaus</figcaption>
+  <div class="label"><img src="categories/hospital.svg" alt="">Krankenhaus</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/doctor.svg" alt=""><img class="big bw" src="categories/doctor.svg" alt=""></div>
+  <figcaption>Arztpraxis</figcaption>
+  <div class="label"><img src="categories/doctor.svg" alt="">Arztpraxis</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/dentist.svg" alt=""><img class="big bw" src="categories/dentist.svg" alt=""></div>
+  <figcaption>Zahnarzt</figcaption>
+  <div class="label"><img src="categories/dentist.svg" alt="">Zahnarzt</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/pharmacy.svg" alt=""><img class="big bw" src="categories/pharmacy.svg" alt=""></div>
+  <figcaption>Apotheke</figcaption>
+  <div class="label"><img src="categories/pharmacy.svg" alt="">Apotheke</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/therapy.svg" alt=""><img class="big bw" src="categories/therapy.svg" alt=""></div>
+  <figcaption>Psychotherapie/Beratung</figcaption>
+  <div class="label"><img src="categories/therapy.svg" alt="">Psychotherapie/Beratung</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/physio.svg" alt=""><img class="big bw" src="categories/physio.svg" alt=""></div>
+  <figcaption>Physiotherapie</figcaption>
+  <div class="label"><img src="categories/physio.svg" alt="">Physiotherapie</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/optician.svg" alt=""><img class="big bw" src="categories/optician.svg" alt=""></div>
+  <figcaption>Optiker</figcaption>
+  <div class="label"><img src="categories/optician.svg" alt="">Optiker</div>
+</figure></div><h2>Behörden</h2><div class="grid"><figure class="tile">
+  <div class="pair"><img class="big" src="categories/townhall.svg" alt=""><img class="big bw" src="categories/townhall.svg" alt=""></div>
+  <figcaption>Rathaus/Bürgeramt</figcaption>
+  <div class="label"><img src="categories/townhall.svg" alt="">Rathaus/Bürgeramt</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/immigration.svg" alt=""><img class="big bw" src="categories/immigration.svg" alt=""></div>
+  <figcaption>Ausländerbehörde</figcaption>
+  <div class="label"><img src="categories/immigration.svg" alt="">Ausländerbehörde</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/jobcenter.svg" alt=""><img class="big bw" src="categories/jobcenter.svg" alt=""></div>
+  <figcaption>Jobcenter/Arbeitsagentur</figcaption>
+  <div class="label"><img src="categories/jobcenter.svg" alt="">Jobcenter/Arbeitsagentur</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/police.svg" alt=""><img class="big bw" src="categories/police.svg" alt=""></div>
+  <figcaption>Polizei</figcaption>
+  <div class="label"><img src="categories/police.svg" alt="">Polizei</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/court.svg" alt=""><img class="big bw" src="categories/court.svg" alt=""></div>
+  <figcaption>Gericht</figcaption>
+  <div class="label"><img src="categories/court.svg" alt="">Gericht</div>
+</figure></div><h2>Bildung/Soziales</h2><div class="grid"><figure class="tile">
+  <div class="pair"><img class="big" src="categories/school.svg" alt=""><img class="big bw" src="categories/school.svg" alt=""></div>
+  <figcaption>Schule</figcaption>
+  <div class="label"><img src="categories/school.svg" alt="">Schule</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/kindergarten.svg" alt=""><img class="big bw" src="categories/kindergarten.svg" alt=""></div>
+  <figcaption>Kita</figcaption>
+  <div class="label"><img src="categories/kindergarten.svg" alt="">Kita</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/language.svg" alt=""><img class="big bw" src="categories/language.svg" alt=""></div>
+  <figcaption>Sprachkurs</figcaption>
+  <div class="label"><img src="categories/language.svg" alt="">Sprachkurs</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/counselling.svg" alt=""><img class="big bw" src="categories/counselling.svg" alt=""></div>
+  <figcaption>Beratungsstelle</figcaption>
+  <div class="label"><img src="categories/counselling.svg" alt="">Beratungsstelle</div>
+</figure></div><h2>Religion</h2><div class="grid"><figure class="tile">
+  <div class="pair"><img class="big" src="categories/church.svg" alt=""><img class="big bw" src="categories/church.svg" alt=""></div>
+  <figcaption>Kirche</figcaption>
+  <div class="label"><img src="categories/church.svg" alt="">Kirche</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/mosque.svg" alt=""><img class="big bw" src="categories/mosque.svg" alt=""></div>
+  <figcaption>Moschee</figcaption>
+  <div class="label"><img src="categories/mosque.svg" alt="">Moschee</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/synagogue.svg" alt=""><img class="big bw" src="categories/synagogue.svg" alt=""></div>
+  <figcaption>Synagoge</figcaption>
+  <div class="label"><img src="categories/synagogue.svg" alt="">Synagoge</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/temple.svg" alt=""><img class="big bw" src="categories/temple.svg" alt=""></div>
+  <figcaption>Tempel</figcaption>
+  <div class="label"><img src="categories/temple.svg" alt="">Tempel</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/worship.svg" alt=""><img class="big bw" src="categories/worship.svg" alt=""></div>
+  <figcaption>Gebetsstätte</figcaption>
+  <div class="label"><img src="categories/worship.svg" alt="">Gebetsstätte</div>
+</figure></div><h2>Alltag</h2><div class="grid"><figure class="tile">
+  <div class="pair"><img class="big" src="categories/station.svg" alt=""><img class="big bw" src="categories/station.svg" alt=""></div>
+  <figcaption>Bahnhof</figcaption>
+  <div class="label"><img src="categories/station.svg" alt="">Bahnhof</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/supermarket.svg" alt=""><img class="big bw" src="categories/supermarket.svg" alt=""></div>
+  <figcaption>Supermarkt</figcaption>
+  <div class="label"><img src="categories/supermarket.svg" alt="">Supermarkt</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/bank.svg" alt=""><img class="big bw" src="categories/bank.svg" alt=""></div>
+  <figcaption>Bank</figcaption>
+  <div class="label"><img src="categories/bank.svg" alt="">Bank</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="categories/post.svg" alt=""><img class="big bw" src="categories/post.svg" alt=""></div>
+  <figcaption>Post</figcaption>
+  <div class="label"><img src="categories/post.svg" alt="">Post</div>
+</figure></div><h2>Sonstiges</h2><div class="grid"><figure class="tile">
+  <div class="pair"><img class="big" src="categories/other.svg" alt=""><img class="big bw" src="categories/other.svg" alt=""></div>
+  <figcaption>Sonstiges</figcaption>
+  <div class="label"><img src="categories/other.svg" alt="">Sonstiges</div>
+</figure></div><h2>Standort</h2><div class="grid"><figure class="tile">
+  <div class="pair"><img class="big" src="categories/location.svg" alt=""><img class="big bw" src="categories/location.svg" alt=""></div>
+  <figcaption>Standort</figcaption>
+  <div class="label"><img src="categories/location.svg" alt="">Standort</div>
+</figure></div>
+<h2>Haltestellen</h2><div class="grid"><figure class="tile">
+  <div class="pair"><img class="big" src="stop.svg" alt=""><img class="big bw" src="stop.svg" alt=""></div>
+  <figcaption>Bus / Straßenbahn</figcaption>
+  <div class="label"><img src="stop.svg" alt="">Hauptbahnhof</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="stop-metro.svg" alt=""><img class="big bw" src="stop-metro.svg" alt=""></div>
+  <figcaption>U-Bahn</figcaption>
+  <div class="label"><img src="stop-metro.svg" alt="">Hauptbahnhof</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="stop-train.svg" alt=""><img class="big bw" src="stop-train.svg" alt=""></div>
+  <figcaption>Bahn / S-Bahn</figcaption>
+  <div class="label"><img src="stop-train.svg" alt="">Hauptbahnhof</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="stop-ferry.svg" alt=""><img class="big bw" src="stop-ferry.svg" alt=""></div>
+  <figcaption>Fähre</figcaption>
+  <div class="label"><img src="stop-ferry.svg" alt="">Hauptbahnhof</div>
+</figure><figure class="tile">
+  <div class="pair"><img class="big" src="stop-cable.svg" alt=""><img class="big bw" src="stop-cable.svg" alt=""></div>
+  <figcaption>Seilbahn</figcaption>
+  <div class="label"><img src="stop-cable.svg" alt="">Hauptbahnhof</div>
+</figure></div>
+<h2>Liniensymbole</h2><div class="lgrid"><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/ball.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/ball.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/ball.svg')"></i></span><small>ball</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/bulb.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/bulb.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/bulb.svg')"></i></span><small>bulb</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/candle.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/candle.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/candle.svg')"></i></span><small>candle</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/castle.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/castle.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/castle.svg')"></i></span><small>castle</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/cat.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/cat.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/cat.svg')"></i></span><small>cat</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/chapel.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/chapel.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/chapel.svg')"></i></span><small>chapel</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/clover.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/clover.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/clover.svg')"></i></span><small>clover</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/cross-roof.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/cross-roof.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/cross-roof.svg')"></i></span><small>cross-roof</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/cup.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/cup.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/cup.svg')"></i></span><small>cup</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/elephant.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/elephant.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/elephant.svg')"></i></span><small>elephant</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/fir.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/fir.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/fir.svg')"></i></span><small>fir</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/fish.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/fish.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/fish.svg')"></i></span><small>fish</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/glass.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/glass.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/glass.svg')"></i></span><small>glass</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/house.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/house.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/house.svg')"></i></span><small>house</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/leaf.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/leaf.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/leaf.svg')"></i></span><small>leaf</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/letter.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/letter.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/letter.svg')"></i></span><small>letter</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/locomotive.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/locomotive.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/locomotive.svg')"></i></span><small>locomotive</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/palm.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/palm.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/palm.svg')"></i></span><small>palm</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/pear.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/pear.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/pear.svg')"></i></span><small>pear</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/rooster.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/rooster.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/rooster.svg')"></i></span><small>rooster</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/scissors.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/scissors.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/scissors.svg')"></i></span><small>scissors</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/squirrel.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/squirrel.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/squirrel.svg')"></i></span><small>squirrel</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/suitcase.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/suitcase.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/suitcase.svg')"></i></span><small>suitcase</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/tent.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/tent.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/tent.svg')"></i></span><small>tent</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/tree.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/tree.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/tree.svg')"></i></span><small>tree</small></div><div class="ls"><span class="badge dark"><b>Bus</b><i style="--s:url('symbols/umbrella.svg')"></i></span>
+<span class="badge light"><b>Bus</b><i style="--s:url('symbols/umbrella.svg')"></i></span>
+<span class="badge bwb"><b>Bus</b><i style="--s:url('symbols/umbrella.svg')"></i></span><small>umbrella</small></div></div>
+</body></html>

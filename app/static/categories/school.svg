@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Schule: white motif on the group colour (high contrast, own drawing) -->
+  <rect width="24" height="24" rx="4" fill="#b04f00"/>
+  <g fill="#fff">
+  <rect x="9" y="3.6" width="12.6" height="9.2" rx=".6"/>
+  <path d="M11 6.6h5.5M11 9.6h8" fill="none" stroke="#b04f00" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M10.6 12.8 9.6 20M20 12.8l1 7.2" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="4.8" cy="8.2" r="2"/>
+  <path d="M4.8 10.8v5.4M4.8 16.2l-1 4.4M4.8 16.2l1 4.4M4.8 12 9 9.6" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

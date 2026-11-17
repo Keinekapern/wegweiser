@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Synagoge: white motif on the group colour (high contrast, own drawing) -->
+  <rect width="24" height="24" rx="4" fill="#8a2a4a"/>
+  <g fill="#fff">
+  <path d="M12 3.4 19.45 16.3H4.55zM12 20.6 4.55 7.7h14.9z" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

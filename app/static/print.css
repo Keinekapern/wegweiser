@@ -1,0 +1,261 @@
+/* Print view: A4 portrait or landscape (@page rule set by print.js in #page-style).
+   On screen the sheet is shown at paper size (WYSIWYG). */
+
+:root { --ink: #111; --muted: #555; --line: #bbb; --accent: #1f5fbf; }
+* { box-sizing: border-box; }
+html { background: #e7e9ee; }
+body {
+  margin: 0; color: var(--ink);
+  font-family: "Noto Sans Arabic", "Noto Sans Tamil", "Noto Sans Ethiopic", system-ui, -apple-system, "Segoe UI", "Noto Sans", sans-serif;
+  font-size: 10.5pt; line-height: 1.35;
+}
+
+/* --- screen toolbar ------------------------------------------------------ */
+.toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.25rem;
+  max-width: 210mm; margin: 0 auto; padding: .75rem 0;
+  font-size: 11pt;
+}
+.toolbar a { color: var(--accent); }
+.toolbar button {
+  padding: .4rem 1.1rem; font: inherit; border: 1px solid var(--accent); border-radius: 4px;
+  background: var(--accent); color: #fff; cursor: pointer;
+}
+.toolbar button:disabled { opacity: .5; cursor: wait; }
+.toolbar #map-status { color: var(--muted); }
+.toolbar #map-status.ok { color: #1b7a3a; }
+.toolbar #map-status.warn { color: #9a5b00; font-weight: 600; }
+.toolbar .error { color: #b3261e; font-weight: 600; }
+.toolbar .hint { flex-basis: 100%; margin: 0; color: var(--muted); font-size: 9.5pt; }
+
+/* --- sheet --------------------------------------------------------------- */
+/* Page 1 is a fixed-height block. Keep a safety margin below the printable height
+   (A4 minus 12 mm margins = 273 x 186 mm): browsers may use larger margins (Firefox
+   12.7 mm) or add headers/footers, and a page 1 that is even slightly too tall makes
+   the browser start an empty second page. */
+:root { --page-w: 186mm; --page-h: 262mm; }
+.landscape { --page-w: 273mm; --page-h: 175mm; }
+.toolbar { max-width: calc(var(--page-w) + 24mm); }
+.sheet {
+  width: calc(var(--page-w) + 24mm); margin: 0 auto 2rem; padding: 12mm;
+  background: #fff; box-shadow: 0 2px 12px rgba(0, 0, 0, .15);
+}
+.sheet-2 { min-height: calc(var(--page-h) + 24mm); }
+
+/* Page 1: fixed height, map row takes the rest */
+.page1 {
+  height: var(--page-h); display: grid; gap: 0 6mm;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto auto;
+  grid-template-areas: "head" "top" "map" "insets" "sources" "details";
+}
+.page1 > * { min-height: 0; }
+.head { grid-area: head; }
+.top { grid-area: top; }
+.map { grid-area: map; }
+.sources { grid-area: sources; }
+.page1 > .details { grid-area: details; overflow: hidden; }
+.page1 > .insets { grid-area: insets; }
+
+/* Detail maps of the walks to/from the stops */
+.insets { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin-top: 3mm; }
+.insets:has(.inset:only-child) { grid-template-columns: 1fr; }
+.inset { margin: 0; min-width: 0; }
+.inset-map { height: 62mm; border: .3mm solid var(--line); }
+.inset figcaption { margin-top: 1mm; font-size: 9pt; font-weight: 600; }
+.inset figcaption .dur { font-weight: normal; }
+.landscape .insets { margin-top: 3mm; }
+.landscape .inset-map { height: 52mm; }
+.no-insets .insets { display: none; }
+.walk-steps h2 { font-size: 10.5pt; margin-top: 3mm; }
+
+/* Portrait with walking detail maps (public transport): detail maps stacked on the
+   left, connection on the right, the main map gets the remaining height */
+body:not(.landscape) .page1.has-insets {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  grid-template-areas: "head head" "top top" "map map" "insets details" "sources sources";
+}
+body:not(.landscape) .page1.has-insets .insets { grid-template-columns: 1fr; gap: 2.5mm; }
+body:not(.landscape) .page1.has-insets .inset-map { height: 46mm; }
+body:not(.landscape) .page1.has-insets > .details { margin-top: 3mm; }
+body:not(.landscape) .page1.has-insets > .details .transit { margin-top: 0; }
+body.no-insets:not(.landscape) .page1.has-insets {
+  grid-template-areas: "head head" "top top" "map map" "details details" "sources sources";
+}
+.page1.has-insets > .sources { margin-top: 2mm; }
+/* Connection moved to page 2: detail maps side by side over the full width */
+body:not(.landscape) .page1.has-insets.details-moved {
+  grid-template-areas: "head head" "top top" "map map" "insets insets" "sources sources";
+}
+body:not(.landscape) .page1.has-insets.details-moved .insets { grid-template-columns: 1fr 1fr; gap: 4mm; }
+body:not(.landscape) .page1.has-insets.details-moved .inset-map { height: 62mm; }
+.sheet-2 > .walk-steps:first-child h2, .sheet-2 > .details:first-child .transit h2 { margin-top: 0; }
+
+/* Landscape: map on the left over the full height, info column on the right */
+.landscape .page1 {
+  grid-template-columns: 1fr 88mm;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  grid-template-areas: "head head" "map top" "map details" "insets details" "sources details";
+}
+.landscape .top { flex-direction: column; gap: 3mm; }
+.landscape .qr { width: 100%; }
+.landscape .qr-codes { justify-content: flex-start; }
+.landscape .qr figcaption { text-align: start; }
+.landscape .qr-code, .landscape .qr-code svg { width: 25mm; }
+.landscape .qr-code svg { height: 25mm; }
+.landscape .steps ol { columns: 1; }
+.landscape .sheet-2 .steps ol { columns: 2; }   /* full width on page 2 */
+.landscape .page1 > .details .transit, .landscape .page1 > .details .steps { margin-top: 3mm; }
+
+.head h1 { margin: 0 0 1mm; font-size: 22pt; line-height: 1.15; }
+.summary { margin: 0 0 4mm; font-size: 11.5pt; }
+.summary .from { color: var(--muted); }
+
+.top { display: flex; gap: 6mm; justify-content: space-between; align-items: flex-start; margin-bottom: 4mm; }
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 1mm 4mm; margin: 0; flex: 1; }
+.facts dt { font-weight: 600; }
+.facts dd { margin: 0; }
+.facts .url { word-break: break-all; }
+
+.qr { margin: 0; flex: none; width: 96mm; }
+.qr-codes { display: flex; gap: 4mm; justify-content: flex-end; }
+.qr-code { display: flex; flex-direction: column; align-items: center; width: 28mm; color: var(--ink); text-decoration: none; }
+.qr-code svg { display: block; width: 28mm; height: 28mm; }
+.qr-code span { margin-top: .5mm; font-size: 8.5pt; text-align: center; }
+.qr figcaption { margin-top: 1.5mm; font-size: 8.5pt; color: var(--muted); text-align: end; }
+
+.map { width: 100%; min-height: 0; border: .3mm solid var(--line); }
+.leaflet-container { font-family: inherit; }
+.leaflet-control-attribution { font-size: 7.5pt; }
+.sources { margin: 1.5mm 0 0; font-size: 8pt; color: var(--muted); }
+
+.steps { display: none; margin-top: 5mm; }
+.with-steps .steps { display: block; }
+.steps h2 { margin: 0 0 2mm; font-size: 12pt; }
+.steps ol { margin: 0; padding-inline-start: 6mm; columns: 2; column-gap: 8mm; font-size: 9pt; }
+.steps li { break-inside: avoid; margin-bottom: 1mm; }
+.steps .dist { color: var(--muted); }
+
+.dest-icon { height: 1.1em; width: 1.1em; vertical-align: -.15em; margin-inline-end: .3em; }
+.dest-label { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
+.dest-label img { width: 18px; height: 18px; }
+/* --- public transport --- */
+/* public transport */
+.transit { --badge-w: 26mm; }
+.transit h2 { font-size: 1.1rem; margin: 1rem 0 .5rem; }
+.legs { list-style: none; margin: 0; padding: 0; }
+.leg { display: flex; gap: .75rem; align-items: flex-start; padding: .35rem 0; border-bottom: 1px solid var(--line); }
+.leg:last-child { border-bottom: 0; }
+.leg-icon { width: var(--badge-w); text-align: center; flex: none; }
+.line-badge {
+  flex: none; box-sizing: border-box; width: var(--badge-w); padding: .1rem .4rem; border-radius: 4px; text-align: center;
+  font-weight: 700; color: var(--line-text, #fff); background: var(--line-color, #1f5fbf);
+  overflow-wrap: anywhere;  /* very long labels wrap inside the fixed width */
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.line-badge { display: inline-flex; align-items: center; justify-content: center; gap: .3em; }
+.line-symbol { height: 1.35em; width: 1.35em; }  /* transparent SVG, no box */
+/* dark line colours: thin light outline that follows the symbol's shape (no box) */
+.on-dark .line-symbol { filter: drop-shadow(0 0 .5px #fff) drop-shadow(0 0 .5px #fff); }
+.line-badge.small { padding: .7mm 1.6mm; font-size: .9em; }
+.line-badge.small .line-symbol { height: 1.2em; width: 1.2em; }
+.dur { color: var(--muted); }
+.alternatives, .timetable-note { margin: .5rem 0 0; }
+.alternatives ul { list-style: none; margin: .2rem 0 0; padding: 0; }
+.alternatives li { display: flex; gap: .75rem; align-items: center; }
+.alt-lines { flex: none; display: flex; flex-direction: column; gap: .15rem; width: var(--badge-w); }
+
+.timetable-note { color: var(--muted); font-size: .9em; }
+.warning { color: #9a5b00; font-weight: 600; }
+.leaflet-tooltip.stop-label { padding: 1px 4px; font-size: 11px; font-weight: 600; box-shadow: none; border-color: #999; }
+.transit { margin-top: 4mm; break-inside: avoid; }
+.transit h2 { font-size: 12pt; margin: 0 0 2mm; }
+.leg { padding: 1.2mm 0; }
+
+/* --- print ---------------------------------------------------------------- */
+@media print {
+  html, body { background: #fff; }
+  .toolbar { display: none; }
+  .sheet { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
+  .sheet-2 { break-before: page; }
+  .sheet-2[hidden] { display: none; }
+  .page1 { break-inside: avoid; break-after: avoid; }
+  html, body { height: auto; }
+  .leaflet-control-zoom { display: none; }
+  .steps h2 { break-after: avoid; }
+  a { color: inherit; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* Line symbols: large enough to compare with the pictogram on the bus display */
+.line-badge .line-symbol { height: 6mm; width: 6mm; }
+.line-badge.small .line-symbol { height: 4.5mm; width: 4.5mm; }
+.alternatives li { margin-bottom: 1mm; }
+
+/* --- black-and-white printing (toggle in the toolbar) ------------------- */
+.bw .line-badge {
+  background: #fff; color: #000; border: .4mm solid #000;
+}
+.bw .leaflet-marker-pane, .bw .leaflet-tile-pane { filter: grayscale(1); }
+/* category/location symbols: coloured field turns dark, the white motif stays white */
+.bw .dest-icon, .bw .dest-label img { filter: grayscale(1) contrast(2.2); }
+/* coloured image symbols (not the own single-colour ones): darken and outline them for b/w */
+.bw .line-symbol, .bw .on-dark .line-symbol { filter: grayscale(1) brightness(.8) contrast(1.8) drop-shadow(0 0 .15mm #000); }
+.bw .leaflet-tile-pane { opacity: .75; }
+.bw .leaflet-overlay-pane path { stroke: #000; }   /* CSS overrides the SVG stroke attribute */
+.bw .leaflet-overlay-pane path.route-ride { stroke-width: 6px; }
+.bw .warning { color: #000; }
+.bw a { color: #000; }
+
+/* Leaflet positions markers and labels for left-to-right layout: keep maps LTR
+   even inside right-to-left directions (Arabic, Persian ...), but let each label's
+   text keep its own direction. */
+.leaflet-container { direction: ltr; }
+.leaflet-tooltip, .leaflet-control-attribution { unicode-bidi: plaintext; }
+
+/* stop sign in front of stop names (not in front of line destinations) */
+.stop-name { white-space: nowrap; }
+.stop-symbol { height: 1.1em; width: 1.1em; vertical-align: -.18em; margin-inline-end: .25em; }
+.stop-label.leaflet-tooltip .dest-label img { width: 14px; height: 14px; }
+.bw .stop-symbol, .bw .stop-label img { filter: grayscale(1) contrast(1.4); }
+
+/* durations/distances in brackets ("(11 Min., 750 m)") never break inside */
+.dur, .dist, .nowrap { white-space: nowrap; }
+
+/* Detail maps: labels may be shifted along their side; the arrow keeps pointing at the marker */
+.leaflet-container .leaflet-tooltip-top::before, .leaflet-container .leaflet-tooltip-bottom::before { left: calc(50% + var(--arrow-dx, 0px)); }
+.leaflet-container .leaflet-tooltip-left::before, .leaflet-container .leaflet-tooltip-right::before { top: calc(50% + var(--arrow-dy, 0px)); }
+
+/* line badges: some air around the line symbol */
+.line-badge:not(.small) { padding: 1mm 2mm; }
+/* walking pictogram (bold, high contrast instead of the thin emoji) */
+.walk-icon { display: block; margin: 0 auto; height: 7mm; width: 7mm; }
+.leg.walk { align-items: center; }
+.inset figcaption .walk-icon, .walk-steps .walk-icon { display: inline-block; height: 1.35em; width: 1.35em; vertical-align: -.3em; margin-inline-end: .3em; }
+.bw .walk-icon { filter: grayscale(1) contrast(2.2); }  /* dark square, figure stays white */
+
+/* own single-colour line symbols: drawn as a mask in the text colour of the badge */
+.line-symbol.mono {
+  display: inline-block; flex: none; background-color: var(--line-text, #fff);
+  -webkit-mask: var(--symbol) center / contain no-repeat; mask: var(--symbol) center / contain no-repeat;
+}
+.on-dark .line-symbol.mono { filter: none; }
+.bw .line-symbol.mono, .bw .on-dark .line-symbol.mono { background-color: #000; filter: none; }
+
+/* translated name or kind of place under the destination name (directions language) */
+.dest-subtitle { margin: -.3em 0 .6em; font-size: 13pt; font-weight: 600; color: var(--muted); }
+
+/* names inserted into text (stops, line destinations): own bidi run, so in right-to-left
+   directions "A ← B" keeps its order (the name itself stays left-to-right) */
+.stop-name, .bidi-isolate { unicode-bidi: isolate; }
+
+/* other connections with changes: start stop and times, below the lines in travel order */
+.alternatives li.alt-multi { flex-direction: column; align-items: flex-start; gap: .2rem; margin-bottom: .45rem; }
+.alt-chain { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem; }
+.alt-chain .line-badge { width: auto; min-width: 0; }
+.alt-arrow { color: var(--muted); font-weight: 700; }
+
+/* start/destination labels: compact like the stop labels (Leaflet default padding is 6px) */
+.leaflet-tooltip:not(.stop-label) { padding: 2px 6px; }
+.leaflet-tooltip:not(.stop-label) .dest-label img { width: 16px; height: 16px; }

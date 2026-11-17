@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="{{ dt.html_lang }}" dir="{{ dt.dir }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {# Browsers suggest the title as PDF file name #}
+  <title>{{ destination.name }}</title>
+  <link rel="icon" href="{{ url_for('static', path='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', path='vendor/leaflet-1.9.4/leaflet.css') }}"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=">
+  <link rel="stylesheet" href="{{ url_for('static', path='fonts.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='print.css') }}">
+  <style id="page-style">@page { size: A4 portrait; margin: 12mm; }</style>
+</head>
+<body>
+  {# Screen-only toolbar, in the UI language #}
+  <div class="toolbar" lang="{{ ui_lang }}" dir="ltr">
+    <a href="/directions?{{ query }}">{{ t("← Zurück") }}</a>
+    {% if (route and route.steps) or walk_details|selectattr("steps")|list %}
+    <label><input type="checkbox" id="toggle-steps"> {{ t("Abbiegehinweise drucken") }}</label>
+    {% endif %}
+    {% if walk_details %}
+    <label><input type="checkbox" id="toggle-insets" checked> {{ t("Detailkarten Fußwege") }}</label>
+    {% endif %}
+    <label>{{ t("Format") }}
+      <select id="orientation">
+        <option value="portrait">{{ t("Hochformat") }}</option>
+        <option value="landscape">{{ t("Querformat") }}</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="toggle-bw"> {{ t("Für Schwarz-Weiß-Druck optimieren") }}</label>
+    <button type="button" id="print-button" disabled>{{ t("Drucken") }}</button>
+    <span id="map-status" aria-live="polite">{{ t("Karte lädt …") }}</span>
+    {% if error %}<span class="error">{{ t(error) }}</span>{% endif %}
+    <p class="hint">
+      {{ t("Kartenausschnitt kann vor dem Drucken verschoben und gezoomt werden.") }}
+      {{ t("Tipp: Im Druckdialog „Als PDF speichern“ wählen und Kopf- und Fußzeilen ausschalten.") }}
+    </p>
+  </div>
+
+  {# Page 1 is a fixed-height grid; the map takes the remaining space. Details (steps /
+     transit legs) move to page 2 if they would squeeze the map (see print.js). #}
+  <article class="sheet">
+    {# Minimum main-map height before details move to page 2: for public transport the
+       exact bus route matters less than the connection and the walking detail maps #}
+    <div class="page1{% if walk_details %} has-insets{% endif %}" id="page1" data-min-map="{{ 55 if route and route.profile == 'transit' else 100 }}">
+      <header class="head">
+        <h1>{% if dest_category %}<img class="dest-icon" src="{{ url_for('static', path=dest_category.image) }}" alt="">{% endif %}{{ destination.name }}</h1>
+  {%- if dest_subtitle %}<p class="dest-subtitle">{{ dest_subtitle }}</p>{% endif %}
+        <p class="summary">
+          {% if route and route.profile == "transit" %}
+          <strong>{{ dt.transit_modes(route.legs) }}:</strong> {{ dt.transit_summary(route.duration_s, route.transfers, route.headway_min) }}
+          <span class="from">· {{ dt("start") }}: <img class="dest-icon" src="{{ url_for('static', path=location_icon) }}" alt="">{{ location.name }}</span>
+          {% elif route %}
+          <strong>{{ dt.profile(route.profile) }}:</strong> {{ dt.summary(route.distance_m, route.duration_s) }}
+          <span class="from">· {{ dt("start") }}: <img class="dest-icon" src="{{ url_for('static', path=location_icon) }}" alt="">{{ location.name }}</span>
+          {% else %}
+          <span class="from">{{ dt("start") }}: <img class="dest-icon" src="{{ url_for('static', path=location_icon) }}" alt="">{{ location.name }}</span>
+          {% endif %}
+        </p>
+      </header>
+
+      <div class="top">
+        <dl class="facts">
+          <dt>{{ dt("address") }}</dt><dd>{{ destination.address }}</dd>
+          {% if destination.phone %}<dt>{{ dt("phone") }}</dt><dd dir="ltr">{{ destination.phone }}</dd>{% endif %}
+          {% if destination.website %}<dt>{{ dt("website") }}</dt><dd dir="ltr" class="url">{{ destination.website|replace("https://", "")|replace("http://", "") }}</dd>{% endif %}
+          {% if destination.opening_hours %}<dt>{{ dt("opening_hours") }}</dt><dd dir="ltr">{{ destination.opening_hours }}</dd>{% endif %}
+        </dl>
+        <figure class="qr">
+          <div class="qr-codes">
+            {% for link in map_links %}
+            <a class="qr-code qr-{{ link.key }}" href="{{ link.url }}" target="_blank" rel="noopener">
+              {{ link.svg|safe }}
+              <span>{{ link.label }}</span>
+            </a>
+            {% endfor %}
+          </div>
+          <figcaption>{{ dt("qr_hint") }}</figcaption>
+        </figure>
+      </div>
+
+      <div id="map" class="map" data-print="1"></div>
+
+      {% include "_walk_insets.html" %}
+
+      <p class="sources">
+        {{ dt("sources") }}: {{ dt("osm") }} (ODbL) ·
+        {% if route and route.profile == "transit" %}{{ dt("timetable_data") }}: Transitous (transitous.org/sources){% for c in symbol_credits %} · {{ c }}{% endfor %}
+        {%- else %}openrouteservice.org (HeiGIT){% endif %}
+        · {{ dt("created", date=dt.date(today)) }}
+      </p>
+
+      <div class="details" id="details">
+        {% if route and route.profile == "transit" %}
+        {% include "_transit.html" %}
+        {% include "_walk_steps.html" %}
+        {% elif route and route.steps %}
+        <section class="steps">
+          <h2>{{ dt("steps") }}</h2>
+          <ol>
+            {% for s in route.steps %}
+            <li>{{ dt.instruction(s) }}{% if s.distance_m >= 5 %} <span class="dist">({{ dt.distance(s.distance_m) }})</span>{% endif %}</li>
+            {% endfor %}
+          </ol>
+        </section>
+        {% endif %}
+      </div>
+    </div>
+  </article>
+  <article class="sheet sheet-2" id="sheet2" hidden></article>
+
+  <script id="map-data" type="application/json">{{ map_data|tojson }}</script>
+  <script id="i18n-print" type="application/json">{{ {
+    "ready": t("Karte geladen – bereit zum Drucken."),
+    "tile_errors": t("{n} Kartenkacheln konnten nicht geladen werden. Seite neu laden oder Ausschnitt verschieben."),
+    "confirm": t("Die Karte ist noch nicht vollständig geladen. Trotzdem drucken?"),
+  }|tojson }}</script>
+  <script src="{{ url_for('static', path='vendor/leaflet-1.9.4/leaflet.js') }}"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="></script>
+  <script src="{{ url_for('static', path='directions-map.js') }}"></script>
+  <script src="{{ url_for('static', path='print.js') }}"></script>
+</body>
+</html>

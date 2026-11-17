@@ -1,0 +1,14 @@
+{# OSM search panel. Expects `geosearch_target` = id of the form to fill. #}
+<div class="geosearch" data-geosearch data-target="{{ geosearch_target }}"{% if search_query %} data-autosearch{% endif %}>
+  <form class="geosearch-form" role="search">
+    <label for="geosearch-q-{{ geosearch_target }}">{{ t("In OpenStreetMap suchen (Name oder Adresse)") }}</label>
+    <div class="geosearch-row">
+      <input id="geosearch-q-{{ geosearch_target }}" name="q" minlength="3" maxlength="200" value="{{ search_query or '' }}"
+             placeholder="{{ t('z. B. Klinikum Stuttgart Katharinenhospital') }}" autocomplete="off">
+      <button type="submit" class="secondary">{{ t("Suchen") }}</button>
+    </div>
+  </form>
+  <p class="geosearch-status" aria-live="polite"></p>
+  <ol class="geosearch-results"></ol>
+  <p class="geosearch-attribution hint" hidden></p>
+</div>

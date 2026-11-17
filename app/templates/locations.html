@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ t("Standorte") }} – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>{{ t("Standorte") }}</h1>
+<p class="hint">{{ t("Feste Startpunkte für Wegbeschreibungen.") }}</p>
+
+{% if locations %}
+<table class="list">
+  <thead>
+    <tr><th>{{ t("Name") }}</th><th>{{ t("Adresse") }}</th><th>{{ t("Koordinaten") }}</th><th></th></tr>
+  </thead>
+  <tbody>
+  {% for loc in locations %}
+    <tr {% if loc.id == edit_id %}class="editing"{% endif %}>
+      <td><img class="dest-icon" src="{{ url_for('static', path=location_icon) }}" alt="">{{ loc.name }}</td>
+      <td>{{ loc.address }}</td>
+      <td class="mono">{{ "%.6f"|format(loc.lat) }}, {{ "%.6f"|format(loc.lon) }}</td>
+      <td class="actions">
+        <a class="button secondary" href="/locations/{{ loc.id }}/edit">{{ t("Bearbeiten") }}</a>
+        <form method="post" action="/locations/{{ loc.id }}/delete"
+              data-confirm="{{ t('Standort „{name}“ wirklich löschen?', name=loc.name) }}"
+              onsubmit="return confirm(this.dataset.confirm);">
+          <button type="submit" class="danger">{{ t("Löschen") }}</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">{{ t("Noch keine Standorte angelegt.") }}</p>
+{% endif %}
+
+<section class="card">
+  <h2>{% if edit_id %}{{ t("Standort bearbeiten") }}{% else %}{{ t("Neuer Standort") }}{% endif %}</h2>
+
+  {% if errors %}
+  <ul class="errors" role="alert">
+    {% for e in errors %}<li>{{ t(e) }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  {% set geosearch_target = "location-form" %}
+  {% include "_geosearch.html" %}
+
+  <form id="location-form" method="post" action="{% if edit_id %}/locations/{{ edit_id }}{% else %}/locations{% endif %}" class="form">
+    <label>{{ t("Name") }}
+      <input name="name" required value="{{ form.name or '' }}" placeholder="{{ t('z. B. Büro Innenstadt') }}">
+    </label>
+    <label>{{ t("Adresse") }}
+      <input name="address" required value="{{ form.address or '' }}" placeholder="{{ t('Straße Nr., PLZ Ort') }}">
+    </label>
+    <label>{{ t("Koordinaten (Breite, Länge)") }}
+      <input name="coords" required inputmode="decimal" value="{{ form.coords or '' }}" placeholder="48.690351, 9.032999">
+    </label>
+    <p class="hint">{{ t("Koordinaten über die Suche oben übernehmen oder z. B. aus Google Maps kopieren und einfügen („48.690351, 9.032999“).") }}</p>
+    <div class="buttons">
+      <button type="submit">{% if edit_id %}{{ t("Speichern") }}{% else %}{{ t("Anlegen") }}{% endif %}</button>
+      {% if edit_id %}<a class="button secondary" href="/locations">{{ t("Abbrechen") }}</a>{% endif %}
+    </div>
+  </form>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', path='geosearch.js') }}"></script>{% endblock %}

@@ -1,0 +1,20 @@
+/* Noto Sans for Arabic/Persian, Tamil and Ethiopic (Tigrinya); SIL OFL 1.1, Fontsource 5.3.0.
+   unicode-range: the browser downloads a font only when such characters occur. */
+@font-face { font-family: "Noto Sans Arabic"; font-weight: 400; font-display: block;
+  src: url("vendor/noto-fonts-5.3.0/noto-sans-arabic-arabic-400-normal.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200E; }
+@font-face { font-family: "Noto Sans Arabic"; font-weight: 700; font-display: block;
+  src: url("vendor/noto-fonts-5.3.0/noto-sans-arabic-arabic-700-normal.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200E; }
+@font-face { font-family: "Noto Sans Tamil"; font-weight: 400; font-display: block;
+  src: url("vendor/noto-fonts-5.3.0/noto-sans-tamil-tamil-400-normal.woff2") format("woff2");
+  unicode-range: U+0B82-0BFA, U+200C-200D, U+25CC; }
+@font-face { font-family: "Noto Sans Tamil"; font-weight: 700; font-display: block;
+  src: url("vendor/noto-fonts-5.3.0/noto-sans-tamil-tamil-700-normal.woff2") format("woff2");
+  unicode-range: U+0B82-0BFA, U+200C-200D, U+25CC; }
+@font-face { font-family: "Noto Sans Ethiopic"; font-weight: 400; font-display: block;
+  src: url("vendor/noto-fonts-5.3.0/noto-sans-ethiopic-ethiopic-400-normal.woff2") format("woff2");
+  unicode-range: U+1200-139F, U+2D80-2DDF, U+AB01-AB2F; }
+@font-face { font-family: "Noto Sans Ethiopic"; font-weight: 700; font-display: block;
+  src: url("vendor/noto-fonts-5.3.0/noto-sans-ethiopic-ethiopic-700-normal.woff2") format("woff2");
+  unicode-range: U+1200-139F, U+2D80-2DDF, U+AB01-AB2F; }

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Kleeblatt: single colour, used as a CSS mask (coloured like the line number) -->
+  <g fill="#000">
+  <circle cx="12" cy="6.6" r="3.9"/><circle cx="7" cy="12.2" r="3.9"/><circle cx="17" cy="12.2" r="3.9"/>
+  <circle cx="12" cy="11" r="2.8"/>
+  <path d="M12 12.5c0 4.2 1 7 3.2 9.2" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/>
+  </g>
+</svg>

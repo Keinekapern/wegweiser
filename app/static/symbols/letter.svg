@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Brief: single colour, used as a CSS mask (coloured like the line number) -->
+  <g fill="#000">
+  <path d="M2.2 5h19.6L12 12.6zM2 7.5l10 7.6 10-7.6v10.7a1.8 1.8 0 0 1-1.8 1.8H3.8A1.8 1.8 0 0 1 2 18.2z"/>
+  </g>
+</svg>

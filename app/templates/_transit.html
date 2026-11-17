@@ -1,0 +1,69 @@
+{# Public transport connection in the directions language. Expects `route` (TransitPlan) and `dt`. #}
+{# Line pictogram; own single-colour symbols (static/symbols/) take the colour of the
+   line number via a CSS mask, the others are coloured images. #}
+{% macro line_symbol(sym) -%}
+{%- if sym and sym.image.startswith("symbols/") -%}
+<span class="line-symbol mono" role="img" aria-label="{{ sym.label }}" title="{{ sym.label }}" style="--symbol: url('{{ url_for('static', path=sym.image) }}')"></span>
+{%- elif sym -%}
+<img class="line-symbol" src="{{ url_for('static', path=sym.image) }}" alt="{{ sym.label }}" title="{{ sym.label }}">
+{%- endif -%}
+{%- endmacro %}
+{% macro alt_badge(alt, i) -%}
+{%- set mode, line = alt.line_summary[i] -%}
+{%- set sym = alt.symbols[i] if alt.symbols else none -%}
+{%- set color = alt.colors[i] if alt.colors else none -%}
+{%- set text = alt.text_colors[i] if alt.colors else "#fff" -%}
+<span class="line-badge small{% if text == '#fff' %} on-dark{% endif %}" style="--line-color: {{ color or '#1f5fbf' }}; --line-text: {{ text }}">
+  {{- dt.line(mode, line) -}}
+  {{- line_symbol(sym) -}}
+</span>
+{%- endmacro %}
+<section class="transit">
+  <h2>{{ dt("connection") }}</h2>
+  <ol class="legs">
+    {% for leg in route.legs %}
+    {% if leg.kind == "walk" %}
+    <li class="leg walk">
+      <span class="leg-icon" aria-hidden="true"><img class="walk-icon" src="/static/walk.svg" alt=""></span>
+      <span>{% if loop.last %}{{ dt("walk_to_dest") }}{% else %}{{ dt.markup("walk_to_stop", stop=stop_name(leg.to_name, route.legs[loop.index].mode)) }}{% endif %}
+        <span class="dur">({{ dt.duration(leg.duration_s) }})</span></span>
+    </li>
+    {% else %}
+    <li class="leg ride">
+      <span class="line-badge{% if leg.text_color == '#fff' %} on-dark{% endif %}" style="--line-color: {{ leg.color or '#1f5fbf' }}; --line-text: {{ leg.text_color }}">
+        {{- dt.line(leg.mode, leg.line) -}}
+        {{- line_symbol(leg.symbol) -}}
+      </span>
+      <span>
+        {% if leg.headsign %}<strong>{{ dt.markup("direction", headsign=isolate(leg.headsign)) }}</strong><br>{% endif %}
+        {%- set short_from, short_to = same_place_names(leg.from_name, leg.to_name) %}
+        {{ stop_name(short_from, leg.mode) }}{% if leg.platform %} ({{ dt("platform", platform=leg.platform) }}){% endif %}
+        {# arrow in reading direction: right-to-left languages read "A ← B" from the right #}
+        {{ "←" if dt.rtl else "→" }} {{ stop_name(short_to, leg.mode) }} <span class="dur">({{ dt.duration(leg.duration_s) }})</span>
+      </span>
+    </li>
+    {% endif %}
+    {% endfor %}
+  </ol>
+  {% if route.alternatives %}
+  <div class="alternatives">
+    <strong>{{ dt("alternatives") }}:</strong>
+    <ul>
+      {% for alt in route.alternatives %}
+      {% set board = stop_name(alt.board_stop, alt.line_summary[0][0] if alt.line_summary else none) %}
+      {% set facts %}<span class="nowrap">{{ dt.duration(alt.duration_s) }}</span>{% if alt.headway_min %} · <span class="nowrap">{{ dt.headway(alt.headway_min) }}</span>{% endif %}{% endset %}
+      {% if alt.line_summary|length == 1 %}
+      <li><span class="alt-lines">{{ alt_badge(alt, 0) }}</span>
+        <span>{{ board }} · {{ facts }}</span></li>
+      {% else %}
+      {# with changes: start stop and times first, then the lines in travel order #}
+      <li class="alt-multi"><span class="alt-head">{{ board }} · {{ facts }}</span>
+        <span class="alt-chain">{% for _ in alt.line_summary %}{% if not loop.first %}<span class="alt-arrow" aria-hidden="true">{{ "←" if dt.rtl else "→" }}</span>{% endif %}{{ alt_badge(alt, loop.index0) }}{% endfor %}</span></li>
+      {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  {% if route.wheelchair_issue %}<p class="warning">⚠ {{ dt("wheelchair_warning") }}</p>{% endif %}
+  <p class="timetable-note">{{ dt("timetable_note", date=dt.date(today)) }}</p>
+</section>

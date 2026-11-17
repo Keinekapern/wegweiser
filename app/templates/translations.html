@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ t("Übersetzungen prüfen") }} – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>{{ t("Übersetzungen prüfen") }}</h1>
+<p class="hint">{{ t("Alle Texte des Ausdrucks in einer Sprache, zum Gegenlesen durch Muttersprachler. Korrekturen bitte notieren und in app/i18n.py übernehmen.") }}</p>
+<form method="get" action="/translations" class="filter">
+  <label>{{ t("Sprache der Wegbeschreibung") }}
+    <select name="lang" onchange="this.form.submit()">
+      {% for code, (native, ui_name) in languages.items() %}
+      {% set translated = t(ui_name) %}
+      <option value="{{ code }}" {% if code == lang %}selected{% endif %}>{{ native }}{% if translated != native %} ({{ translated }}){% endif %}</option>
+      {% endfor %}
+    </select>
+  </label>
+</form>
+<table class="list translations">
+  <thead><tr><th>Key</th><th>Context</th><th>Deutsch</th><th>English</th><th>{{ languages[lang][0] }}</th></tr></thead>
+  <tbody>
+    {% for key, ctx, de, en, target in rows %}
+    <tr><td class="mono small">{{ key }}</td><td class="small hint">{{ ctx }}</td><td>{{ de }}</td><td>{{ en }}</td>
+      <td lang="{{ html_lang }}" dir="{{ 'rtl' if rtl else 'ltr' }}" class="target">{{ target }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<h2>{{ t("Verkehrsmittel") }}</h2>
+<p class="hint">{{ t("Überschrift der ÖPNV-Verbindung, zusammengesetzt aus den genutzten Verkehrsmitteln. Korrekturen in app/i18n.py (TRANSIT_MODE_PHRASES) übernehmen.") }}</p>
+<table class="list translations">
+  <thead><tr><th>Modes</th><th>Deutsch</th><th>English</th><th>{{ languages[lang][0] }}</th></tr></thead>
+  <tbody>
+    {% for combo, de, en, target in mode_rows %}
+    <tr><td class="mono small">{{ combo }}</td><td>{{ de }}</td><td>{{ en }}</td>
+      <td lang="{{ html_lang }}" dir="{{ 'rtl' if rtl else 'ltr' }}" class="target">{{ target }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<h2>{{ t("Kategorien") }}</h2>
+<p class="hint">{{ t("Stehen unter dem Namen des Ziels, wenn für die Sprache kein übersetzter Name eingetragen ist. Korrekturen in app/category_names.py übernehmen.") }}</p>
+<table class="list translations">
+  <thead><tr><th>Key</th><th>Deutsch</th><th>English</th><th>{{ languages[lang][0] }}</th></tr></thead>
+  <tbody>
+    {% for key, de, en, target in category_rows %}
+    <tr><td class="mono small">{{ key }}</td><td>{{ de }}</td><td>{{ en }}</td>
+      <td lang="{{ html_lang }}" dir="{{ 'rtl' if rtl else 'ltr' }}" class="target">{{ target }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% if maneuvers %}
+<h2>{{ t("Abbiegehinweise (selbst erzeugt)") }}</h2>
+<p class="hint">{{ t("openrouteservice unterstützt diese Sprache nicht. Die Hinweise werden aus diesen Vorlagen gebildet, der Straßenname folgt nach einem Gedankenstrich.") }}</p>
+<table class="list translations">
+  <thead><tr><th>Key</th><th>Meaning</th><th>{{ languages[lang][0] }}</th></tr></thead>
+  <tbody>
+    {% for key, meaning, target in maneuvers %}
+    <tr><td class="mono small">{{ key }}</td><td class="small hint">{{ meaning }}</td>
+      <td lang="{{ html_lang }}" dir="{{ 'rtl' if rtl else 'ltr' }}" class="target">{{ target }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

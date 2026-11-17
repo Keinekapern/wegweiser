@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Beratungsstelle: white motif on the group colour (high contrast, own drawing) -->
+  <rect width="24" height="24" rx="4" fill="#b04f00"/>
+  <g fill="#fff">
+  <circle cx="5.8" cy="7.6" r="2.2"/><circle cx="18.2" cy="7.6" r="2.2"/>
+  <path d="M2.1999999999999997 14.4v-1.2a3.6 3.6 0 0 1 7.2 0V14.4z"/><path d="M14.6 14.4v-1.2a3.6 3.6 0 0 1 7.2 0V14.4z"/>
+  <rect x="2.5" y="14.8" width="19" height="2.4"/>
+  <path d="M5 17.2V21M19 17.2V21" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="10" y="9.4" width="4.4" height="5.4"/>
+  <path d="M11 11h2.4M11 12.8h2.4" fill="none" stroke="#b04f00" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

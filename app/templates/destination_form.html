@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% set heading = t("Ziel bearbeiten") if edit_id else t("Neues Ziel") %}
+{% block title %}{{ heading }} – {{ app_name }}{% endblock %}
+{% macro val(key) %}{{ form[key] if form[key] is not none else '' }}{% endmacro %}
+{% block content %}
+<p><a href="/destinations">{{ t("← Zurück zur Zielliste") }}</a></p>
+<h1>{{ heading }}</h1>
+
+<section class="card">
+  {% set geosearch_target = "destination-form" %}
+  {% include "_geosearch.html" %}
+
+  {% if errors %}
+  <ul class="errors" role="alert">
+    {% for e in errors %}<li>{{ t(e) }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  <form id="destination-form" method="post"
+        action="{% if edit_id %}/destinations/{{ edit_id }}{% else %}/destinations{% endif %}" class="form">
+    <p class="geosearch-filled hint" hidden>{{ t("Daten aus OpenStreetMap übernommen – bitte prüfen und ggf. korrigieren.") }}</p>
+    <label>{{ t("Name (Überschrift auf dem Ausdruck)") }}
+      <input name="name" required value="{{ val('name') }}">
+    </label>
+    <label>{{ t("Kategorie") }}
+      <select name="category">
+        <option value="">{{ t("– keine –") }}</option>
+        {% for group in category_groups %}
+        <optgroup label="{{ t(group) }}">
+          {% for c in categories if c.group == group %}
+          <option value="{{ c.key }}" {% if form.category == c.key %}selected{% endif %}>{{ t(c.label) }}</option>
+          {% endfor %}
+        </optgroup>
+        {% endfor %}
+      </select>
+    </label>
+    <label>{{ t("Adresse") }}
+      <input name="address" required value="{{ val('address') }}" placeholder="{{ t('Straße Nr., PLZ Ort') }}">
+    </label>
+    <label>{{ t("Koordinaten (Breite, Länge)") }}
+      <input name="coords" required inputmode="decimal" value="{{ val('coords') }}" placeholder="48.690351, 9.032999">
+      <span class="hint small">{{ t("Einfügen z. B. aus Google Maps (Rechtsklick auf den Ort → Koordinaten kopieren).") }}</span>
+    </label>
+    <div class="row">
+      <label>{{ t("Telefon") }}
+        <input name="phone" type="tel" value="{{ val('phone') }}" placeholder="+49 7071 …" data-phone>
+        <span class="hint small">{{ t("Wird automatisch ins internationale Format (+49 …) gebracht.") }}</span>
+      </label>
+      <label>{{ t("Website") }}
+        <input name="website" value="{{ val('website') }}" placeholder="https://…">
+      </label>
+    </div>
+    <label>{{ t("Öffnungszeiten") }}
+      <input name="opening_hours" value="{{ val('opening_hours') }}" placeholder="{{ t('z. B. Mo-Fr 08:00-12:00') }}">
+    </label>
+    <label>{{ t("Geprüfter Google-Maps-Link (optional)") }}
+      <span class="input-with-buttons">
+        <input name="google_maps_url" value="{{ val('google_maps_url') }}" placeholder="https://maps.app.goo.gl/…">
+        <button type="button" class="secondary" id="google-search">{{ t("In Google Maps suchen") }}</button>
+        <button type="button" class="secondary" id="google-open">{{ t("Link öffnen") }}</button>
+      </span>
+      <span class="hint small">{{ t("Wird für den Google-QR-Code verwendet. Ohne Link wird eine Suche nach Name und Adresse erzeugt.") }}</span>
+    </label>
+    {% set names = form.names or {} %}
+    <details class="name-translations"{% if names.values()|select|list %} open{% endif %}>
+      <summary>{{ t("Name in anderen Sprachen (optional)") }}</summary>
+      <p class="hint small">{{ t("Nur für Namen, die man übersetzen kann (z. B. „Kinderklinik“), nicht für Eigennamen wie „Fielmann“. Ohne Übersetzung steht auf der Wegbeschreibung die Art der Einrichtung in der gewählten Sprache. Vorschläge aus OpenStreetMap werden bei der Suche eingetragen.") }}</p>
+      <div class="name-grid">
+        {% for l in name_languages %}
+        {% set translated = t(l.label) %}
+        <label>{{ l.native }}{% if translated != l.native %} <span class="hint">({{ translated }})</span>{% endif %}
+          <input name="name_{{ l.code }}" value="{{ names.get(l.code, '') }}" lang="{{ l.html_lang }}" dir="{{ 'rtl' if l.rtl else 'ltr' }}" maxlength="200">
+        </label>
+        {% endfor %}
+      </div>
+    </details>
+    {% if locations %}
+    <fieldset class="location-checks">
+      <legend>{{ t("Standorte, für die das Ziel angeboten wird") }}</legend>
+      {% for loc in locations %}
+      <label class="check"><input type="checkbox" name="location_ids" value="{{ loc.id }}" {% if loc.id in (form.location_ids or []) %}checked{% endif %}> {{ loc.name }}</label>
+      {% endfor %}
+      <span class="hint small">{{ t("Ohne Häkchen erscheint das Ziel bei allen Standorten.") }}</span>
+    </fieldset>
+    {% endif %}
+    <label>{{ t("Notiz (intern, keine Patientendaten)") }}
+      <textarea name="note" rows="3">{{ val('note') }}</textarea>
+    </label>
+    <input type="hidden" name="osm_type" value="{{ val('osm_type') }}">
+    <input type="hidden" name="osm_id" value="{{ val('osm_id') }}">
+    <p class="hint small osm-ref">
+      {% if form.osm_type and form.osm_id %}
+        {{ t("OSM-Objekt") }}: <a href="https://www.openstreetmap.org/{{ form.osm_type }}/{{ form.osm_id }}" target="_blank" rel="noopener">{{ form.osm_type }}/{{ form.osm_id }}</a>
+      {% endif %}
+    </p>
+    <div class="buttons">
+      <button type="submit">{% if edit_id %}{{ t("Speichern") }}{% else %}{{ t("Anlegen") }}{% endif %}</button>
+      <a class="button secondary" href="/destinations">{{ t("Abbrechen") }}</a>
+    </div>
+  </form>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', path='geosearch.js') }}"></script>
+<script src="{{ url_for('static', path='destination-form.js') }}"></script>{% endblock %}

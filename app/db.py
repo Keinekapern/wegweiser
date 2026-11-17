@@ -1,0 +1,482 @@
+"""SQLite access. Schema changes are applied via PRAGMA user_version migrations."""
+
+import sqlite3
+from collections.abc import Iterator
+from contextlib import contextmanager
+from dataclasses import asdict, dataclass, fields
+from pathlib import Path
+
+from app.config import database_path
+
+MIGRATIONS: list[str] = [
+    # 1: locations (fixed start points)
+    """
+    CREATE TABLE locations (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        name       TEXT    NOT NULL,
+        address    TEXT    NOT NULL,
+        lat        REAL    NOT NULL CHECK (lat BETWEEN -90 AND 90),
+        lon        REAL    NOT NULL CHECK (lon BETWEEN -180 AND 180),
+        created_at TEXT    NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT    NOT NULL DEFAULT (datetime('now'))
+    );
+    """,
+    # 2: destinations + geocoding cache
+    """
+    CREATE TABLE destinations (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        name            TEXT    NOT NULL,
+        address         TEXT    NOT NULL,
+        lat             REAL    NOT NULL CHECK (lat BETWEEN -90 AND 90),
+        lon             REAL    NOT NULL CHECK (lon BETWEEN -180 AND 180),
+        phone           TEXT    NOT NULL DEFAULT '',
+        website         TEXT    NOT NULL DEFAULT '',
+        opening_hours   TEXT    NOT NULL DEFAULT '',
+        google_maps_url TEXT    NOT NULL DEFAULT '',
+        note            TEXT    NOT NULL DEFAULT '',
+        osm_type        TEXT    CHECK (osm_type IN ('node', 'way', 'relation')),
+        osm_id          INTEGER,
+        created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+        updated_at      TEXT    NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE geocode_cache (
+        cache_key  TEXT PRIMARY KEY,
+        response   TEXT NOT NULL,
+        fetched_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    """,
+    # 3: generic API cache (geocoding + routing) and daily API usage counter
+    """
+    ALTER TABLE geocode_cache RENAME TO api_cache;
+    CREATE TABLE api_usage (
+        service TEXT NOT NULL,
+        day     TEXT NOT NULL,
+        count   INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (service, day)
+    );
+    """,
+    # 4: key/value settings (e.g. public transport defaults)
+    """
+    CREATE TABLE settings (
+        key   TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+    );
+    """,
+    # 5: line symbols (pictograms shown next to line numbers, e.g. TüBus Tübingen)
+    """
+    CREATE TABLE line_symbol_sets (
+        id      INTEGER PRIMARY KEY AUTOINCREMENT,
+        name    TEXT NOT NULL,
+        modes   TEXT NOT NULL DEFAULT 'BUS',   -- comma-separated MOTIS modes
+        min_lat REAL NOT NULL, min_lon REAL NOT NULL,
+        max_lat REAL NOT NULL, max_lon REAL NOT NULL,
+        credit  TEXT NOT NULL DEFAULT ''       -- attribution shown on the printout
+    );
+    CREATE TABLE line_symbols (
+        set_id INTEGER NOT NULL REFERENCES line_symbol_sets(id) ON DELETE CASCADE,
+        line   TEXT NOT NULL,
+        label  TEXT NOT NULL,
+        image  TEXT NOT NULL,                  -- path below app/static
+        PRIMARY KEY (set_id, line)
+    );
+    -- Tübingen city buses (TüBus): line -> motif as on the bus displays,
+    -- see tuebus.de "Übersicht der Symbole". Free Twemoji graphics with the same motifs.
+    INSERT INTO line_symbol_sets (id, name, modes, min_lat, min_lon, max_lat, max_lon, credit)
+    VALUES (1, 'TüBus Tübingen', 'BUS', 48.45, 8.93, 48.59, 9.15, 'Twemoji (CC BY 4.0)');
+    INSERT INTO line_symbols (set_id, line, label, image) VALUES
+        (1, '1', 'Katze', 'vendor/twemoji-17.0.3/1f408.svg'),
+        (1, '2', 'Haus', 'vendor/twemoji-17.0.3/1f3e0.svg'),
+        (1, '3', 'Ball', 'vendor/twemoji-17.0.3/26bd.svg'),
+        (1, '4', 'Blatt', 'vendor/twemoji-17.0.3/1f341.svg'),
+        (1, '5', 'Kreuz', 'vendor/twemoji-17.0.3/2795.svg'),
+        (1, '6', 'Tanne', 'vendor/twemoji-17.0.3/1f332.svg'),
+        (1, '7', 'Eichhörnchen', 'vendor/twemoji-17.0.3/1f43f.svg'),
+        (1, '8', 'Tasse', 'vendor/twemoji-17.0.3/2615.svg'),
+        (1, '9', 'Schloss', 'vendor/twemoji-17.0.3/1f3f0.svg'),
+        (1, '10', 'Gockel', 'vendor/twemoji-17.0.3/1f413.svg'),
+        (1, '11', 'Kerze', 'vendor/twemoji-17.0.3/1f56f.svg'),
+        (1, '12', 'Birne', 'vendor/twemoji-17.0.3/1f350.svg'),
+        (1, '13', 'Elefant', 'vendor/twemoji-17.0.3/1f418.svg'),
+        (1, '14', 'Koffer', 'vendor/twemoji-17.0.3/1f4bc.svg'),
+        (1, '15', 'Glas', 'vendor/twemoji-17.0.3/1f377.svg'),
+        (1, '16', 'Schirm', 'vendor/twemoji-17.0.3/2602.svg'),
+        (1, '17', 'Glühbirne', 'vendor/twemoji-17.0.3/1f4a1.svg'),
+        (1, '18', 'Kapelle', 'vendor/twemoji-17.0.3/26ea.svg'),
+        (1, '19', 'Brief', 'vendor/twemoji-17.0.3/2709.svg'),
+        (1, '21', 'Schere', 'vendor/twemoji-17.0.3/2702.svg'),
+        (1, '22', 'Fisch', 'vendor/twemoji-17.0.3/1f41f.svg'),
+        (1, '31', 'Kleeblatt', 'vendor/twemoji-17.0.3/2618.svg'),
+        (1, '32', 'Palme', 'vendor/twemoji-17.0.3/1f334.svg'),
+        (1, '33', 'Zelt', 'vendor/twemoji-17.0.3/26fa.svg'),
+        (1, '34', 'Baum', 'vendor/twemoji-17.0.3/1f333.svg'),
+        (1, '35', 'Lokomotive', 'vendor/twemoji-17.0.3/1f682.svg');
+    """,
+    # 6: destinations <-> locations (many-to-many). Destinations without any
+    # assignment are offered for all locations.
+    """
+    CREATE TABLE destination_locations (
+        destination_id INTEGER NOT NULL REFERENCES destinations(id) ON DELETE CASCADE,
+        location_id    INTEGER NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
+        PRIMARY KEY (destination_id, location_id)
+    );
+    CREATE INDEX destination_locations_by_location ON destination_locations(location_id);
+    -- With exactly one location, existing destinations obviously belong to it
+    INSERT INTO destination_locations (destination_id, location_id)
+        SELECT d.id, l.id FROM destinations d, locations l
+        WHERE (SELECT COUNT(*) FROM locations) = 1;
+    """,
+    # 7: destination category (key from app/categories.py, '' = none)
+    """
+    ALTER TABLE destinations ADD COLUMN category TEXT NOT NULL DEFAULT '';
+    """,
+    # 8: own single-colour symbols (static/symbols/, coloured like the line number)
+    """
+    UPDATE line_symbols SET image = 'symbols/cross-roof.svg'
+        WHERE image = 'vendor/twemoji-17.0.3/2795.svg';
+    """,
+    # 9: all TüBus line symbols are own single-colour drawings (no Twemoji credit needed)
+    """
+    UPDATE line_symbols SET image = CASE line
+            WHEN '1' THEN 'symbols/cat.svg'
+            WHEN '2' THEN 'symbols/house.svg'
+            WHEN '3' THEN 'symbols/ball.svg'
+            WHEN '4' THEN 'symbols/leaf.svg'
+            WHEN '6' THEN 'symbols/fir.svg'
+            WHEN '7' THEN 'symbols/squirrel.svg'
+            WHEN '8' THEN 'symbols/cup.svg'
+            WHEN '9' THEN 'symbols/castle.svg'
+            WHEN '10' THEN 'symbols/rooster.svg'
+            WHEN '11' THEN 'symbols/candle.svg'
+            WHEN '12' THEN 'symbols/pear.svg'
+            WHEN '13' THEN 'symbols/elephant.svg'
+            WHEN '14' THEN 'symbols/suitcase.svg'
+            WHEN '15' THEN 'symbols/glass.svg'
+            WHEN '16' THEN 'symbols/umbrella.svg'
+            WHEN '17' THEN 'symbols/bulb.svg'
+            WHEN '18' THEN 'symbols/chapel.svg'
+            WHEN '19' THEN 'symbols/letter.svg'
+            WHEN '21' THEN 'symbols/scissors.svg'
+            WHEN '22' THEN 'symbols/fish.svg'
+            WHEN '31' THEN 'symbols/clover.svg'
+            WHEN '32' THEN 'symbols/palm.svg'
+            WHEN '33' THEN 'symbols/tent.svg'
+            WHEN '34' THEN 'symbols/tree.svg'
+            WHEN '35' THEN 'symbols/locomotive.svg'
+            ELSE image END
+        WHERE set_id = (SELECT id FROM line_symbol_sets WHERE name = 'TüBus Tübingen')
+          AND image LIKE 'vendor/twemoji-%';
+    UPDATE line_symbol_sets SET credit = '' WHERE name = 'TüBus Tübingen'
+        AND NOT EXISTS (SELECT 1 FROM line_symbols s WHERE s.set_id = line_symbol_sets.id
+                        AND s.image LIKE 'vendor/twemoji-%');
+    """,
+    # 10: destination names in other languages (directions language code, e.g. 'en', 'ar')
+    """
+    CREATE TABLE destination_names (
+        destination_id INTEGER NOT NULL REFERENCES destinations(id) ON DELETE CASCADE,
+        lang           TEXT NOT NULL,
+        name           TEXT NOT NULL,
+        PRIMARY KEY (destination_id, lang)
+    );
+    """,
+]
+
+
+@dataclass
+class Location:
+    id: int
+    name: str
+    address: str
+    lat: float
+    lon: float
+
+
+def connect(path: Path | None = None) -> sqlite3.Connection:
+    path = path or database_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    # One connection per request; FastAPI may create it in a worker thread and use it
+    # in the event loop thread (async endpoints), never concurrently.
+    conn = sqlite3.connect(path, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
+
+
+def migrate(conn: sqlite3.Connection) -> None:
+    current = conn.execute("PRAGMA user_version").fetchone()[0]
+    for version, sql in enumerate(MIGRATIONS[current:], start=current + 1):
+        with conn:
+            conn.executescript(sql)
+            conn.execute(f"PRAGMA user_version = {version}")
+
+
+@contextmanager
+def get_conn() -> Iterator[sqlite3.Connection]:
+    conn = connect()
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
+def init_db() -> None:
+    with get_conn() as conn:
+        migrate(conn)
+        normalize_existing_phones(conn)
+
+
+def normalize_existing_phones(conn: sqlite3.Connection) -> None:
+    """One-off: bring phone numbers saved before normalization into +49 format."""
+    from app.validation import normalize_phone   # avoid import cycle at module load
+    if setting_get(conn, "phones_normalized_v1"):
+        return
+    with conn:
+        for row in conn.execute("SELECT id, phone FROM destinations WHERE phone != ''").fetchall():
+            phone = normalize_phone(row["phone"])
+            if phone != row["phone"]:
+                conn.execute("UPDATE destinations SET phone = ? WHERE id = ?", (phone, row["id"]))
+        conn.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('phones_normalized_v1', '1')")
+
+
+# --- locations -------------------------------------------------------------
+
+def _row_to_location(row: sqlite3.Row) -> Location:
+    return Location(row["id"], row["name"], row["address"], row["lat"], row["lon"])
+
+
+def list_locations(conn: sqlite3.Connection) -> list[Location]:
+    rows = conn.execute(
+        "SELECT id, name, address, lat, lon FROM locations ORDER BY name COLLATE NOCASE"
+    ).fetchall()
+    return [_row_to_location(r) for r in rows]
+
+
+def get_location(conn: sqlite3.Connection, location_id: int) -> Location | None:
+    row = conn.execute(
+        "SELECT id, name, address, lat, lon FROM locations WHERE id = ?", (location_id,)
+    ).fetchone()
+    return _row_to_location(row) if row else None
+
+
+def create_location(conn: sqlite3.Connection, name: str, address: str, lat: float, lon: float) -> int:
+    with conn:
+        cur = conn.execute(
+            "INSERT INTO locations (name, address, lat, lon) VALUES (?, ?, ?, ?)",
+            (name, address, lat, lon),
+        )
+    return cur.lastrowid
+
+
+def update_location(
+    conn: sqlite3.Connection, location_id: int, name: str, address: str, lat: float, lon: float
+) -> bool:
+    with conn:
+        cur = conn.execute(
+            "UPDATE locations SET name = ?, address = ?, lat = ?, lon = ?, "
+            "updated_at = datetime('now') WHERE id = ?",
+            (name, address, lat, lon, location_id),
+        )
+    return cur.rowcount > 0
+
+
+def delete_location(conn: sqlite3.Connection, location_id: int) -> bool:
+    with conn:
+        cur = conn.execute("DELETE FROM locations WHERE id = ?", (location_id,))
+    return cur.rowcount > 0
+
+
+# --- destinations ----------------------------------------------------------
+
+@dataclass
+class Destination:
+    id: int | None
+    name: str
+    address: str
+    lat: float
+    lon: float
+    phone: str = ""
+    website: str = ""
+    opening_hours: str = ""
+    google_maps_url: str = ""
+    note: str = ""
+    osm_type: str | None = None
+    osm_id: int | None = None
+    category: str = ""
+
+    @property
+    def osm_url(self) -> str | None:
+        if self.osm_type and self.osm_id:
+            return f"https://www.openstreetmap.org/{self.osm_type}/{self.osm_id}"
+        return None
+
+
+_DEST_COLUMNS = [f.name for f in fields(Destination) if f.name != "id"]
+
+
+def list_destinations(conn: sqlite3.Connection,
+                      location_id: int | None = None) -> list[Destination]:
+    """All destinations, or those offered for a location (assigned to it or unassigned)."""
+    sql = f"SELECT id, {', '.join(_DEST_COLUMNS)} FROM destinations d"
+    params: tuple = ()
+    if location_id is not None:
+        sql += (" WHERE NOT EXISTS (SELECT 1 FROM destination_locations dl"
+                "                   WHERE dl.destination_id = d.id)"
+                " OR EXISTS (SELECT 1 FROM destination_locations dl"
+                "            WHERE dl.destination_id = d.id AND dl.location_id = ?)")
+        params = (location_id,)
+    rows = conn.execute(sql + " ORDER BY name COLLATE NOCASE", params).fetchall()
+    return [Destination(**dict(r)) for r in rows]
+
+
+def destination_location_ids(conn: sqlite3.Connection) -> dict[int, list[int]]:
+    """destination id -> assigned location ids (missing/empty = all locations)."""
+    result: dict[int, list[int]] = {}
+    for r in conn.execute("SELECT destination_id, location_id FROM destination_locations "
+                          "ORDER BY location_id"):
+        result.setdefault(r["destination_id"], []).append(r["location_id"])
+    return result
+
+
+def set_destination_locations(conn: sqlite3.Connection, destination_id: int,
+                              location_ids: list[int]) -> None:
+    with conn:
+        conn.execute("DELETE FROM destination_locations WHERE destination_id = ?",
+                     (destination_id,))
+        conn.executemany(
+            "INSERT INTO destination_locations (destination_id, location_id) "
+            "SELECT ?, id FROM locations WHERE id = ?",   # ignores unknown location ids
+            [(destination_id, lid) for lid in dict.fromkeys(location_ids)],
+        )
+
+
+def get_destination_names(conn: sqlite3.Connection, destination_id: int) -> dict[str, str]:
+    """Translated names of a destination: {lang: name}."""
+    rows = conn.execute("SELECT lang, name FROM destination_names WHERE destination_id = ?",
+                        (destination_id,))
+    return {row["lang"]: row["name"] for row in rows}
+
+
+def set_destination_names(conn: sqlite3.Connection, destination_id: int,
+                          names: dict[str, str]) -> None:
+    """Replaces all translated names; empty values are dropped."""
+    with conn:
+        conn.execute("DELETE FROM destination_names WHERE destination_id = ?", (destination_id,))
+        conn.executemany(
+            "INSERT INTO destination_names (destination_id, lang, name) VALUES (?, ?, ?)",
+            [(destination_id, lang, name.strip()) for lang, name in names.items() if name.strip()],
+        )
+
+
+def get_destination(conn: sqlite3.Connection, destination_id: int) -> Destination | None:
+    row = conn.execute(
+        f"SELECT id, {', '.join(_DEST_COLUMNS)} FROM destinations WHERE id = ?",
+        (destination_id,),
+    ).fetchone()
+    return Destination(**dict(row)) if row else None
+
+
+def create_destination(conn: sqlite3.Connection, dest: Destination) -> int:
+    values = asdict(dest)
+    placeholders = ", ".join("?" for _ in _DEST_COLUMNS)
+    with conn:
+        cur = conn.execute(
+            f"INSERT INTO destinations ({', '.join(_DEST_COLUMNS)}) VALUES ({placeholders})",
+            [values[c] for c in _DEST_COLUMNS],
+        )
+    return cur.lastrowid
+
+
+def update_destination(conn: sqlite3.Connection, destination_id: int, dest: Destination) -> bool:
+    values = asdict(dest)
+    assignments = ", ".join(f"{c} = ?" for c in _DEST_COLUMNS)
+    with conn:
+        cur = conn.execute(
+            f"UPDATE destinations SET {assignments}, updated_at = datetime('now') WHERE id = ?",
+            [values[c] for c in _DEST_COLUMNS] + [destination_id],
+        )
+    return cur.rowcount > 0
+
+
+def delete_destination(conn: sqlite3.Connection, destination_id: int) -> bool:
+    with conn:
+        cur = conn.execute("DELETE FROM destinations WHERE id = ?", (destination_id,))
+    return cur.rowcount > 0
+
+
+# --- API cache and usage -------------------------------------------------------
+
+def cache_get(conn: sqlite3.Connection, key: str, max_age_days: int) -> str | None:
+    row = conn.execute(
+        "SELECT response FROM api_cache WHERE cache_key = ? "
+        "AND fetched_at >= datetime('now', ?)",
+        (key, f"-{int(max_age_days)} days"),
+    ).fetchone()
+    return row["response"] if row else None
+
+
+def cache_put(conn: sqlite3.Connection, key: str, response: str) -> None:
+    with conn:
+        conn.execute(
+            "INSERT INTO api_cache (cache_key, response, fetched_at) "
+            "VALUES (?, ?, datetime('now')) "
+            "ON CONFLICT(cache_key) DO UPDATE SET response = excluded.response, "
+            "fetched_at = excluded.fetched_at",
+            (key, response),
+        )
+
+
+def usage_today(conn: sqlite3.Connection, service: str) -> int:
+    row = conn.execute(
+        "SELECT count FROM api_usage WHERE service = ? AND day = date('now')", (service,)
+    ).fetchone()
+    return row["count"] if row else 0
+
+
+def usage_increment(conn: sqlite3.Connection, service: str) -> None:
+    with conn:
+        conn.execute(
+            "INSERT INTO api_usage (service, day, count) VALUES (?, date('now'), 1) "
+            "ON CONFLICT(service, day) DO UPDATE SET count = count + 1",
+            (service,),
+        )
+
+
+# --- settings --------------------------------------------------------------
+
+def setting_get(conn: sqlite3.Connection, key: str) -> str | None:
+    row = conn.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
+    return row["value"] if row else None
+
+
+def setting_put(conn: sqlite3.Connection, key: str, value: str) -> None:
+    with conn:
+        conn.execute(
+            "INSERT INTO settings (key, value) VALUES (?, ?) "
+            "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            (key, value),
+        )
+
+
+# --- line symbols ----------------------------------------------------------
+
+@dataclass
+class LineSymbolSet:
+    id: int
+    name: str
+    modes: set[str]
+    bbox: tuple[float, float, float, float]  # min_lat, min_lon, max_lat, max_lon
+    credit: str
+    symbols: dict[str, tuple[str, str]]       # line -> (label, image)
+
+    def contains(self, lat: float, lon: float) -> bool:
+        return self.bbox[0] <= lat <= self.bbox[2] and self.bbox[1] <= lon <= self.bbox[3]
+
+
+def list_line_symbol_sets(conn: sqlite3.Connection) -> list[LineSymbolSet]:
+    sets = []
+    for r in conn.execute("SELECT * FROM line_symbol_sets ORDER BY id").fetchall():
+        symbols = {row["line"]: (row["label"], row["image"]) for row in conn.execute(
+            "SELECT line, label, image FROM line_symbols WHERE set_id = ?", (r["id"],))}
+        sets.append(LineSymbolSet(
+            r["id"], r["name"], {m.strip() for m in r["modes"].split(",") if m.strip()},
+            (r["min_lat"], r["min_lon"], r["max_lat"], r["max_lon"]), r["credit"], symbols))
+    return sets

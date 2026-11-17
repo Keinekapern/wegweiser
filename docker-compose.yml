@@ -1,0 +1,26 @@
+name: wegweiser
+services:
+  wegweiser:
+    build: .
+    container_name: wegweiser
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_PATH: ${DATABASE_PATH:-/data/wegweiser.sqlite}
+      # local time for dates on the printout ("Erstellt am", timetable as of)
+      TZ: ${TZ:-Europe/Berlin}
+    ports:
+      - "${APP_PORT:-8420}:8000"
+    volumes:
+      - ./data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 60s
+      timeout: 5s
+      retries: 3

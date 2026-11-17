@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Sprachkurs: white motif on the group colour (high contrast, own drawing) -->
+  <rect width="24" height="24" rx="4" fill="#b04f00"/>
+  <g fill="#fff">
+  <path d="M5 3.4h8a2.6 2.6 0 0 1 2.6 2.6v3.8A2.6 2.6 0 0 1 13 12.4H8.6L5.4 15.4v-3H5a2.6 2.6 0 0 1-2.6-2.6V6A2.6 2.6 0 0 1 5 3.4z"/>
+  <path d="M11 9.4h8a2.6 2.6 0 0 1 2.6 2.6v3.8a2.6 2.6 0 0 1-2.6 2.6h-.4v3l-3.2-3H11a2.6 2.6 0 0 1-2.6-2.6V12A2.6 2.6 0 0 1 11 9.4z" stroke="#b04f00" stroke-width="1.2"/>
+  <path d="M5 6.6h6M5 9.2h4" fill="none" stroke="#b04f00" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="12.4" cy="13.9" r=".9" fill="#b04f00"/><circle cx="15" cy="13.9" r=".9" fill="#b04f00"/><circle cx="17.6" cy="13.9" r=".9" fill="#b04f00"/>
+  </g>
+</svg>

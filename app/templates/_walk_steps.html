@@ -1,0 +1,11 @@
+{# Turn-by-turn texts of the walks to/from the stops (only if openrouteservice had them) #}
+{% for w in walk_details if w.steps %}
+<section class="steps walk-steps">
+  <h2>{% if w.kind == "to_stop" %}{{ dt.markup("walk_to_stop", stop=stop_name(w.stop, w.stop_mode)) }}{% else %}{{ dt("walk_to_dest") }}{% endif %}</h2>
+  <ol>
+    {% for s in w.steps %}
+    <li>{{ dt.instruction(s) }}{% if s.distance_m >= 5 %} <span class="dist">({{ dt.distance(s.distance_m) }})</span>{% endif %}</li>
+    {% endfor %}
+  </ol>
+</section>
+{% endfor %}

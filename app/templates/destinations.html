@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ t("Ziele") }} – {{ app_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ t("Ziele") }}</h1>
+  <a class="button" href="/destinations/new{% if filter_id %}?location_id={{ filter_id }}{% endif %}">{{ t("Neues Ziel") }}</a>
+</div>
+<p class="hint">{{ t("Einrichtungen, zu denen Wegbeschreibungen erstellt werden.") }}</p>
+
+{% if locations|length > 1 %}
+<form method="get" action="/destinations" class="filter">
+  <label>{{ t("Standort") }}
+    <select name="location_id" onchange="this.form.submit()">
+      <option value="">{{ t("Alle Standorte") }}</option>
+      {% for loc in locations %}
+      <option value="{{ loc.id }}" {% if loc.id == filter_id %}selected{% endif %}>{{ loc.name }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <noscript><button type="submit" class="secondary">{{ t("Filtern") }}</button></noscript>
+</form>
+{% endif %}
+
+{% if destinations %}
+<table class="list">
+  <thead>
+    <tr><th>{{ t("Name") }}</th><th>{{ t("Adresse") }}</th><th>{{ t("Kontakt") }}</th><th>{{ t("Standorte") }}</th><th></th></tr>
+  </thead>
+  <tbody>
+  {% for d in destinations %}
+    <tr>
+      <td>
+        {% set cat = categories.get(d.category) %}
+        {% if cat %}<img class="dest-icon" src="{{ url_for('static', path=cat.image) }}" alt="{{ t(cat.label) }}" title="{{ t(cat.label) }}">{% endif %}
+        {{ d.name }}
+        {% if d.note %}<div class="hint small">{{ d.note }}</div>{% endif %}
+      </td>
+      <td>{{ d.address }}</td>
+      <td class="small">
+        {% if d.phone %}{{ d.phone }}<br>{% endif %}
+        {% if d.website %}<a href="{{ d.website }}" target="_blank" rel="noopener">{{ t("Website") }}</a>{% endif %}
+        {% if d.google_maps_url %}<span class="badge" title="{{ t('Geprüfter Google-Maps-Link hinterlegt') }}">{{ t("Google-Link") }}</span>{% endif %}
+      </td>
+      <td class="small">
+        {% set assigned = assignments.get(d.id, []) %}
+        {% if assigned %}{% for lid in assigned %}{{ location_names[lid] }}{% if not loop.last %}, {% endif %}{% endfor %}
+        {% else %}<span class="hint">{{ t("alle") }}</span>{% endif %}
+      </td>
+      <td class="actions">
+        <a class="button" href="/directions?destination_id={{ d.id }}{% if filter_id %}&amp;location_id={{ filter_id }}{% endif %}">{{ t("Route") }}</a>
+        <a class="button secondary" href="/destinations/{{ d.id }}/edit">{{ t("Bearbeiten") }}</a>
+        <form method="post" action="/destinations/{{ d.id }}/delete"
+              data-confirm="{{ t('Ziel „{name}“ wirklich löschen?', name=d.name) }}"
+              onsubmit="return confirm(this.dataset.confirm);">
+          <button type="submit" class="danger">{{ t("Löschen") }}</button>
+        </form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">{{ t("Noch keine Ziele angelegt.") }}</p>
+{% endif %}
+{% endblock %}

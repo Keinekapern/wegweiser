@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Rathaus/Bürgeramt: white motif on the group colour (high contrast, own drawing) -->
+  <rect width="24" height="24" rx="4" fill="#5b3f9e"/>
+  <g fill="#fff">
+  <circle cx="12" cy="7.2" r="2.4"/>
+  <path d="M7.8 14v-1.2a4.2 4.2 0 0 1 8.4 0V14z"/>
+  <rect x="2.5" y="14.6" width="19" height="3"/>
+  <path d="M4.5 17.6V21M19.5 17.6V21M3 3.5h18" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

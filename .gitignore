@@ -1,0 +1,7 @@
+.env
+*.sqlite
+data/
+__pycache__/
+.venv/
+node_modules/
+CLAUDE.local.md

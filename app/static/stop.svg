@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Bus/tram stop sign (German style): yellow disc, green ring, green H -->
+  <circle cx="50" cy="50" r="49" fill="#ffd500" stroke="#1d2330" stroke-width="1.5"/>
+  <circle cx="50" cy="50" r="38" fill="none" stroke="#00894b" stroke-width="14"/>
+  <path d="M33 26h11v19h12V26h11v48H56V55H44v19H33z" fill="#00894b"/>
+</svg>

@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}{% if destination %}{{ destination.name }} – {% endif %}{{ app_name }}{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', path='vendor/leaflet-1.9.4/leaflet.css') }}"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=">
+{% endblock %}
+{% block content %}
+<h1>{{ t("Wegbeschreibung") }}</h1>
+
+{% if not locations and not destinations %}
+<p class="empty"><a href="/locations">{{ t("Zuerst einen Standort und ein Ziel anlegen.") }}</a></p>
+{% elif not locations %}
+<p class="empty"><a href="/locations">{{ t("Zuerst einen Standort anlegen.") }}</a></p>
+{% elif not destinations %}
+<p class="empty"><a href="/destinations/new">{{ t("Zuerst ein Ziel anlegen.") }}</a></p>
+{% else %}
+<form method="get" action="/directions" class="card form selection">
+  <div class="row four">
+    <label>{{ t("Start (Standort)") }}
+      <select name="location_id" required>
+        <option value="">{{ t("– bitte wählen –") }}</option>
+        {% for l in locations %}
+        <option value="{{ l.id }}" {% if l.id == selected.location_id %}selected{% endif %}>{{ l.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>{{ t("Ziel") }}
+      {# Grouped by category; destination-picker.js turns it into a search field #}
+      <select name="destination_id" required data-picker
+              data-placeholder="{{ t('Ziel suchen …') }}"
+              data-empty="{{ t('Kein passendes Ziel gefunden.') }}"
+              data-create="{{ t('„{q}“ als neues Ziel anlegen') }}"
+              data-create-plain="{{ t('Neues Ziel anlegen') }}">
+        <option value="">{{ t("– bitte wählen –") }}</option>
+        {% for group_label, cat, items in dest_groups %}
+        <optgroup label="{{ t(group_label) }}">
+          {% for d in items %}
+          {% set assigned = assignments.get(d.id, []) %}
+          {% set offered = not assigned or selected.location_id in assigned or not selected.location_id %}
+          <option value="{{ d.id }}" data-locations="{{ assigned|join(',') }}"
+                  data-address="{{ d.address }}" data-category="{{ t(group_label) }}"
+                  {%- if cat %} data-icon="{{ url_for('static', path=cat.image) }}"{% endif %}
+                  {%- if d.id == selected.destination_id %} selected{% endif %}
+                  {%- if not offered and d.id != selected.destination_id %} hidden disabled{% endif %}>{{ d.name }}</option>
+          {% endfor %}
+        </optgroup>
+        {% endfor %}
+      </select>
+    </label>
+    <label>{{ t("Verkehrsmittel") }}
+      <select name="profile">
+        {% for key, label in profiles.items() %}
+        <option value="{{ key }}" {% if key == selected.profile %}selected{% endif %}>{{ t(label) }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>{{ t("Sprache der Wegbeschreibung") }}
+      <select name="lang">
+        {% for code, (native, ui_name) in directions_languages.items() %}
+        {% set translated = t(ui_name) %}
+        <option value="{{ code }}" {% if code == selected.lang %}selected{% endif %}>{{ native }}{% if translated != native %} ({{ translated }}){% endif %}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+
+  {% set ts = transit_settings %}
+  <div class="transit-opts" id="transit-opts" {% if selected.profile not in ("transit", "auto") %}hidden{% endif %}>
+    <input type="hidden" name="transit_opts" value="1">
+    <details class="transit-details" {% if option_errors or saved %}open{% endif %}>
+      <summary>
+        <strong>{{ t("ÖPNV-Optionen") }}:</strong>
+        <span class="transit-summary">{{ t("max. {n} Umstiege", n=ts.max_transfers) }}
+          · {% for key in ts.modes %}{{ t(mode_groups[key]) }}{% if not loop.last %}, {% endif %}{% endfor %}
+          · {{ t(weekdays[ts.weekday]) }} {{ ts.time }}{% if ts.wheelchair %} · {{ t("rollstuhlgerecht") }}{% endif %}
+          {%- if selected.profile == "auto" %} · {{ t("zu Fuß bis {n} Min.", n=ts.auto_walk_max_min) }}{% endif %}</span>
+        <span class="details-hint">{{ t("ändern") }}</span>
+      </summary>
+    {% if option_errors %}
+    <ul class="errors" role="alert">{% for e in option_errors %}<li>{{ t(e) }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if saved %}<p class="notice">{{ t("Standardwerte für ÖPNV gespeichert.") }}</p>{% endif %}
+    <div class="row four">
+      <label>{{ t("Maximale Umstiege") }}
+        <input type="number" name="max_transfers" min="0" max="6" value="{{ ts.max_transfers }}">
+      </label>
+      <label>{{ t("Max. Fußweg zur Starthaltestelle (Min.)") }}
+        <input type="number" name="walk_start_min" min="1" max="30" value="{{ ts.walk_start_min }}">
+      </label>
+      <label>{{ t("Max. Fußweg von der Zielhaltestelle (Min.)") }}
+        <input type="number" name="walk_end_min" min="1" max="30" value="{{ ts.walk_end_min }}">
+      </label>
+      <label>{{ t("Referenz-Wochentag") }}
+        <select name="weekday">
+          {% for day in weekdays %}
+          <option value="{{ loop.index0 }}" {% if loop.index0 == ts.weekday %}selected{% endif %}>{{ t(day) }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <div class="row four">
+      <div class="stack">
+        <label>{{ t("Uhrzeit") }}
+          <input type="time" name="time" value="{{ ts.time }}">
+        </label>
+        <label>{{ t("Automatische Wahl: zu Fuß bis (Min.)") }}
+          <input type="number" name="auto_walk_max_min" min="5" max="60" value="{{ ts.auto_walk_max_min }}">
+        </label>
+      </div>
+      <div class="checks">
+        <span class="label">{{ t("Erlaubte Verkehrsmittel") }}</span>
+        {% for key, label in mode_groups.items() %}
+        <label class="check"><input type="checkbox" name="modes" value="{{ key }}" {% if key in ts.modes %}checked{% endif %}> {{ t(label) }}</label>
+        {% endfor %}
+      </div>
+      <div class="checks">
+        <label class="check"><input type="checkbox" name="wheelchair" value="1" {% if ts.wheelchair %}checked{% endif %}> {{ t("Rollstuhlgerecht (stufenfreie Wege)") }}</label>
+      </div>
+    </div>
+    <p class="hint small">{{ t("Gesucht wird eine Verbindung am nächsten {weekday} gegen {time} Uhr. Auf dem Ausdruck steht der Takt, keine Abfahrtszeiten.", weekday=t(weekdays[ts.weekday]), time=ts.time) }}</p>
+    <button type="submit" class="secondary" formaction="/directions/transit-defaults" formmethod="post">{{ t("Als Standard speichern") }}</button>
+    </details>
+  </div>
+
+  <div class="buttons"><button type="submit">{{ t("Route berechnen") }}</button>
+    <a class="small translations-link" href="/translations?lang={{ selected.lang }}">{{ t("Übersetzungen prüfen") }}</a></div>
+</form>
+{% endif %}
+
+{% if error %}
+<ul class="errors" role="alert"><li>{{ t(error) }}</li></ul>
+{% endif %}
+{% if auto_reason %}
+<p class="auto-choice">{{ t(auto_reason) }}</p>
+{% endif %}
+
+{% if map_data %}
+{# Content in the directions language (later reused for the printout) #}
+<section class="result" lang="{{ dt.html_lang }}" dir="{{ dt.dir }}">
+  <h2>{% if dest_category %}<img class="dest-icon" src="{{ url_for('static', path=dest_category.image) }}" alt="{{ t(dest_category.label) }}" title="{{ t(dest_category.label) }}">{% endif %}{{ destination.name }}</h2>
+  {%- if dest_subtitle %}<p class="dest-subtitle">{{ dest_subtitle }}</p>{% endif %}
+  <dl class="facts">
+    <dt>{{ dt("address") }}</dt><dd>{{ destination.address }}</dd>
+    {% if destination.phone %}<dt>{{ dt("phone") }}</dt><dd dir="ltr">{{ destination.phone }}</dd>{% endif %}
+    {% if destination.website %}<dt>{{ dt("website") }}</dt><dd dir="ltr">{{ destination.website }}</dd>{% endif %}
+    {% if destination.opening_hours %}<dt>{{ dt("opening_hours") }}</dt><dd dir="ltr">{{ destination.opening_hours }}</dd>{% endif %}
+    <dt>{{ dt("start") }}</dt><dd><img class="dest-icon" src="{{ url_for('static', path=location_icon) }}" alt="">{{ location.name }}</dd>
+    {% if route and route.profile == "transit" %}<dt>{{ dt.transit_modes(route.legs) }}</dt><dd>{{ dt.transit_summary(route.duration_s, route.transfers, route.headway_min) }}</dd>
+    {% elif route %}<dt>{{ dt.profile(route.profile) }}</dt><dd>{{ dt.summary(route.distance_m, route.duration_s) }}</dd>{% endif %}
+  </dl>
+  <p class="result-actions" lang="{{ ui_lang }}" dir="ltr"><a class="button" href="/directions/print?{{ query }}">{{ t("Druckansicht") }}</a></p>
+  <div id="map" class="map" aria-label="{{ t('Karte mit Route') }}"></div>
+  <p class="hint small">
+    {% if route and route.profile == "transit" %}{{ dt("timetable_data") }}: <a href="{{ transit_sources_url }}" target="_blank" rel="noopener">Transitous</a> · {{ dt("osm") }}{% for c in symbol_credits %} · {{ c }}{% endfor %}
+    {% else %}{{ route_attribution }}{% endif %} · {{ dt("created", date=dt.date(today)) }}</p>
+
+  {% include "_walk_insets.html" %}
+  {% if route and route.profile == "transit" %}
+  {% include "_transit.html" %}
+  {% if walk_details|selectattr("steps")|list %}
+  <details class="steps">
+    <summary>{{ dt("steps") }}</summary>
+    {% include "_walk_steps.html" %}
+  </details>
+  {% endif %}
+  {% elif route and route.steps %}
+  <details class="steps">
+    <summary>{{ dt("steps") }} ({{ route.steps|length }})</summary>
+    <ol>
+      {% for s in route.steps %}
+      <li>{{ dt.instruction(s) }}{% if s.distance_m >= 5 %} <span class="hint">({{ dt.distance(s.distance_m) }})</span>{% endif %}</li>
+      {% endfor %}
+    </ol>
+  </details>
+  {% endif %}
+</section>
+<script id="map-data" type="application/json">{{ map_data|tojson }}</script>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='destination-picker.js') }}" defer></script>
+<script>
+  // Offer only destinations assigned to the chosen location (or unassigned ones)
+  (function () {
+    const loc = document.querySelector('select[name="location_id"]');
+    const dest = document.querySelector('select[name="destination_id"]');
+    if (!loc || !dest) return;
+    const filter = () => {
+      Array.from(dest.options).forEach((opt) => {
+        if (!opt.value) return;
+        const assigned = opt.dataset.locations ? opt.dataset.locations.split(",") : [];
+        const offered = !loc.value || !assigned.length || assigned.includes(loc.value);
+        opt.hidden = opt.disabled = !offered;
+      });
+      if (dest.selectedOptions[0] && dest.selectedOptions[0].disabled) dest.value = "";
+    };
+    loc.addEventListener("change", filter);
+  })();
+
+  // Show public transport options only for the "transit" profile
+  (function () {
+    const select = document.querySelector('select[name="profile"]');
+    const opts = document.getElementById("transit-opts");
+    if (!select || !opts) return;
+    select.addEventListener("change", () => { opts.hidden = !["transit", "auto"].includes(select.value); });
+  })();
+</script>
+{% if map_data %}
+<script src="{{ url_for('static', path='vendor/leaflet-1.9.4/leaflet.js') }}"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="></script>
+<script src="{{ url_for('static', path='directions-map.js') }}"></script>
+{% endif %}
+{% endblock %}

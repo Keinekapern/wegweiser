@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Palme: single colour, used as a CSS mask (coloured like the line number) -->
+  <g fill="#000">
+  <path d="M12.6 9.6c.6 4.2.1 8.3-1.5 11.9" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.8"/>
+  <path d="M12.6 9.2C10.2 5 5.6 4.4 2 7.3c3.6-.4 7 .5 10.6 1.9zM12.6 9.2C15 5 19.6 4.4 23 7.3c-3.6-.4-7 .5-10.4 1.9z"/>
+  <path d="M12.6 9.2C11.2 4.8 12.4 2 15.4 1c-1 2.8-1.2 5.4-2.8 8.2zM12.6 9.2C8.6 9.6 5.4 12.4 4.8 16c2.4-2.6 5-4.6 7.8-6.8zM12.6 9.2c4 .4 7.2 3.2 7.8 6.8-2.4-2.6-5-4.6-7.8-6.8z"/>
+  </g>
+</svg>
