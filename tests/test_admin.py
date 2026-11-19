@@ -94,7 +94,8 @@ def test_anonymous_destination_is_pending_and_usable(client, anon_client):
     assert "sofort nutzbar" in listing and "unbestätigt" in listing
     assert "/destinations/1/edit" in listing                 # own pending destination
     picker = anon_client.get("/directions", params={"location_id": 2}).text
-    assert "Klinik (unbestätigt)" in picker
+    assert "Klinik (unbestätigt)" in picker and 'data-icon="http://testserver/static/categories/pending.svg"' in picker
+    assert 'src="http://testserver/static/categories/pending.svg"' in listing
     # usable for directions right away
     assert anon_client.get("/directions/print", params={"location_id": 2, "destination_id": 1,
                                                         "profile": "foot-walking"}).status_code == 200

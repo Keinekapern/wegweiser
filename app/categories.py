@@ -10,6 +10,10 @@ ICON_DIR = "categories"
 # Symbol for locations (start points): house with tree, distinct from the plain house
 # used as TüBus line 2 symbol
 LOCATION_ICON = f"{ICON_DIR}/location.svg"
+# Destinations without a category (also on the printout)
+NONE_ICON = f"{ICON_DIR}/none.svg"
+# Destinations awaiting approval: replaces the category symbol in the interface only
+PENDING_ICON = f"{ICON_DIR}/pending.svg"
 
 
 @dataclass(frozen=True)

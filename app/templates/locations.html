@@ -12,7 +12,7 @@
   <tbody>
   {% for loc in locations %}
     <tr {% if loc.id == edit_id %}class="editing"{% endif %}>
-      <td><img class="dest-icon" src="{{ url_for('static', path=location_icon) }}" alt="">{{ loc.name }}</td>
+      <td><div class="with-icon"><img class="dest-icon" src="{{ url_for('static', path=location_icon) }}" alt="">{{ loc.name }}</div></td>
       <td>{{ loc.address }}</td>
       <td class="mono">{{ "%.6f"|format(loc.lat) }}, {{ "%.6f"|format(loc.lon) }}</td>
       <td class="actions"><div class="row-actions">

@@ -34,7 +34,9 @@ def test_route_is_rendered(client, fake_ors):
     _setup(client)
     page = client.get("/directions", params={"location_id": 1, "destination_id": 1,
                                              "profile": "foot-walking"}).text
-    assert "<h2>Katharinenhospital</h2>" in page
+    # no category: the "not categorised" symbol before the name
+    assert ('<h2 class="with-icon"><img class="dest-icon" src="http://testserver/static/categories/none.svg"'
+            ' alt="Ohne Kategorie" title="Ohne Kategorie">Katharinenhospital</h2>') in page
     assert "<dt>Zu Fuß</dt><dd>1,8 km, ca. 5 Min.</dd>" in page
     assert 'id="map"' in page and 'id="map-data"' in page
     assert "leaflet.js" in page

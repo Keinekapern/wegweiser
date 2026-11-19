@@ -45,7 +45,7 @@
        exact bus route matters less than the connection and the walking detail maps #}
     <div class="page1{% if walk_details %} has-insets{% endif %}" id="page1" data-min-map="{{ 55 if route and route.profile == 'transit' else 100 }}">
       <header class="head">
-        <h1>{% if dest_category %}<img class="dest-icon" src="{{ url_for('static', path=dest_category.image) }}" alt="">{% endif %}{{ destination.name }}</h1>
+        <h1 class="with-icon"><img class="dest-icon" src="{{ url_for('static', path=dest_category.image if dest_category else NONE_ICON) }}" alt="">{{ destination.name }}</h1>
   {%- if dest_subtitle %}<p class="dest-subtitle">{{ dest_subtitle }}</p>{% endif %}
         <p class="summary">
           {% if route and route.profile == "transit" %}

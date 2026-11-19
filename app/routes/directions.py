@@ -101,8 +101,9 @@ def build_context(conn: Connection, router_: OrsClient, transit: TransitousClien
             "start": {"name": location.name, "lat": location.lat, "lon": location.lon,
                       "icon": f"/static/{categories.LOCATION_ICON}"},
             "end": {"name": destination.name, "lat": destination.lat, "lon": destination.lon,
-                    "icon": (f"/static/{categories.get(destination.category).image}"
-                             if categories.get(destination.category) else None)},
+                    "icon": "/static/" + (categories.get(destination.category).image
+                                          if categories.get(destination.category)
+                                          else categories.NONE_ICON)},
             "route": route.to_dict() if route else None,
             "walk_details": [d.to_dict() for d in details],
             "attribution": dt("osm"),

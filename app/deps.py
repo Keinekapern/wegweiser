@@ -8,7 +8,7 @@ from fastapi import Depends, Request
 from fastapi.templating import Jinja2Templates
 from markupsafe import Markup, escape
 
-from app import db
+from app import categories, db
 from app.i18n import i18n_context
 from app.services.transit import same_place_names, stop_icon
 
@@ -52,6 +52,8 @@ def dt_local(utc: str) -> str:
 
 
 templates.env.globals["dt_local"] = dt_local
+templates.env.globals["NONE_ICON"] = categories.NONE_ICON
+templates.env.globals["PENDING_ICON"] = categories.PENDING_ICON
 templates.env.globals["stop_name"] = stop_name
 templates.env.globals["isolate"] = isolate
 templates.env.globals["same_place_names"] = same_place_names

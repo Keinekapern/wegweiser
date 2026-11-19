@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- Ohne Kategorie: the location pin of "Sonstiges" as an outline on white, i.e. not
+       categorised yet (distinct from the filled "Sonstiges" symbol) -->
+  <rect x=".75" y=".75" width="22.5" height="22.5" rx="3.5" fill="#fff" stroke="#555c66" stroke-width="1.5"/>
+  <path d="M12 3.6a6 6 0 0 0-6 6c0 4.4 6 11 6 11s6-6.6 6-11a6 6 0 0 0-6-6z" fill="none" stroke="#555c66" stroke-width="1.8" stroke-linejoin="round"/>
+  <circle cx="12" cy="9.6" r="2.1" fill="#555c66"/>
+</svg>

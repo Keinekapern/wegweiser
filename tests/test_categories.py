@@ -53,7 +53,7 @@ def test_category_saved_and_shown(client):
     assert 'pharmacy.svg" alt="Apotheke"' in page
     assert '"icon": "/static/categories/pharmacy.svg"' in page
     printout = client.get("/directions/print", params={"location_id": 1, "destination_id": 1}).text
-    assert '<h1><img class="dest-icon"' in printout
+    assert '<h1 class="with-icon"><img class="dest-icon"' in printout
     assert "Twemoji" not in printout   # own drawings, no attribution
 
 

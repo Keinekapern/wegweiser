@@ -326,3 +326,12 @@ a { color: var(--accent); }
 .topbar .count { display: inline-block; min-width: 1.3em; padding: 0 .35em; border-radius: 1em; background: var(--warn); color: #000; font-size: .75rem; font-weight: 600; text-align: center; }
 .badge.pending { border-color: var(--warn); color: var(--warn); }
 .card.narrow { max-width: 28rem; }
+
+/* Icon before a name: wrapped lines and the subtitle start where the name starts
+   (hanging indent = icon width 1.3em + gap .3em) */
+.with-icon { padding-inline-start: 1.6em; text-indent: -1.6em; }
+.with-icon > * { text-indent: 0; }
+.result h2.with-icon + .dest-subtitle { padding-inline-start: calc(1.5rem * 1.6 + .15rem); }
+.name-cell { display: grid; grid-template-columns: auto 1fr; column-gap: .3em; align-items: center; }
+.name-cell .dest-icon { margin: 0; vertical-align: 0; }
+.name-cell .name, .name-cell .note { grid-column: 2; }

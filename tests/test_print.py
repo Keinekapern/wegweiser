@@ -61,7 +61,8 @@ def test_print_view(client):
     page = r.text
     assert "<title>Katharinenhospital</title>" in page
     assert '<html lang="de" dir="ltr">' in page
-    assert "<h1>Katharinenhospital</h1>" in page
+    assert ('<h1 class="with-icon"><img class="dest-icon" src="http://testserver/static/categories/none.svg"'
+            ' alt="">Katharinenhospital</h1>') in page
     assert "Zu Fuß:</strong> 1,8 km, ca. 5 Min." in page
     assert "+49 711 27801" in page and "24/7" in page
     assert page.count('<svg viewBox=') == 3

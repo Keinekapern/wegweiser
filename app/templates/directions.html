@@ -39,7 +39,7 @@
           {% set offered = not assigned or selected.location_id in assigned or not selected.location_id %}
           <option value="{{ d.id }}" data-locations="{{ assigned|join(',') }}"
                   data-address="{{ d.address }}" data-category="{{ t(group_label) }}"
-                  {%- if cat %} data-icon="{{ url_for('static', path=cat.image) }}"{% endif %}
+                  data-icon="{{ url_for('static', path=PENDING_ICON if d.pending else (cat.image if cat else NONE_ICON)) }}"
                   {%- if d.id == selected.destination_id %} selected{% endif %}
                   {%- if not offered and d.id != selected.destination_id %} hidden disabled{% endif %}>{{ d.name }}{% if d.pending %} ({{ t("unbestätigt") }}){% endif %}</option>
           {% endfor %}
@@ -137,7 +137,8 @@
 {% if map_data %}
 {# Content in the directions language (later reused for the printout) #}
 <section class="result" lang="{{ dt.html_lang }}" dir="{{ dt.dir }}">
-  <h2>{% if dest_category %}<img class="dest-icon" src="{{ url_for('static', path=dest_category.image) }}" alt="{{ t(dest_category.label) }}" title="{{ t(dest_category.label) }}">{% endif %}{{ destination.name }}</h2>
+  {% set cat_label = t(dest_category.label) if dest_category else t("Ohne Kategorie") %}
+  <h2 class="with-icon"><img class="dest-icon" src="{{ url_for('static', path=dest_category.image if dest_category else NONE_ICON) }}" alt="{{ cat_label }}" title="{{ cat_label }}">{{ destination.name }}</h2>
   {%- if dest_subtitle %}<p class="dest-subtitle">{{ dest_subtitle }}</p>{% endif %}
   <dl class="facts">
     <dt>{{ dt("address") }}</dt><dd>{{ destination.address }}</dd>

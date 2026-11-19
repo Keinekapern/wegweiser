@@ -259,3 +259,8 @@ body:not(.landscape) .page1.has-insets.details-moved .inset-map { height: 62mm; 
 /* start/destination labels: compact like the stop labels (Leaflet default padding is 6px) */
 .leaflet-tooltip:not(.stop-label) { padding: 2px 6px; }
 .leaflet-tooltip:not(.stop-label) .dest-label img { width: 16px; height: 16px; }
+
+/* Icon before the heading: wrapped lines and the subtitle start where the name starts
+   (hanging indent = icon width 1.1em + gap .3em, in the 22pt of the heading) */
+.head h1.with-icon { padding-inline-start: 1.4em; text-indent: -1.4em; }
+.head h1.with-icon + .dest-subtitle { padding-inline-start: calc(22pt * 1.4 + 2pt); }
