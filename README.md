@@ -84,7 +84,7 @@ Mehrere Organisationen betreiben am besten je eine eigene Instanz (eigener Conta
 
 In der Betriebsart `admin` kann ohne Anmeldung jede Person Wegbeschreibungen erstellen und neue Ziele anlegen. Neue Ziele sind sofort nutzbar, tragen aber den Vermerk „unbestätigt“, bis ein Admin sie auf der Admin-Seite bestätigt oder ablehnt. Bis dahin lassen sie sich im selben Browser noch korrigieren.
 
-Nur Admins können bestehende Ziele und Standorte bearbeiten oder löschen, Standorte anlegen, Ziele bestimmten Standorten zuordnen und die ÖPNV-Standardwerte speichern. Weitere Admins und das eigene Passwort verwaltet man auf der Admin-Seite.
+Nur Admins können bestehende Ziele und Standorte bearbeiten oder löschen, Standorte anlegen, Ziele bestimmten Standorten zuordnen, die ÖPNV-Standardwerte speichern und festlegen, welche Sprachen der Wegbeschreibung zur Auswahl stehen (Admin-Seite → Einstellungen; Deutsch ist immer dabei). Weitere Admins und das eigene Passwort verwaltet man auf der Admin-Seite.
 
 Das erste Admin-Konto wird auf dem Server angelegt (fragt nach dem Passwort):
 

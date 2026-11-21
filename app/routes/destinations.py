@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app import auth, categories, db
+from app import auth, categories, db, languages
 from app.deps import DB, templates
 from app.i18n import (DIRECTIONS_LANGUAGES, directions_language_options, get_ui_lang,
                       translate)
@@ -55,17 +55,20 @@ def _int_or_none(raw: str | None) -> int | None:
         return None
 
 
-async def read_form(request: Request) -> dict:
+async def read_form(request: Request, conn) -> dict:
     data = await request.form()
     form: dict = {f: str(data.get(f, "")) for f in FORM_FIELDS}
     form["location_ids"] = _int_list(data.getlist("location_ids"))
-    form["names"] = {lang: str(data.get(f"name_{lang}", "")).strip()[:200] for lang in NAME_LANGS}
+    # only the languages shown in the form (names in switched-off languages are kept)
+    shown = set(languages.enabled(conn))
+    form["names"] = {lang: str(data.get(f"name_{lang}", "")).strip()[:200]
+                     for lang in NAME_LANGS if lang in shown}
     return form
 
 
-def _name_languages(request: Request) -> list[dict]:
-    """Directions languages for the translated-name fields, sorted like the language menu."""
-    options = directions_language_options(get_ui_lang(request))
+def _name_languages(request: Request, conn) -> list[dict]:
+    """Enabled directions languages for the translated-name fields, sorted like the menu."""
+    options = languages.options(conn, get_ui_lang(request))
     return [{"code": code, "native": native, "label": ui_name,
              "html_lang": DIRECTIONS_LANGUAGES[code][1], "rtl": DIRECTIONS_LANGUAGES[code][2]}
             for code, (native, ui_name) in options.items() if code in NAME_LANGS]
@@ -79,7 +82,7 @@ def render_form(request: Request, conn, *, form: dict, errors=None,
          "can_assign": auth.can(request, "destination.assign_locations"),
          "creates_pending": auth.creates_pending(request),
          "locations": db.list_locations(conn), "categories": categories.CATEGORIES,
-         "category_groups": categories.GROUPS, "name_languages": _name_languages(request)},
+         "category_groups": categories.GROUPS, "name_languages": _name_languages(request, conn)},
         status_code=status_code,
     )
 
@@ -127,7 +130,7 @@ def _creator_locations(conn, location_ids: list[int]) -> list[int]:
 
 @router.post("", response_class=HTMLResponse)
 async def destinations_create(request: Request, conn: DB):
-    form = await read_form(request)
+    form = await read_form(request, conn)
     errors, dest = validate_destination_form(form)
     if errors:
         return render_form(request, conn, form=form, errors=errors, status_code=422)
@@ -170,7 +173,7 @@ def destinations_edit(request: Request, conn: DB, destination_id: int):
 @router.post("/{destination_id}", response_class=HTMLResponse)
 async def destinations_update(request: Request, conn: DB, destination_id: int):
     _editable_destination(request, conn, destination_id)
-    form = await read_form(request)
+    form = await read_form(request, conn)
     errors, dest = validate_destination_form(form)
     if errors:
         return render_form(request, conn, form=form, errors=errors, edit_id=destination_id,

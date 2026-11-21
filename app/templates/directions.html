@@ -123,7 +123,8 @@
   </div>
 
   <div class="buttons"><button type="submit">{{ t("Route berechnen") }}</button>
-    <a class="small translations-link" href="/translations?lang={{ selected.lang }}">{{ t("Übersetzungen prüfen") }}</a></div>
+    <a class="small translations-link" href="/translations?lang={{ selected.lang }}">{{ t("Übersetzungen prüfen") }}</a>
+    {%- if can('settings.languages') %} · <a class="small translations-link" href="/settings/languages">{{ t("Sprachen auswählen") }}</a>{% endif %}</div>
 </form>
 {% endif %}
 

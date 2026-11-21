@@ -385,9 +385,11 @@ def get_destination_names(conn: sqlite3.Connection, destination_id: int) -> dict
 
 def set_destination_names(conn: sqlite3.Connection, destination_id: int,
                           names: dict[str, str]) -> None:
-    """Replaces all translated names; empty values are dropped."""
+    """Sets the translated names of the given languages (empty = remove); names in other
+    languages stay (e.g. languages currently switched off in the language settings)."""
     with conn:
-        conn.execute("DELETE FROM destination_names WHERE destination_id = ?", (destination_id,))
+        conn.executemany("DELETE FROM destination_names WHERE destination_id = ? AND lang = ?",
+                         [(destination_id, lang) for lang in names])
         conn.executemany(
             "INSERT INTO destination_names (destination_id, lang, name) VALUES (?, ?, ?)",
             [(destination_id, lang, name.strip()) for lang, name in names.items() if name.strip()],

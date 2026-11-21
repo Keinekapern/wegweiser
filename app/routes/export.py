@@ -6,7 +6,7 @@ from urllib.parse import quote
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
 
-from app import categories, config, db, export_names
+from app import categories, config, db, export_names, languages
 from app.deps import DB, Allowed, templates
 from app.i18n import (DIRECTIONS_LANGUAGES, Msg, directions_language_options, get_ui_lang,
                       normalize_directions_lang, translate, translator)
@@ -38,7 +38,7 @@ def directions_pdf(request: Request, conn: DB, _: Allowed("export.pdf"),
     dest = db.get_destination(conn, destination_id)
     if dest is None or db.get_location(conn, location_id) is None:
         raise HTTPException(404, translate(get_ui_lang(request), "Standort oder Ziel wurde nicht gefunden."))
-    lang = normalize_directions_lang(lang)
+    lang = languages.normalize(conn, lang)
     params = request.url.query
     try:
         with pdf.open_renderer(lock_timeout=20) as renderer:
@@ -65,7 +65,7 @@ def _form_context(request: Request, conn, *, errors=None, form=None):
         "destinations": destinations,
         "assignments": db.destination_location_ids(conn),
         "categories": categories.BY_KEY,
-        "languages": directions_language_options(get_ui_lang(request)),
+        "languages": languages.options(conn, get_ui_lang(request)),
         "modes": export_names.MODE_LABELS,
         "errors": errors or [],
         "form": form or {"location_ids": [l.id for l in locations][:1], "langs": ["de"],
@@ -87,7 +87,7 @@ async def export_start(request: Request, conn: DB, _: Allowed("export.bulk")):
     form = {
         "location_ids": _ints(data.getlist("location_ids")),
         "destination_ids": _ints(data.getlist("destination_ids")),
-        "langs": [l for l in data.getlist("langs") if l in DIRECTIONS_LANGUAGES],
+        "langs": [l for l in data.getlist("langs") if l in set(languages.enabled(conn))],
         "modes": [m for m in data.getlist("modes") if m in export.MODES],
         "orientation": "landscape" if data.get("orientation") == "landscape" else "portrait",
         "bw": data.get("bw") == "1",

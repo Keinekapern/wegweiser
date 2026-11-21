@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ t("Sprachen der Wegbeschreibung") }} – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>{{ t("Sprachen der Wegbeschreibung") }}</h1>
+<p class="hint">{{ t("Nur die angehakten Sprachen stehen bei der Wegbeschreibung, im Export und bei den übersetzten Zielnamen zur Auswahl. Deutsch ist immer dabei. Bereits gespeicherte Namen in abgeschalteten Sprachen bleiben erhalten.") }}
+  <a href="/translations">{{ t("Übersetzungen prüfen") }}</a></p>
+{% if notice %}<p class="notice" role="status">{{ t(notice) }}</p>{% endif %}
+
+<form method="post" action="/settings/languages" class="form export-form" id="languages-form">
+  <fieldset class="location-checks lang-checks">
+    <legend>{{ t("Sprachen") }}</legend>
+    <p class="buttons small"><button type="button" class="secondary" data-check="lang" data-value="1">{{ t("Alle") }}</button>
+      <button type="button" class="secondary" data-check="lang" data-value="0">{{ t("Keine") }}</button></p>
+    {% for code, (native, label) in all_languages.items() %}
+    {% set translated = t(label) %}
+    <label class="check"><input type="checkbox" name="langs" value="{{ code }}" {% if code in enabled %}checked{% endif %}{% if code == default_lang %} disabled{% endif %}> {{ native }}{% if translated != native %} <span class="hint">({{ translated }})</span>{% endif %}</label>
+    {% endfor %}
+  </fieldset>
+  <div class="buttons"><button type="submit">{{ t("Speichern") }}</button></div>
+</form>
+{% endblock %}
+
+{% block scripts %}<script>
+  // "Alle" / "Keine" (German stays on: its checkbox is disabled)
+  document.querySelectorAll("#languages-form button[data-check]").forEach((btn) => btn.addEventListener("click", () => {
+    document.querySelectorAll('#languages-form input[name="langs"]:not(:disabled)').forEach((i) => { i.checked = btn.dataset.value === "1"; });
+  }));
+</script>{% endblock %}

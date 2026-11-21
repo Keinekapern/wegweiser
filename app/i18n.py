@@ -68,6 +68,16 @@ def translator(lang: str) -> Callable[..., str]:
 # German msgid -> English. Keep sorted by area; tests check that every msgid
 # used in templates/JS exists here.
 ENGLISH: dict[str, str] = {
+    # language settings
+    "Sprachen der Wegbeschreibung": "Directions languages",
+    "Sprachen auswählen": "Choose languages",
+    "Sprachen der Wegbeschreibung auswählen": "Choose directions languages",
+    "Einstellungen": "Settings",
+    "Nur die angehakten Sprachen stehen bei der Wegbeschreibung, im Export und bei den übersetzten Zielnamen zur Auswahl. Deutsch ist immer dabei. Bereits gespeicherte Namen in abgeschalteten Sprachen bleiben erhalten.":
+        "Only the ticked languages are offered for directions, in the export and for translated "
+        "destination names. German is always included. Names already saved in languages that are "
+        "switched off are kept.",
+    "Gespeichert: {n} Sprachen stehen zur Auswahl.": "Saved: {n} languages are offered.",
     # PDF export
     "PDF-Export": "PDF export",
     "Export": "Export",

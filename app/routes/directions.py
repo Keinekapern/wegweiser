@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app import categories, config, db
+from app import categories, config, db, languages
 from app.category_names import category_name
 from app.deps import DB, Allowed, templates
 from app.i18n import (DirectionsText, Msg, directions_language_options, get_ui_lang,
@@ -68,7 +68,7 @@ def build_context(conn: Connection, router_: OrsClient, transit: TransitousClien
         loc_id = assignments[dest_id][0]
     if profile not in UI_PROFILES:
         profile = "auto"
-    doc_lang = normalize_directions_lang(lang)
+    doc_lang = languages.normalize(conn, lang)
     dt = DirectionsText(doc_lang)
 
     location = db.get_location(conn, loc_id) if loc_id else None
@@ -267,7 +267,7 @@ def selection_options(conn: Connection, request: Request) -> dict:
         "mode_groups": MODE_GROUP_LABELS,
         "weekdays": WEEKDAYS,
         # code -> (native name, name as UI msgid)
-        "directions_languages": directions_language_options(get_ui_lang(request)),
+        "directions_languages": languages.options(conn, get_ui_lang(request)),
     }
 
 
