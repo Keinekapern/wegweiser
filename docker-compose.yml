@@ -9,6 +9,8 @@ services:
         required: false
     environment:
       DATABASE_PATH: ${DATABASE_PATH:-/data/wegweiser.sqlite}
+      # daily database backups (app/services/backup.py) into the second volume below
+      BACKUP_DIR: /backups
       # local time for dates on the printout ("Erstellt am", timetable as of)
       TZ: ${TZ:-Europe/Berlin}
     ports:
@@ -19,6 +21,8 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       - ./data:/data
+      # backups: best on a second drive or a cloud-synced folder, e.g. BACKUP_PATH=/mnt/usb/wegweiser
+      - ${BACKUP_PATH:-./backups}:/backups
     deploy:
       resources:
         limits:

@@ -10,3 +10,4 @@ selfhost/motis/*
 !selfhost/motis/config.yml
 selfhost/ors/
 selfhost/*.log
+backups/

@@ -198,6 +198,12 @@ MIGRATIONS: list[str] = [
     ALTER TABLE destinations ADD COLUMN creator_token TEXT;
     ALTER TABLE destinations ADD COLUMN approved_by TEXT NOT NULL DEFAULT '';
     """,
+    # 12: line symbols are no longer in the database but in regional add-ons
+    # (app/regions/<key>/region.json, see app/regions.py)
+    """
+    DROP TABLE line_symbols;
+    DROP TABLE line_symbol_sets;
+    """,
 ]
 
 
@@ -584,26 +590,3 @@ def setting_put(conn: sqlite3.Connection, key: str, value: str) -> None:
 
 
 # --- line symbols ----------------------------------------------------------
-
-@dataclass
-class LineSymbolSet:
-    id: int
-    name: str
-    modes: set[str]
-    bbox: tuple[float, float, float, float]  # min_lat, min_lon, max_lat, max_lon
-    credit: str
-    symbols: dict[str, tuple[str, str]]       # line -> (label, image)
-
-    def contains(self, lat: float, lon: float) -> bool:
-        return self.bbox[0] <= lat <= self.bbox[2] and self.bbox[1] <= lon <= self.bbox[3]
-
-
-def list_line_symbol_sets(conn: sqlite3.Connection) -> list[LineSymbolSet]:
-    sets = []
-    for r in conn.execute("SELECT * FROM line_symbol_sets ORDER BY id").fetchall():
-        symbols = {row["line"]: (row["label"], row["image"]) for row in conn.execute(
-            "SELECT line, label, image FROM line_symbols WHERE set_id = ?", (r["id"],))}
-        sets.append(LineSymbolSet(
-            r["id"], r["name"], {m.strip() for m in r["modes"].split(",") if m.strip()},
-            (r["min_lat"], r["min_lon"], r["max_lat"], r["max_lon"]), r["credit"], symbols))
-    return sets

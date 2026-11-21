@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ t("Sicherung") }} – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>{{ t("Sicherung") }}</h1>
+{% if enabled %}
+<p class="hint">{{ t("Wegweiser sichert die Datenbank jeden Tag um {time} Uhr und behält die letzten {keep} Sicherungen. Gesichert werden Standorte, Ziele, übersetzte Namen, Einstellungen und Admin-Konten.", time=time, keep=keep) }}</p>
+{% else %}
+<p class="notice warn">{{ t("Die automatische Sicherung ist ausgeschaltet (BACKUP_KEEP=0). Sicherungen von Hand sind weiter möglich.") }}</p>
+{% endif %}
+<p class="hint">{{ t("Speicherort") }}: <code>{{ directory }}</code> – {{ t("am besten ein zweiter Datenträger oder ein Ordner, der mit einem Cloud-Speicher abgeglichen wird (BACKUP_PATH in .env).") }}</p>
+
+{% if notice %}<p class="notice" role="status">{{ t(notice) }}</p>{% endif %}
+{% if last_error %}<ul class="errors" role="alert"><li>{{ t("Die letzte Sicherung ist fehlgeschlagen") }}{% if last_error_at %} ({{ last_error_at.strftime("%d.%m.%Y, %H:%M") }}){% endif %}: {{ last_error }}</li></ul>{% endif %}
+
+<form method="post" action="/settings/backup" class="buttons"><button type="submit">{{ t("Jetzt sichern") }}</button></form>
+
+{% if backups %}
+<table class="list">
+  <thead><tr><th>{{ t("Sicherung") }}</th><th>{{ t("Erstellt") }}</th><th>{{ t("Größe") }}</th><th></th></tr></thead>
+  <tbody>
+  {% for b in backups %}
+    <tr>
+      <td class="mono">{{ b.name }}</td>
+      <td>{{ b.created.strftime("%d.%m.%Y, %H:%M") }}</td>
+      <td>{{ "%.1f"|format(b.size / 1048576)|replace(".", ",") }} MB</td>
+      <td class="actions"><div class="row-actions"><a class="button secondary" href="/settings/backup/{{ b.name }}">{{ t("Herunterladen") }}</a></div></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">{{ t("Noch keine Sicherung vorhanden.") }}</p>
+{% endif %}
+
+<section class="card">
+  <h2>{{ t("Wiederherstellen") }}</h2>
+  <ol>
+    <li>{{ t("Wegweiser anhalten:") }} <code>docker compose stop wegweiser</code></li>
+    <li>{{ t("Die gewünschte Sicherung über data/wegweiser.sqlite kopieren (die alte Datei vorher umbenennen).") }}</li>
+    <li>{{ t("Wegweiser wieder starten:") }} <code>docker compose start wegweiser</code></li>
+  </ol>
+</section>
+{% endblock %}

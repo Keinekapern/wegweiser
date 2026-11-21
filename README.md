@@ -57,13 +57,20 @@ Alle Symbole sind eigene, einfache Zeichnungen mit starkem Kontrast, auch für M
 - **Kategorie-Symbole** für Ziele zeigen konkrete Dinge statt Sinnbilder (Zahn, Brille, Stethoskop), ohne Buchstaben. Gestaltet wurden sie nach Erkenntnissen aus der Forschung zu kulturübergreifend verständlichen Piktogrammen. Die Farbe steht für die Gruppe: Gesundheit, Behörden, Bildung/Soziales, Religion, Alltag.
 - **Ohne Kategorie** steht eine Ortsmarke als Umriss vor dem Namen, unbestätigte Ziele tragen in der Oberfläche eine Sanduhr (nicht auf dem Ausdruck).
 - **Haltestellenschilder** je Verkehrsmittel: H für Bus und Straßenbahn, eigene Schilder für Bahn, U-Bahn, Fähre und Seilbahn.
-- **Liniensymbole** für Verkehrsbetriebe, deren Linien Bildzeichen tragen (zurzeit TüBus Tübingen). Sie stehen hinter der Liniennummer in deren Schriftfarbe, wie auf den Bussen.
+- **Liniensymbole und Linienfarben** für Verkehrsbetriebe, deren Linien Bildzeichen tragen, kommen aus regionalen Zusätzen (siehe unten; zurzeit TüBus Tübingen). Die Symbole stehen hinter der Liniennummer in deren Schriftfarbe, wie auf den Bussen.
+- **Linien ohne Farbe** bekommen eine Farbe nach Verkehrsmittel, angelehnt an die Beschilderung der Deutschen Bahn: S-Bahn grün, U-Bahn blau, Straßenbahn rot, Bus purpur, Züge und Sonstiges nachtblau.
 
 ![Übersicht der Kategorie-Symbole](docs/screenshots/symbols.png)
 
 Die vollständige Übersicht liegt in der laufenden App unter `/static/symbol-preview.html`.
 
 ![Schwarz-Weiß-Druck](docs/screenshots/print-bw.png)
+
+## Regionale Zusätze
+
+Was nur für eine Stadt oder einen Verkehrsverbund gilt, liegt als Zusatz in `app/regions/<name>/`: eine `region.json` mit Gebiet, Verkehrsmitteln und je Linie Farbe und Bildzeichen, dazu die Symbol-Dateien. Mitgeliefert ist `tuebingen` (TüBus: Bildzeichen wie auf den Busanzeigen, Linienfarben aus dem Liniennetzplan, auch für Linien, die Subunternehmer fahren). Eine Linie bekommt Farbe und Symbol, wenn ihre Einstiegshaltestelle im Gebiet liegt.
+
+Nicht benötigte Zusätze lässt man weg, indem man den Ordner löscht oder in `.env` `REGIONS=` setzt (`REGIONS=none` für keine, `REGIONS=tuebingen` für eine Auswahl; ohne Angabe gelten alle vorhandenen). Das Format steht in `app/regions.py`; neue Zusätze für andere Städte sind willkommen.
 
 ## Ziele und Standorte verwalten
 
@@ -133,7 +140,7 @@ Für ein eigenes openrouteservice bleibt `ORS_API_KEY` leer. Getestet ist das f�
 - Wegweiser hat keine eigene Anmeldung. Von außerhalb des internen Netzes nur über VPN oder hinter einer Zugangskontrolle erreichbar machen, etwa einem Cloudflare Tunnel mit Cloudflare Access (siehe [Zugriff von außen](#zugriff-von-außen)).
 - Wer Fehler meldet oder Screenshots teilt, nimmt Beispieldaten statt echter Standorte.
 
-**Sicherung:** Alle Daten stehen in einer einzigen Datei, `./data/wegweiser.sqlite`. Eine konsistente Kopie im laufenden Betrieb erstellt `sqlite3 data/wegweiser.sqlite ".backup sicherung.sqlite"`. Die Kopie kann man auf einem zweiten Datenträger oder in einem Cloud-Speicher ablegen.
+**Sicherung:** Wegweiser sichert die Datenbank jeden Tag selbst (Standard 2:30 Uhr, `BACKUP_TIME`) und behält die letzten 14 Stände (`BACKUP_KEEP`, 0 = aus). Die Sicherungen landen im Ordner `./backups` neben `./data`; mit `BACKUP_PATH` in `.env` zeigt er auf einen zweiten Datenträger oder einen Ordner, der mit einem Cloud-Speicher abgeglichen wird. Gesichert werden Standorte, Ziele, Namen, Einstellungen und Admin-Konten, nicht der Zwischenspeicher. Auf der Admin-Seite unter „Sicherung der Datenbank“ stehen die vorhandenen Sicherungen zum Download, dazu „Jetzt sichern“ und ein Hinweis, falls die letzte Sicherung fehlgeschlagen ist. Wiederherstellen: Container anhalten, Sicherung über `data/wegweiser.sqlite` kopieren, Container starten.
 
 **Haftung:** Routen, Fahrpläne und Öffnungszeiten stammen aus offenen Datenquellen und können falsch oder veraltet sein. Den Ausdruck vor der Weitergabe kurz prüfen.
 

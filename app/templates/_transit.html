@@ -1,11 +1,11 @@
 {# Public transport connection in the directions language. Expects `route` (TransitPlan) and `dt`. #}
-{# Line pictogram; own single-colour symbols (static/symbols/) take the colour of the
-   line number via a CSS mask, the others are coloured images. #}
+{# Line pictogram from a regional add-on (app/regions/); single-colour symbols take the
+   colour of the line number via a CSS mask, the others are coloured images. #}
 {% macro line_symbol(sym) -%}
-{%- if sym and sym.image.startswith("symbols/") -%}
-<span class="line-symbol mono" role="img" aria-label="{{ sym.label }}" title="{{ sym.label }}" style="--symbol: url('{{ url_for('static', path=sym.image) }}')"></span>
+{%- if sym and sym.mono -%}
+<span class="line-symbol mono" role="img" aria-label="{{ sym.label }}" title="{{ sym.label }}" style="--symbol: url('{{ url_for('regions', path=sym.image) }}')"></span>
 {%- elif sym -%}
-<img class="line-symbol" src="{{ url_for('static', path=sym.image) }}" alt="{{ sym.label }}" title="{{ sym.label }}">
+<img class="line-symbol" src="{{ url_for('regions', path=sym.image) }}" alt="{{ sym.label }}" title="{{ sym.label }}">
 {%- endif -%}
 {%- endmacro %}
 {% macro alt_badge(alt, i) -%}

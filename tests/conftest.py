@@ -187,6 +187,7 @@ def fake_nominatim():
 @pytest.fixture
 def client(tmp_path, monkeypatch, fake_nominatim, fake_ors, fake_transit):
     monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "test.sqlite"))
+    monkeypatch.setenv("BACKUP_KEEP", "0")    # no background backups during tests
     from app import auth
     monkeypatch.setattr(auth, "_N", 2 ** 8)   # fast password hashing in tests
     from app.main import app

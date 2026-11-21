@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app import config, db
 from app.auth import LoginRequired, login_url
+from app.services import backup
 from app.deps import BASE_DIR
 from app.routes import (admin, api, destinations, directions, export, locations, settings,
                         translations, ui)
@@ -17,8 +18,12 @@ async def lifespan(_app: FastAPI):
     if config.auth_mode() == "off" and config.tunnel_configured():
         raise RuntimeError("AUTH_MODE=off together with CLOUDFLARE_TUNNEL_TOKEN: without login "
                            "everyone reaching the tunnel could change everything. Use AUTH_MODE=admin.")
+    config.backup_time()            # fail early on a wrong BACKUP_TIME
     db.init_db()
+    stop_backups = backup.start_scheduler()
     yield
+    if stop_backups:
+        stop_backups.set()
 
 
 app = FastAPI(title=config.APP_NAME, lifespan=lifespan)
@@ -40,6 +45,8 @@ class RevalidatedStaticFiles(StaticFiles):
 
 
 app.mount("/static", RevalidatedStaticFiles(directory=BASE_DIR / "static"), name="static")
+# Files of the regional add-ons (app/regions/<key>/symbols/ ...), see app/regions.py
+app.mount("/regions", RevalidatedStaticFiles(directory=BASE_DIR / "regions"), name="regions")
 app.include_router(locations.router)
 app.include_router(destinations.router)
 app.include_router(directions.router)

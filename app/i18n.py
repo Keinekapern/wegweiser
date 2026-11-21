@@ -68,6 +68,29 @@ def translator(lang: str) -> Callable[..., str]:
 # German msgid -> English. Keep sorted by area; tests check that every msgid
 # used in templates/JS exists here.
 ENGLISH: dict[str, str] = {
+    # database backups
+    "Sicherung": "Backup",
+    "Sicherung der Datenbank": "Database backup",
+    "Wegweiser sichert die Datenbank jeden Tag um {time} Uhr und behält die letzten {keep} Sicherungen. Gesichert werden Standorte, Ziele, übersetzte Namen, Einstellungen und Admin-Konten.":
+        "Wegweiser backs up the database every day at {time} and keeps the latest {keep} "
+        "backups: locations, destinations, translated names, settings and admin accounts.",
+    "Die automatische Sicherung ist ausgeschaltet (BACKUP_KEEP=0). Sicherungen von Hand sind weiter möglich.":
+        "Automatic backups are switched off (BACKUP_KEEP=0). Manual backups are still possible.",
+    "Speicherort": "Location",
+    "am besten ein zweiter Datenträger oder ein Ordner, der mit einem Cloud-Speicher abgeglichen wird (BACKUP_PATH in .env).":
+        "ideally a second drive or a folder synced with cloud storage (BACKUP_PATH in .env).",
+    "Sicherung erstellt: {name}": "Backup created: {name}",
+    "Die letzte Sicherung ist fehlgeschlagen": "The last backup failed",
+    "Jetzt sichern": "Back up now",
+    "Erstellt": "Created",
+    "Größe": "Size",
+    "Herunterladen": "Download",
+    "Noch keine Sicherung vorhanden.": "No backup yet.",
+    "Wiederherstellen": "Restore",
+    "Wegweiser anhalten:": "Stop Wegweiser:",
+    "Die gewünschte Sicherung über data/wegweiser.sqlite kopieren (die alte Datei vorher umbenennen).":
+        "Copy the backup over data/wegweiser.sqlite (rename the old file first).",
+    "Wegweiser wieder starten:": "Start Wegweiser again:",
     # language settings
     "Sprachen der Wegbeschreibung": "Directions languages",
     "Sprachen auswählen": "Choose languages",

@@ -54,6 +54,20 @@ STOP_ICONS = {"bus": "stop.svg", "tram": "stop.svg", "metro": "stop-metro.svg",
               "train": "stop-train.svg", "ferry": "stop-ferry.svg", "cable": "stop-cable.svg"}
 
 
+# Line colour when neither the timetable nor a line colour set has one: by mode, after the
+# colours of the DB station signage (DB Design Manual Wegeleitsystem, 2.2 Farben; RAL
+# colours in sRGB): S-Bahn RAL 6017 Maigrün, U-Bahn RAL 5017 Verkehrsblau, Tram RAL 3020
+# Verkehrsrot, Bus RAL 4006 Verkehrspurpur, everything else (trains, ferry ...) the sign
+# colour RAL 5022 Nachtblau.
+MODE_COLORS = {"BUS": "#992572", "COACH": "#992572", "TRAM": "#bb1e10",
+               "SUBWAY": "#005a8c", "METRO": "#005a8c", "SUBURBAN": "#587f40"}
+DEFAULT_LINE_COLOR = "#222d5a"
+
+
+def fallback_color(mode: str | None) -> str:
+    return MODE_COLORS.get(mode or "", DEFAULT_LINE_COLOR)
+
+
 def stop_icon(mode: str | None) -> str:
     """Static path of the stop sign for a MOTIS mode (bus sign if unknown)."""
     return STOP_ICONS.get(MODE_KINDS.get(mode or "", "bus"), "stop.svg")

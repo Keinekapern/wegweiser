@@ -113,3 +113,33 @@ def tunnel_configured() -> bool:
 # (inside the container the app listens on port 8000).
 def pdf_base_url() -> str:
     return os.environ.get("PDF_BASE_URL", "").strip().rstrip("/") or "http://127.0.0.1:8000"
+
+
+# Regional add-ons (app/regions/<key>/): not set = all installed, "none" = none,
+# otherwise a comma-separated list of keys, e.g. "tuebingen"
+def regions() -> str:
+    return os.environ.get("REGIONS", "").strip().lower()
+
+
+# Automatic database backups (app/services/backup.py)
+def backup_dir() -> Path:
+    raw = os.environ.get("BACKUP_DIR", "").strip()
+    return Path(raw) if raw else database_path().parent / "backups"
+
+
+def backup_keep() -> int:
+    """How many daily backups are kept; 0 switches automatic backups off."""
+    raw = os.environ.get("BACKUP_KEEP", "").strip()
+    return max(0, int(raw)) if raw else 14
+
+
+def backup_enabled() -> bool:
+    return backup_keep() > 0
+
+
+def backup_time() -> tuple[int, int]:
+    raw = os.environ.get("BACKUP_TIME", "").strip() or "02:30"
+    hour, minute = (int(x) for x in raw.split(":", 1))
+    if not (0 <= hour < 24 and 0 <= minute < 60):
+        raise ValueError(f"BACKUP_TIME must be HH:MM, not {raw!r}")
+    return hour, minute

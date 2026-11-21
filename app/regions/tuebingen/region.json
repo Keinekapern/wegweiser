@@ -1,0 +1,178 @@
+{
+  "name": "TüBus Tübingen",
+  "about": "TüBus (Stadtwerke Tübingen): Bildzeichen hinter der Liniennummer wie auf den Anzeigen der Busse (tuebus.de, „Übersicht der Symbole“; eigene einfarbige Zeichnungen) und Linienfarben aus dem Liniennetzplan Stadtnetz Tübingen (Stand 14.12.2025), auch für Linien, die Subunternehmer fahren.",
+  "area": {
+    "min_lat": 48.45,
+    "min_lon": 8.93,
+    "max_lat": 48.59,
+    "max_lon": 9.15
+  },
+  "modes": [
+    "BUS"
+  ],
+  "mono_symbols": true,
+  "lines": {
+    "1": {
+      "color": "#e7000e",
+      "symbol": "cat.svg",
+      "label": "Katze"
+    },
+    "2": {
+      "color": "#009e96",
+      "symbol": "house.svg",
+      "label": "Haus"
+    },
+    "3": {
+      "color": "#db5c00",
+      "symbol": "ball.svg",
+      "label": "Ball"
+    },
+    "4": {
+      "color": "#85c695",
+      "symbol": "leaf.svg",
+      "label": "Blatt"
+    },
+    "5": {
+      "color": "#62052f",
+      "symbol": "cross-roof.svg",
+      "label": "Kreuz"
+    },
+    "6": {
+      "color": "#c49961",
+      "symbol": "fir.svg",
+      "label": "Tanne"
+    },
+    "7": {
+      "color": "#ffdb00",
+      "symbol": "squirrel.svg",
+      "label": "Eichhörnchen"
+    },
+    "8": {
+      "color": "#6a8dc1",
+      "symbol": "cup.svg",
+      "label": "Tasse"
+    },
+    "9": {
+      "color": "#65b2b1",
+      "symbol": "castle.svg",
+      "label": "Schloss"
+    },
+    "10": {
+      "color": "#d7db00",
+      "symbol": "rooster.svg",
+      "label": "Gockel"
+    },
+    "11": {
+      "color": "#106eb4",
+      "symbol": "candle.svg",
+      "label": "Kerze"
+    },
+    "12": {
+      "color": "#db68a3",
+      "symbol": "pear.svg",
+      "label": "Birne"
+    },
+    "13": {
+      "color": "#4e8195",
+      "symbol": "elephant.svg",
+      "label": "Elefant"
+    },
+    "14": {
+      "color": "#005166",
+      "symbol": "suitcase.svg",
+      "label": "Koffer"
+    },
+    "15": {
+      "symbol": "glass.svg",
+      "label": "Glas"
+    },
+    "16": {
+      "color": "#8bbd0d",
+      "symbol": "umbrella.svg",
+      "label": "Schirm"
+    },
+    "17": {
+      "color": "#a2087f",
+      "symbol": "bulb.svg",
+      "label": "Glühbirne"
+    },
+    "18": {
+      "color": "#a297c6",
+      "symbol": "chapel.svg",
+      "label": "Kapelle"
+    },
+    "19": {
+      "color": "#611e82",
+      "symbol": "letter.svg",
+      "label": "Brief"
+    },
+    "21": {
+      "color": "#00a1e5",
+      "symbol": "scissors.svg",
+      "label": "Schere"
+    },
+    "22": {
+      "color": "#90ad95",
+      "symbol": "fish.svg",
+      "label": "Fisch"
+    },
+    "31": {
+      "color": "#f48e00",
+      "symbol": "clover.svg",
+      "label": "Kleeblatt"
+    },
+    "32": {
+      "color": "#6c7329",
+      "symbol": "palm.svg",
+      "label": "Palme"
+    },
+    "33": {
+      "color": "#007971",
+      "symbol": "tent.svg",
+      "label": "Zelt"
+    },
+    "34": {
+      "color": "#a2087f",
+      "symbol": "tree.svg",
+      "label": "Baum"
+    },
+    "35": {
+      "color": "#005ba8",
+      "symbol": "locomotive.svg",
+      "label": "Lokomotive"
+    },
+    "123": {
+      "color": "#a34853"
+    },
+    "826": {
+      "color": "#f48e00"
+    },
+    "827": {
+      "color": "#00458d"
+    },
+    "828": {
+      "color": "#00612d"
+    },
+    "X11": {
+      "color": "#7a003f"
+    },
+    "X15": {
+      "color": "#f39ac0"
+    },
+    "X82": {
+      "color": "#b7746e"
+    },
+    "7611": {
+      "color": "#e6007c"
+    },
+    "7612": {
+      "color": "#00943d"
+    },
+    "7613": {
+      "color": "#c49961"
+    },
+    "7625": {
+      "color": "#f9ae28"
+    }
+  }
+}
