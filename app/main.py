@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from app import config, db
 from app.auth import LoginRequired, login_url
 from app.deps import BASE_DIR
-from app.routes import admin, api, destinations, directions, locations, translations, ui
+from app.routes import admin, api, destinations, directions, export, locations, translations, ui
 
 
 @asynccontextmanager
@@ -46,6 +46,7 @@ app.include_router(api.router)
 app.include_router(ui.router)
 app.include_router(translations.router)
 app.include_router(admin.router)
+app.include_router(export.router)
 
 
 @app.get("/favicon.ico", include_in_schema=False)

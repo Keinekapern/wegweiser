@@ -25,6 +25,7 @@
       <a href="/directions" {% if request.url.path.startswith('/directions') %}aria-current="page"{% endif %}>{{ t("Wegbeschreibung") }}</a>
       <a href="/destinations" {% if request.url.path.startswith('/destinations') %}aria-current="page"{% endif %}>{{ t("Ziele") }}</a>
       <a href="/locations" {% if request.url.path.startswith('/locations') %}aria-current="page"{% endif %}>{{ t("Standorte") }}</a>
+      {% if can('export.bulk') %}<a href="/export" {% if request.url.path.startswith('/export') %}aria-current="page"{% endif %}>{{ t("Export") }}</a>{% endif %}
       {% if admin %}<a href="/admin" {% if request.url.path.startswith('/admin') %}aria-current="page"{% endif %}>{{ t("Admin") }}{% if pending_count %} <span class="count" title="{{ t('Neue Ziele zur Bestätigung') }}">{{ pending_count }}</span>{% endif %}</a>{% endif %}
     </nav>
     {% if admin %}

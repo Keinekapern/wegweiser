@@ -30,11 +30,11 @@
     </label>
     <label><input type="checkbox" id="toggle-bw"> {{ t("Für Schwarz-Weiß-Druck optimieren") }}</label>
     <button type="button" id="print-button" disabled>{{ t("Drucken") }}</button>
+    {% if can('export.pdf') %}<a class="button secondary" id="pdf-button" href="/directions/pdf?{{ request.url.query }}" title="{{ t('PDF auf dem Server erstellen, mit den gewählten Optionen; ein verschobener Kartenausschnitt wird nicht übernommen.') }}">{{ t("Als PDF") }}</a>{% endif %}
     <span id="map-status" aria-live="polite">{{ t("Karte lädt …") }}</span>
     {% if error %}<span class="error">{{ t(error) }}</span>{% endif %}
     <p class="hint">
       {{ t("Kartenausschnitt kann vor dem Drucken verschoben und gezoomt werden.") }}
-      {{ t("Tipp: Im Druckdialog „Als PDF speichern“ wählen und Kopf- und Fußzeilen ausschalten.") }}
     </p>
   </div>
 

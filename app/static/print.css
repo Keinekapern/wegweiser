@@ -22,6 +22,10 @@ body {
   background: var(--accent); color: #fff; cursor: pointer;
 }
 .toolbar button:disabled { opacity: .5; cursor: wait; }
+.toolbar a.button {
+  padding: .4rem 1.1rem; border: 1px solid var(--accent); border-radius: 4px;
+  background: #fff; color: var(--accent); text-decoration: none;
+}
 .toolbar #map-status { color: var(--muted); }
 .toolbar #map-status.ok { color: #1b7a3a; }
 .toolbar #map-status.warn { color: #9a5b00; font-weight: 600; }

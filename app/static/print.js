@@ -10,15 +10,20 @@
   let loaded = false;
   const errors = new Map(layers.map((l) => [l, 0]));
 
+  // For the server-side PDF export (app/services/pdf.py): "ok" | "errors" once settled
+  const settle = (state) => { document.documentElement.dataset.printReady = state; };
+
   function update() {
     if (!layers.length) {          // map script failed: never claim "ready"
       status.textContent = strings.tile_errors.replace("{n}", "?");
       status.classList.add("warn");
+      settle("errors");
       return;
     }
     if (layers.some((l) => l.isLoading())) {
       loaded = false;
       status.classList.remove("ok", "warn");
+      delete document.documentElement.dataset.printReady;
       return;
     }
     button.disabled = false;
@@ -28,6 +33,7 @@
     status.textContent = loaded ? strings.ready : strings.tile_errors.replace("{n}", failed);
     status.classList.toggle("ok", loaded);
     status.classList.toggle("warn", !loaded);
+    settle(loaded ? "ok" : "errors");
   }
 
   layers.forEach((layer) => {
@@ -38,7 +44,10 @@
   });
   update();
   // Never block printing completely (e.g. tile server unreachable)
-  setTimeout(() => { button.disabled = false; }, 15000);
+  setTimeout(() => {
+    button.disabled = false;
+    if (!document.documentElement.dataset.printReady) settle("errors");
+  }, 15000);
 
   button.addEventListener("click", () => {
     if (!loaded && !window.confirm(strings.confirm)) return;
@@ -130,6 +139,7 @@
 
   const insets = document.getElementById("toggle-insets");
   if (insets) {
+    if (new URLSearchParams(window.location.search).get("insets") === "0") insets.checked = false;
     const syncInsets = () => document.body.classList.toggle("no-insets", !insets.checked);
     syncInsets();
     insets.addEventListener("change", () => { syncInsets(); layout(); });
@@ -143,6 +153,19 @@
     const sync = () => document.body.classList.toggle("with-steps", toggle.checked);
     sync();
     toggle.addEventListener("change", () => { sync(); layout(); });
+  }
+
+  // "Als PDF": server-side PDF with the options chosen here (not the map section)
+  const pdfLink = document.getElementById("pdf-button");
+  if (pdfLink) {
+    pdfLink.addEventListener("click", () => {
+      const params = new URLSearchParams(window.location.search);
+      params.set("orientation", orientation.value);
+      if (bw) params.set("bw", bw.checked ? "1" : "0");
+      if (toggle) params.set("steps", toggle.checked ? "1" : "0");
+      if (insets) params.set("insets", insets.checked ? "1" : "0");
+      pdfLink.href = "/directions/pdf?" + params.toString();
+    });
   }
 
   layout();

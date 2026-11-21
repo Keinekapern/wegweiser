@@ -68,6 +68,66 @@ def translator(lang: str) -> Callable[..., str]:
 # German msgid -> English. Keep sorted by area; tests check that every msgid
 # used in templates/JS exists here.
 ENGLISH: dict[str, str] = {
+    # PDF export
+    "PDF-Export": "PDF export",
+    "Export": "Export",
+    "Als PDF": "As PDF",
+    "PDF auf dem Server erstellen, mit den gewählten Optionen; ein verschobener Kartenausschnitt wird nicht übernommen.":
+        "Create the PDF on the server with the chosen options; a moved map section is not used.",
+    "Gerade läuft ein PDF-Export. Bitte in ein paar Minuten erneut versuchen.":
+        "A PDF export is running. Please try again in a few minutes.",
+    "Erstellt Wegbeschreibungen als PDF für mehrere Ziele und Sprachen auf einmal und packt sie in eine ZIP-Datei: je Standort ein Ordner (bei mehreren Standorten), darin je Ziel ein Ordner mit den PDFs aller Sprachen.":
+        "Creates directions as PDFs for many destinations and languages at once and packs them "
+        "into a ZIP file: one folder per location (with several locations), inside one folder "
+        "per destination with the PDFs of all languages.",
+    "Alle": "All",
+    "Keine": "None",
+    "Sprachen": "Languages",
+    "Je Standort werden nur die Ziele erstellt, die dort angeboten werden.":
+        "For each location, only the destinations offered there are created.",
+    "Bei mehreren Verkehrsmitteln steht es im Dateinamen.":
+        "With several modes, the mode is part of the file name.",
+    "{n} PDFs werden erstellt, Dauer etwa {min} Minuten.": "{n} PDFs will be created, taking about {min} minutes.",
+    "{n} PDFs – höchstens {max} sind auf einmal möglich.": "{n} PDFs – at most {max} are possible at once.",
+    "Export starten": "Start export",
+    "Bitte mindestens einen Standort wählen.": "Please choose at least one location.",
+    "Bitte mindestens ein Ziel wählen.": "Please choose at least one destination.",
+    "Bitte mindestens eine Sprache wählen.": "Please choose at least one language.",
+    "Für diese Auswahl gibt es keine Ziele: Die gewählten Ziele werden bei den gewählten Standorten nicht angeboten.":
+        "Nothing to export: the chosen destinations are not offered at the chosen locations.",
+    "Das wären {n} PDFs, höchstens {max} sind auf einmal möglich. Bitte weniger Ziele oder Sprachen wählen.":
+        "That would be {n} PDFs, at most {max} are possible at once. Please choose fewer "
+        "destinations or languages.",
+    "Gerade läuft schon ein Export. Bitte warten, bis er fertig ist.":
+        "An export is already running. Please wait until it has finished.",
+    "Wartet …": "Waiting …",
+    "Erstelle PDF {done} von {total} …": "Creating PDF {done} of {total} …",
+    "Fertig: {done} PDFs.": "Done: {done} PDFs.",
+    "Der Export ist fehlgeschlagen.": "The export failed.",
+    "{n} PDFs konnten nicht oder nur unvollständig erstellt werden, siehe Übersicht.pdf im ZIP.":
+        "{n} PDFs could not be created or are incomplete, see Overview.pdf in the ZIP.",
+    "ZIP herunterladen": "Download ZIP",
+    "eine Stunde lang verfügbar": "available for one hour",
+    "Neuer Export": "New export",
+    "Übersicht": "Overview",
+    "automatisch": "automatic",
+    "zu Fuß": "on foot",
+    "{n} Standorte": "{n} locations",
+    "Ohne Namen": "Unnamed",
+    "Wegweiser – Export": "Wegweiser – export",
+    "Erstellt am": "Created on",
+    "Schwarz-Weiß": "black and white",
+    "PDFs": "PDFs",
+    "von": "of",
+    "Inhalt": "Contents",
+    "Ordner": "Folder",
+    "Nicht oder unvollständig erstellt": "Not created or incomplete",
+    "Karte unvollständig (Kacheln fehlen)": "Map incomplete (tiles missing)",
+    "Seite konnte nicht erstellt werden": "Page could not be created",
+    "Fehler beim Erstellen": "Error while creating",
+    "Fahrpläne und Routen ändern sich: Die Wegbeschreibungen geben den Stand vom Erstellungsdatum wieder.":
+        "Timetables and routes change: the directions show the state on the date they were created.",
+    "Quellen": "Sources",
     # admin / approval of new destinations
     "Admin": "Admin",
     "Admins": "Admins",
@@ -185,7 +245,6 @@ ENGLISH: dict[str, str] = {
     "Kein passendes Ziel gefunden.": "No matching destination found.",
     "„{q}“ als neues Ziel anlegen": "Create “{q}” as a new destination",
     "Neues Ziel anlegen": "Create a new destination",
-    "Koordinaten": "Coordinates",
     "Koordinaten (Breite, Länge)": "Coordinates (latitude, longitude)",
     "Koordinaten nicht erkannt. Bitte im Format „48.690351, 9.032999“ eingeben (Breite, Länge).":
         "Coordinates not recognised. Please enter them as “48.690351, 9.032999” (latitude, longitude).",
@@ -220,7 +279,6 @@ ENGLISH: dict[str, str] = {
     "Nur für Namen, die man übersetzen kann (z. B. „Kinderklinik“), nicht für Eigennamen wie „Fielmann“. Ohne Übersetzung steht auf der Wegbeschreibung die Art der Einrichtung in der gewählten Sprache. Vorschläge aus OpenStreetMap werden bei der Suche eingetragen.":
         "Only for names that can be translated (e.g. “Kinderklinik”), not for proper names like “Fielmann”. Without a translation, the directions show the kind of place in the chosen language. Suggestions from OpenStreetMap are filled in by the search.",
     "Kategorien": "Categories",
-    "Verkehrsmittel": "Means of transport",
     "Überschrift der ÖPNV-Verbindung, zusammengesetzt aus den genutzten Verkehrsmitteln. Korrekturen in app/i18n.py (TRANSIT_MODE_PHRASES) übernehmen.":
         "Heading of the public transport connection, built from the means of transport used. Put corrections into app/i18n.py (TRANSIT_MODE_PHRASES).",
     "Stehen unter dem Namen des Ziels, wenn für die Sprache kein übersetzter Name eingetragen ist. Korrekturen in app/category_names.py übernehmen.":
@@ -336,8 +394,6 @@ ENGLISH: dict[str, str] = {
         "{n} map tiles could not be loaded. Reload the page or move the map.",
     "Die Karte ist noch nicht vollständig geladen. Trotzdem drucken?":
         "The map has not finished loading. Print anyway?",
-    "Tipp: Im Druckdialog „Als PDF speichern“ wählen und Kopf- und Fußzeilen ausschalten.":
-        "Tip: choose “Save as PDF” in the print dialog and turn off headers and footers.",
     "Kartenausschnitt kann vor dem Drucken verschoben und gezoomt werden.":
         "The map can be moved and zoomed before printing.",
     "Standort oder Ziel wurde nicht gefunden.": "Location or destination not found.",

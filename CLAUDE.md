@@ -27,6 +27,7 @@ Open-Source-Projekt (EUPL-1.2). Jede Organisation betreibt ihre eigene Instanz; 
    - Erstellungsdatum und Quellenangaben (Pflicht, siehe Datenquellen)
    - Ausgabe über die Druckfunktion des Browsers („Als PDF speichern“) mit sauberem `@media print`-CSS
 5. **Rechte**: Ohne Anmeldung Wegbeschreibungen erstellen und neue Ziele anlegen (Status „pending“, sofort nutzbar, im selben Browser korrigierbar). Admins (Konten in der DB, `app/auth.py`, erstes Konto per `python -m app.admin_cli`) bestätigen neue Ziele und dürfen allein bearbeiten, löschen, Standorte anlegen, Ziele Standorten zuordnen und ÖPNV-Standardwerte speichern. Jede ändernde Aktion ist ein POST; Cookies SameSite=Lax. `AUTH_MODE=off` schaltet die Anmeldung ganz ab (eigener PC). **Rechte nur über `auth.can(request, "<aktion>")` / `auth.require(...)` bzw. `Allowed("<aktion>")` prüfen**, nie direkt über `current_admin`; so kann später ein Modus mit Benutzerkonten und Rollen je Standort dazukommen, ohne alle Seiten anzufassen. Mehrere Organisationen = mehrere Instanzen, keine Mandantenfähigkeit.
+6. **Server-PDFs und Massenexport** (`app/services/pdf.py`, `export.py`, Namen in `app/export_names.py`): Playwright/Chromium rendert die Druckansicht (wartet auf `<html data-print-ready>`), Kacheln laufen über einen Disk-Cache (7 Tage, gedrosselt); immer nur ein Browser gleichzeitig. Tests nutzen einen Fake-Renderer.
 
 ### Phase 2: ÖPNV
 - ÖPNV-Verbindung vom Standort zum Ziel
@@ -101,5 +102,4 @@ Dockerfile
 ## Offene Entscheidungen
 - Port und Hostname im Heimnetz
 - Kartenkachel-Anbieter für den Druck (OSM-Standard vs. Alternative)
-- Druck nur über den Browser oder zusätzlich serverseitiges PDF (z. B. WeasyPrint/Playwright)
 - Zeitpunkt für den Umstieg auf selbst gehostetes Routing und ÖPNV

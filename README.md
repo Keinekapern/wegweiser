@@ -17,7 +17,27 @@ Das Werkzeug ersetzt einen mühsamen Ablauf: Google-Maps-Druckansicht, Screensho
 - **QR-Codes** für Google Maps, OpenStreetMap und Apple Karten, damit jede Person ihre eigene Karten-App nutzen kann
 - **Quellenangaben und Erstellungsdatum**, mit dem Hinweis, dass sich Fahrpläne ändern können
 
-Ausgegeben wird über die Druckfunktion des Browsers („Als PDF speichern“). Die Druckansicht wartet, bis alle Kartenkacheln geladen sind. Hoch- und Querformat sowie eine Schwarz-Weiß-Variante sind wählbar.
+Ausgegeben wird über die Druckfunktion des Browsers („Als PDF speichern“) oder über „Als PDF“: Dann erstellt der Server das PDF, mit den gewählten Optionen. Die Druckansicht wartet, bis alle Kartenkacheln geladen sind. Hoch- und Querformat sowie eine Schwarz-Weiß-Variante sind wählbar.
+
+## PDF-Export für viele Ziele und Sprachen
+
+Unter „Export“ (nur Admins) erstellt Wegweiser die Wegbeschreibungen für ausgewählte Standorte, Ziele, Sprachen und Verkehrsmittel auf einmal und packt sie in eine ZIP-Datei. Je Standort wird nur erstellt, was dort angeboten wird. Der Export läuft im Hintergrund mit Fortschrittsanzeige (etwa 1–3 Sekunden je PDF), das ZIP steht danach eine Stunde zum Download bereit.
+
+```
+Wegweiser_2026-11-21_2-Standorte.zip
+├── Übersicht.pdf                      Inhalt, Optionen, was nicht erstellt werden konnte
+├── EA Tübingen/                       Standort-Ebene nur bei mehreren Standorten
+│   └── CRONA-Kliniken/
+│       ├── CRONA-Kliniken – Arabisch.pdf
+│       ├── CRONA-Kliniken – Deutsch.pdf
+│       └── CRONA-Kliniken – Persisch (Farsi).pdf
+└── NUK Sindelfingen/
+    └── …
+```
+
+Dateinamen: „Ziel – Sprache.pdf“, die Sprache ausgeschrieben in der Sprache der Oberfläche (auf Deutsch z. B. „Arabisch“, auf Englisch „Arabic“); bei mehreren Verkehrsmitteln zusätzlich „– ÖPNV“ bzw. „– zu Fuß“. Gleich benannte Ziele bekommen die Straße dazu. Namen sind Windows-tauglich (keine Sonderzeichen wie `/ : ?`, höchstens 80 Zeichen).
+
+Die PDFs rendert ein Headless-Chromium (Playwright) im Container aus der Druckansicht. Kartenkacheln werden dabei auf dem Server 7 Tage zwischengespeichert und nur einzeln nacheinander geholt, damit auch große Exporte die Kachelserver nicht belasten; für sehr große oder häufige Exporte trotzdem einen eigenen oder kommerziellen Kachelanbieter verwenden (`TILE_URL`).
 
 ## Verständlich über Sprachgrenzen hinweg
 
@@ -126,6 +146,7 @@ docker compose up -d --build
 
 Die Oberfläche ist danach unter `http://<host>:${APP_PORT:-8420}/` erreichbar. Gedacht ist der Betrieb im internen Netz oder per VPN, nicht öffentlich im Internet.
 
+- Das Image enthält Chromium für die Server-PDFs (rund 1,3 GB). Der Container braucht normal etwa 100 MB Arbeitsspeicher, beim PDF-Export einige hundert MB mehr (Grenze in `docker-compose.yml`: 1 GB).
 - Die SQLite-Datenbank liegt unter `./data/` (Volume). Der Container läuft als UID 1000 und macht `./data` beim Start für sich beschreibbar.
 - Die Zeitzone für Datumsangaben auf dem Ausdruck ist `Europe/Berlin` (über `TZ` änderbar).
 - Nach Änderungen an `.env` den Container neu erzeugen: `docker compose up -d`.

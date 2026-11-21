@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ t("PDF-Export") }} – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>{{ t("PDF-Export") }}</h1>
+<p class="hint">{{ t("Erstellt Wegbeschreibungen als PDF für mehrere Ziele und Sprachen auf einmal und packt sie in eine ZIP-Datei: je Standort ein Ordner (bei mehreren Standorten), darin je Ziel ein Ordner mit den PDFs aller Sprachen.") }}</p>
+{% if busy %}<p class="notice warn" role="status">{{ t("Gerade läuft schon ein Export. Bitte warten, bis er fertig ist.") }}</p>{% endif %}
+{% if errors %}<ul class="errors" role="alert">{% for e in errors %}<li>{{ t(e) }}</li>{% endfor %}</ul>{% endif %}
+
+<form method="post" action="/export" class="form export-form" id="export-form">
+  <fieldset class="location-checks">
+    <legend>{{ t("Standorte") }}</legend>
+    {% for loc in locations %}
+    <label class="check"><input type="checkbox" name="location_ids" value="{{ loc.id }}" {% if loc.id in form.location_ids %}checked{% endif %}> {{ loc.name }}</label>
+    {% endfor %}
+  </fieldset>
+
+  <fieldset class="location-checks dest-checks">
+    <legend>{{ t("Ziele") }}</legend>
+    <p class="buttons small"><button type="button" class="secondary" data-check="dest" data-value="1">{{ t("Alle") }}</button>
+      <button type="button" class="secondary" data-check="dest" data-value="0">{{ t("Keine") }}</button></p>
+    {% for d in destinations %}
+    {% set cat = categories.get(d.category) %}
+    <label class="check" data-locations="{{ assignments.get(d.id, [])|join(',') }}"><input type="checkbox" name="destination_ids" value="{{ d.id }}" {% if d.id in form.destination_ids %}checked{% endif %}>
+      <img class="dest-icon" src="{{ url_for('static', path=cat.image if cat else NONE_ICON) }}" alt="">{{ d.name }}</label>
+    {% endfor %}
+    <span class="hint small">{{ t("Je Standort werden nur die Ziele erstellt, die dort angeboten werden.") }}</span>
+  </fieldset>
+
+  <fieldset class="location-checks lang-checks">
+    <legend>{{ t("Sprachen") }}</legend>
+    <p class="buttons small"><button type="button" class="secondary" data-check="lang" data-value="1">{{ t("Alle") }}</button>
+      <button type="button" class="secondary" data-check="lang" data-value="0">{{ t("Keine") }}</button></p>
+    {% for code, (native, label) in languages.items() %}
+    {% set translated = t(label) %}
+    <label class="check"><input type="checkbox" name="langs" value="{{ code }}" {% if code in form.langs %}checked{% endif %}> {{ native }}{% if translated != native %} <span class="hint">({{ translated }})</span>{% endif %}</label>
+    {% endfor %}
+  </fieldset>
+
+  <fieldset class="location-checks">
+    <legend>{{ t("Verkehrsmittel") }}</legend>
+    {% for key, label in modes.items() %}
+    <label class="check"><input type="checkbox" name="modes" value="{{ key }}" {% if key in form.modes %}checked{% endif %}> {{ t({"auto": "Automatisch", "transit": "ÖPNV", "foot-walking": "Zu Fuß"}[key]) }}</label>
+    {% endfor %}
+    <span class="hint small">{{ t("Bei mehreren Verkehrsmitteln steht es im Dateinamen.") }}</span>
+  </fieldset>
+
+  <fieldset class="location-checks">
+    <legend>{{ t("Format") }}</legend>
+    <label class="check"><input type="radio" name="orientation" value="portrait" {% if form.orientation != "landscape" %}checked{% endif %}> {{ t("Hochformat") }}</label>
+    <label class="check"><input type="radio" name="orientation" value="landscape" {% if form.orientation == "landscape" %}checked{% endif %}> {{ t("Querformat") }}</label>
+    <label class="check"><input type="checkbox" name="bw" value="1" {% if form.bw %}checked{% endif %}> {{ t("Für Schwarz-Weiß-Druck optimieren") }}</label>
+  </fieldset>
+
+  <p class="hint" id="export-count" data-max="{{ max_files }}"
+     data-text="{{ t('{n} PDFs werden erstellt, Dauer etwa {min} Minuten.') }}"
+     data-too-many="{{ t('{n} PDFs – höchstens {max} sind auf einmal möglich.') }}"></p>
+  <div class="buttons"><button type="submit" {% if busy %}disabled{% endif %}>{{ t("Export starten") }}</button></div>
+</form>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', path='export.js') }}"></script>{% endblock %}

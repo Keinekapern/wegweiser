@@ -159,6 +159,8 @@ ACTIONS = (
     "location.manage",               # create, edit, delete locations
     "settings.transit_defaults",
     "admin.panel",                   # admin page: approvals, admin accounts
+    "export.pdf",                    # a single PDF of a printout
+    "export.bulk",                   # ZIP of many PDFs (server load, tile requests)
 )
 
 
@@ -186,7 +188,7 @@ def can(request: Request, action: str, obj=None, conn: sqlite3.Connection | None
         raise ValueError(f"unknown action {action!r}")
     if not login_enabled():
         return action != "admin.panel"   # nothing to administer without accounts
-    if action == "destination.create":
+    if action in ("destination.create", "export.pdf"):
         return True
     if current_admin(request) is not None:
         return True

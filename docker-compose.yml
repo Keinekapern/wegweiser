@@ -22,7 +22,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
+          # ~100 MB normally; headless Chromium for PDF exports needs several hundred MB more
+          memory: 1g
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
       interval: 60s

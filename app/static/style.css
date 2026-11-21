@@ -336,3 +336,13 @@ a { color: var(--accent); }
 .name-cell .dest-icon { margin: 0; vertical-align: 0; }
 .name-cell .name, .name-cell .note { grid-column: 2; }
 .open-mode { margin: 0; padding: .4rem 1.5rem; background: var(--highlight); border-bottom: 1px solid var(--border); font-size: .85rem; color: var(--muted); }
+.topbar nav.tabs a { white-space: nowrap; }
+/* PDF export form: long lists in columns; destinations not offered at the chosen locations dimmed */
+.export-form .dest-checks, .export-form .lang-checks { columns: 2 18rem; column-gap: 2rem; }
+.export-form .lang-checks { columns: 3 13rem; }
+.export-form fieldset .check { break-inside: avoid; }
+.export-form fieldset legend, .export-form fieldset .buttons { column-span: all; }
+.export-form .dest-checks .check.unused { opacity: .45; }
+.export-form .dest-checks .dest-icon { margin-inline-start: .2em; }
+#export-count.warn { color: var(--danger); font-weight: 600; }
+.export-status progress { width: 100%; height: 1rem; }

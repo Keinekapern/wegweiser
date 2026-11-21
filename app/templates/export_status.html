@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ t("PDF-Export") }} – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>{{ t("PDF-Export") }}</h1>
+<section class="card narrow export-status" id="export-status" data-url="/export/{{ job.id }}/status"
+         data-labels='{{ {"queued": t("Wartet …"), "running": t("Erstelle PDF {done} von {total} …"), "done": t("Fertig: {done} PDFs."), "failed": t("Der Export ist fehlgeschlagen.")}|tojson }}'>
+  <p class="status-line" aria-live="polite">{{ t("Wartet …") }}</p>
+  <progress id="export-progress" max="{{ job.total }}" value="{{ state.done }}"></progress>
+  <p class="hint small current"></p>
+  <p class="problems hint" hidden data-text="{{ t('{n} PDFs konnten nicht oder nur unvollständig erstellt werden, siehe Übersicht.pdf im ZIP.') }}"></p>
+  <p class="download" hidden><a class="button" href="/export/{{ job.id }}/download">{{ t("ZIP herunterladen") }}</a>
+    <span class="hint small">{{ job.zip_name }} · <span class="size"></span> · {{ t("eine Stunde lang verfügbar") }}</span></p>
+  <p class="error" hidden></p>
+</section>
+<p><a href="/export">{{ t("Neuer Export") }}</a></p>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', path='export.js') }}"></script>{% endblock %}

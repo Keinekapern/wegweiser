@@ -107,3 +107,9 @@ def auth_mode() -> str:
 
 def tunnel_configured() -> bool:
     return bool(os.environ.get("CLOUDFLARE_TUNNEL_TOKEN", "").strip())
+
+
+# Server-side PDFs: the headless browser loads the app's own pages from here
+# (inside the container the app listens on port 8000).
+def pdf_base_url() -> str:
+    return os.environ.get("PDF_BASE_URL", "").strip().rstrip("/") or "http://127.0.0.1:8000"

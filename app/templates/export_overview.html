@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="{{ ui_lang }}">
+<head>
+<meta charset="utf-8">
+<title>{{ t("Übersicht") }}</title>
+<link rel="stylesheet" href="/static/fonts.css">
+<style>
+  body { font-family: "Noto Sans", sans-serif; font-size: 10pt; color: #1d2330; }
+  h1 { font-size: 18pt; margin: 0 0 2mm; }
+  h2 { font-size: 12pt; margin: 6mm 0 2mm; }
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 1mm 6mm; margin: 4mm 0; }
+  dt { font-weight: 600; }
+  dd { margin: 0; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 1.2mm 2mm; border-bottom: .3mm solid #d5d9e0; vertical-align: top; }
+  th { font-weight: 600; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .path { font-size: 8.5pt; color: #5b6372; }
+  .sources { margin-top: 8mm; font-size: 8pt; color: #5b6372; }
+</style>
+</head>
+<body>
+<h1>{{ t("Wegweiser – Export") }}</h1>
+<dl>
+  <dt>{{ t("Erstellt am") }}</dt><dd>{{ today.strftime("%d.%m.%Y") }}</dd>
+  <dt>{{ t("Sprachen") }}</dt><dd>{{ languages|join(", ") }}</dd>
+  <dt>{{ t("Verkehrsmittel") }}</dt><dd>{{ modes|join(", ") }}</dd>
+  <dt>{{ t("Format") }}</dt><dd>{{ t("Querformat") if job.request.orientation == "landscape" else t("Hochformat") }}{% if job.request.bw %}, {{ t("Schwarz-Weiß") }}{% endif %}</dd>
+  <dt>{{ t("PDFs") }}</dt><dd>{{ created_count }} {{ t("von") }} {{ job.total }}</dd>
+</dl>
+
+<h2>{{ t("Inhalt") }}</h2>
+<table>
+  <thead><tr>{% if several_locations %}<th>{{ t("Standort") }}</th>{% endif %}<th>{{ t("Ziel") }}</th><th>{{ t("Ordner") }}</th><th class="num">{{ t("PDFs") }}</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>{% if several_locations %}<td>{{ r.location }}</td>{% endif %}<td>{{ r.destination }}</td><td class="path">{{ r.folder }}/</td><td class="num">{{ r.count }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% if job.problems %}
+<h2>{{ t("Nicht oder unvollständig erstellt") }}</h2>
+<table>
+  <tbody>
+  {% for path, reason in job.problems %}
+    <tr><td class="path">{{ path }}</td><td>{{ t(reason) }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<p class="sources">{{ t("Fahrpläne und Routen ändern sich: Die Wegbeschreibungen geben den Stand vom Erstellungsdatum wieder.") }}
+  {{ t("Quellen") }}: © OpenStreetMap-Mitwirkende (ODbL) · {{ transit_source }} · {{ route_source }}</p>
+</body>
+</html>
