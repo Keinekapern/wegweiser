@@ -96,7 +96,7 @@
     // Start with everything on page 1, then measure
     page1.append(details);
     walkSteps.forEach((el) => details.append(el));
-    page1.classList.remove("details-moved");
+    page1.classList.remove("details-moved", "compact");
     sheet2.hidden = true;
 
     if (squeezed(landscape)) {
@@ -104,8 +104,11 @@
       const moved = walkSteps.filter(isVisible);
       moved.forEach((el) => sheet2.append(el));
       if (moved.length) sheet2.hidden = false;
-      // Stage 2: still too tight -> all details to page 2 (before the walking texts)
+      // Stage 2: set the details a little tighter
+      if (squeezed(landscape)) page1.classList.add("compact");
+      // Stage 3: still too tight -> all details to page 2 (before the walking texts), full size
       if (squeezed(landscape)) {
+        page1.classList.remove("compact");
         sheet2.prepend(details);
         page1.classList.add("details-moved");
         sheet2.hidden = false;

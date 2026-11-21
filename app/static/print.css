@@ -92,18 +92,19 @@ body:not(.landscape) .page1.has-insets.details-moved .insets { grid-template-col
 body:not(.landscape) .page1.has-insets.details-moved .inset-map { height: 62mm; }
 .sheet-2 > .walk-steps:first-child h2, .sheet-2 > .details:first-child .transit h2 { margin-top: 0; }
 
-/* Landscape: map on the left over the full height, info column on the right */
+/* Landscape: heading and maps on the left, info column on the right from the top of the
+   page (address and QR codes beside the heading, so the connection has more room) */
 .landscape .page1 {
-  grid-template-columns: 1fr 88mm;
+  grid-template-columns: 1fr 100mm;
   grid-template-rows: auto auto minmax(0, 1fr) auto auto;
-  grid-template-areas: "head head" "map top" "map details" "insets details" "sources details";
+  grid-template-areas: "head top" "map top" "map details" "insets details" "sources details";
 }
 .landscape .top { flex-direction: column; gap: 3mm; }
 .landscape .qr { width: 100%; }
 .landscape .qr-codes { justify-content: flex-start; }
 .landscape .qr figcaption { text-align: start; }
-.landscape .qr-code, .landscape .qr-code svg { width: 25mm; }
-.landscape .qr-code svg { height: 25mm; }
+.landscape .qr-code, .landscape .qr-code svg { width: 22mm; }
+.landscape .qr-code svg { height: 22mm; }
 .landscape .steps ol { columns: 1; }
 .landscape .sheet-2 .steps ol { columns: 2; }   /* full width on page 2 */
 .landscape .page1 > .details .transit, .landscape .page1 > .details .steps { margin-top: 3mm; }
@@ -154,7 +155,7 @@ body:not(.landscape) .page1.has-insets.details-moved .inset-map { height: 62mm; 
   overflow-wrap: anywhere;  /* very long labels wrap inside the fixed width */
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
-.line-badge { display: inline-flex; align-items: center; justify-content: center; gap: .3em; }
+.line-badge { display: inline-flex; align-items: center; justify-content: center; gap: .3em; white-space: nowrap; }
 .line-symbol { height: 1.35em; width: 1.35em; }  /* transparent SVG, no box */
 /* dark line colours: thin light outline that follows the symbol's shape (no box) */
 .on-dark .line-symbol { filter: drop-shadow(0 0 .5px #fff) drop-shadow(0 0 .5px #fff); }
@@ -264,3 +265,10 @@ body:not(.landscape) .page1.has-insets.details-moved .inset-map { height: 62mm; 
    (hanging indent = icon width 1.1em + gap .3em, in the 22pt of the heading) */
 .head h1.with-icon { padding-inline-start: 1.4em; text-indent: -1.4em; }
 .head h1.with-icon + .dest-subtitle { padding-inline-start: calc(22pt * 1.4 + 2pt); }
+
+/* Details squeezed on page 1: slightly smaller and tighter before they move to page 2
+   (print.js, stage 2) */
+.page1.compact > .details { font-size: 9.5pt; }
+.page1.compact > .details .leg { padding: .8mm 0; }
+.page1.compact > .details .transit h2 { margin-bottom: 1mm; }
+.page1.compact > .details .alternatives li { margin-bottom: .5mm; }
