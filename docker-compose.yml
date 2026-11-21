@@ -13,6 +13,10 @@ services:
       TZ: ${TZ:-Europe/Berlin}
     ports:
       - "${APP_PORT:-8420}:8000"
+    # lets the app reach services on the same machine, e.g. selfhost/ (MOTIS, openrouteservice):
+    # TRANSITOUS_BASE_URL=http://host.docker.internal:8421
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./data:/data
     deploy:

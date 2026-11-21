@@ -27,15 +27,15 @@ cd selfhost
 In der `.env` von Wegweiser dann:
 
 ```sh
-TRANSITOUS_BASE_URL=http://<host>:8421
-ORS_BASE_URL=http://<host>:8422/ors
+TRANSITOUS_BASE_URL=http://host.docker.internal:8421
+ORS_BASE_URL=http://host.docker.internal:8422/ors
 ORS_API_KEY=
 TRANSIT_ATTRIBUTION=Datensatz der NVBW GmbH
 TRANSIT_ATTRIBUTION_URL=https://www.nvbw.de/open-data
 ROUTE_ATTRIBUTION=openrouteservice
 ```
 
-`<host>` ist die IP-Adresse des Rechners im internen Netz. Danach Wegweiser neu starten (`docker compose up -d`). Ports lassen sich mit `MOTIS_PORT` und `ORS_PORT` ändern.
+`host.docker.internal` ist der Rechner selbst, wenn Wegweiser auf demselben Rechner läuft (in `docker-compose.yml` eingetragen); sonst dessen IP-Adresse im internen Netz. Danach Wegweiser neu starten (`docker compose up -d`). Vorhandene Routen im Zwischenspeicher stammen noch von den öffentlichen Diensten; sie verfallen nach einigen Tagen von selbst. Ports lassen sich mit `MOTIS_PORT` und `ORS_PORT` ändern.
 
 ## Aktuell halten
 

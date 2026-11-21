@@ -78,6 +78,7 @@ if [ $gtfs_new = 1 ] || [ $osm_new = 1 ] || [ $force = 1 ]; then
   log "MOTIS: läuft wieder"
 else
   log "MOTIS: nichts zu tun"
+  docker compose up -d motis >/dev/null 2>&1   # make sure it runs (e.g. after a reboot or stop)
 fi
 
 if [ $osm_new = 1 ]; then

@@ -1,8 +1,8 @@
 # Self-hosted routing for Wegweiser: MOTIS 2 (public transport) and openrouteservice
 # (walking/car routes). Prepare and update the data with ./update.sh (see README.md here).
 #
-# Wegweiser .env:  TRANSITOUS_BASE_URL=http://<host>:8421
-#                  ORS_BASE_URL=http://<host>:8422/ors   (ORS_API_KEY empty)
+# Wegweiser .env:  TRANSITOUS_BASE_URL=http://host.docker.internal:8421
+#                  ORS_BASE_URL=http://host.docker.internal:8422/ors   (ORS_API_KEY empty)
 name: wegweiser-selfhost
 services:
   motis:
