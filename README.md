@@ -146,7 +146,7 @@ docker compose up -d --build
 
 Die Oberfläche ist danach unter `http://<host>:${APP_PORT:-8420}/` erreichbar. Gedacht ist der Betrieb im internen Netz oder per VPN, nicht öffentlich im Internet.
 
-- Das Image enthält Chromium für die Server-PDFs (rund 1,3 GB). Der Container braucht normal etwa 100 MB Arbeitsspeicher, beim PDF-Export einige hundert MB mehr (Grenze in `docker-compose.yml`: 1 GB).
+- Das Image enthält Chromium für die Server-PDFs (rund 900 MB). Der Container braucht normal etwa 100 MB Arbeitsspeicher, beim PDF-Export einige hundert MB mehr (Grenze in `docker-compose.yml`: 1 GB).
 - Die SQLite-Datenbank liegt unter `./data/` (Volume). Der Container läuft als UID 1000 und macht `./data` beim Start für sich beschreibbar.
 - Die Zeitzone für Datumsangaben auf dem Ausdruck ist `Europe/Berlin` (über `TZ` änderbar).
 - Nach Änderungen an `.env` den Container neu erzeugen: `docker compose up -d`.
