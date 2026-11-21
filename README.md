@@ -35,6 +35,7 @@ Die Sprache der Wegbeschreibung ist pro Ausdruck wählbar, darunter Arabisch, Pe
 Alle Symbole sind eigene, einfache Zeichnungen mit starkem Kontrast, auch für Menschen mit eingeschränktem Sehvermögen und im Schwarz-Weiß-Druck gut erkennbar.
 
 - **Kategorie-Symbole** für Ziele zeigen konkrete Dinge statt Sinnbilder (Zahn, Brille, Stethoskop), ohne Buchstaben. Gestaltet wurden sie nach Erkenntnissen aus der Forschung zu kulturübergreifend verständlichen Piktogrammen. Die Farbe steht für die Gruppe: Gesundheit, Behörden, Bildung/Soziales, Religion, Alltag.
+- **Ohne Kategorie** steht eine Ortsmarke als Umriss vor dem Namen, unbestätigte Ziele tragen in der Oberfläche eine Sanduhr (nicht auf dem Ausdruck).
 - **Haltestellenschilder** je Verkehrsmittel: H für Bus und Straßenbahn, eigene Schilder für Bahn, U-Bahn, Fähre und Seilbahn.
 - **Liniensymbole** für Verkehrsbetriebe, deren Linien Bildzeichen tragen (zurzeit TüBus Tübingen). Sie stehen hinter der Liniennummer in deren Schriftfarbe, wie auf den Bussen.
 
@@ -52,7 +53,16 @@ Standorte (Startpunkte) und Ziele werden einmal angelegt und stehen danach per A
 
 ## Admins und Rechte
 
-Ohne Anmeldung kann jede Person Wegbeschreibungen erstellen und neue Ziele anlegen. Neue Ziele sind sofort nutzbar, tragen aber den Vermerk „unbestätigt“, bis ein Admin sie auf der Admin-Seite bestätigt oder ablehnt. Bis dahin lassen sie sich im selben Browser noch korrigieren.
+Wie viel Rechteverwaltung nötig ist, hängt vom Betrieb ab. Die Betriebsart wird in `.env` mit `AUTH_MODE` gewählt:
+
+| `AUTH_MODE` | Gedacht für | Rechte |
+|---|---|---|
+| `admin` (Standard) | eine Einrichtung oder ein Träger mit gemeinsamer Instanz, auch über Tunnel | Alle erstellen Wegbeschreibungen und schlagen Ziele vor; Admins bestätigen und verwalten (siehe unten) |
+| `off` | den eigenen PC oder ein kleines, vertrauenswürdiges Büronetz | Keine Anmeldung, alle dürfen alles, neue Ziele sind sofort dauerhaft. Die Oberfläche weist darauf hin. Zusammen mit `CLOUDFLARE_TUNNEL_TOKEN` startet Wegweiser nicht. |
+
+Mehrere Organisationen betreiben am besten je eine eigene Instanz (eigener Container, eigene Datenbank); die selbst gehosteten Dienste für Routen und Fahrpläne können sie sich teilen. Benutzerkonten mit Rollen je Standort für größere Träger sind vorbereitet, aber noch nicht umgesetzt.
+
+In der Betriebsart `admin` kann ohne Anmeldung jede Person Wegbeschreibungen erstellen und neue Ziele anlegen. Neue Ziele sind sofort nutzbar, tragen aber den Vermerk „unbestätigt“, bis ein Admin sie auf der Admin-Seite bestätigt oder ablehnt. Bis dahin lassen sie sich im selben Browser noch korrigieren.
 
 Nur Admins können bestehende Ziele und Standorte bearbeiten oder löschen, Standorte anlegen, Ziele bestimmten Standorten zuordnen und die ÖPNV-Standardwerte speichern. Weitere Admins und das eigene Passwort verwaltet man auf der Admin-Seite.
 

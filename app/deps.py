@@ -16,13 +16,14 @@ BASE_DIR = Path(__file__).parent
 def auth_context(request: Request) -> dict:
     """Jinja2 context processor: logged-in admin and the number of destinations awaiting
     approval (shown in the navigation)."""
-    from app.auth import current_admin
-    admin = current_admin(request)
+    from app import auth
+    admin = auth.current_admin(request)
     pending = 0
     if admin is not None:
         with db.get_conn() as conn:
             pending = db.count_pending_destinations(conn)
-    return {"admin": admin, "pending_count": pending}
+    return {"admin": admin, "pending_count": pending, "login_enabled": auth.login_enabled(),
+            "can": lambda action, obj=None: auth.can(request, action, obj)}
 
 
 templates = Jinja2Templates(directory=BASE_DIR / "templates",
@@ -73,3 +74,12 @@ def _require_admin(request: Request):
 
 
 AdminUser = Annotated[db.Admin, Depends(_require_admin)]
+
+
+def Allowed(action: str):
+    """Route parameter type: only continue if the current browser may do `action`
+    (otherwise login page or 404), e.g. `_: Allowed("location.manage")`."""
+    def check(request: Request) -> None:
+        from app.auth import require
+        require(request, action)
+    return Annotated[None, Depends(check)]

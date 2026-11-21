@@ -17,7 +17,7 @@
       <td class="mono">{{ "%.6f"|format(loc.lat) }}, {{ "%.6f"|format(loc.lon) }}</td>
       <td class="actions"><div class="row-actions">
         <a class="button" href="/directions?location_id={{ loc.id }}">{{ t("Route") }}</a>
-        {% if admin %}
+        {% if can('location.manage') %}
         <a class="button secondary" href="/locations/{{ loc.id }}/edit">{{ t("Bearbeiten") }}</a>
         <form method="post" action="/locations/{{ loc.id }}/delete"
               data-confirm="{{ t('Standort „{name}“ wirklich löschen?', name=loc.name) }}"
@@ -34,7 +34,7 @@
 <p class="empty">{{ t("Noch keine Standorte angelegt.") }}</p>
 {% endif %}
 
-{% if admin %}
+{% if can('location.manage') %}
 <section class="card">
   <h2>{% if edit_id %}{{ t("Standort bearbeiten") }}{% else %}{{ t("Neuer Standort") }}{% endif %}</h2>
 

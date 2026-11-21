@@ -5,7 +5,7 @@
 {% block content %}
 <p><a href="/destinations">{{ t("← Zurück zur Zielliste") }}</a></p>
 <h1>{{ heading }}</h1>
-{% if not is_admin %}
+{% if creates_pending %}
 <p class="hint">{% if edit_id %}{{ t("Dieses Ziel ist noch unbestätigt. Bis zur Bestätigung durch einen Admin lässt es sich in diesem Browser noch korrigieren.") }}{% else %}{{ t("Neue Ziele sind sofort nutzbar und werden dauerhaft, sobald ein Admin sie bestätigt.") }}{% endif %}</p>
 {% endif %}
 
@@ -77,7 +77,7 @@
         {% endfor %}
       </div>
     </details>
-    {% if locations and is_admin %}
+    {% if locations and can_assign %}
     <fieldset class="location-checks">
       <legend>{{ t("Standorte, für die das Ziel angeboten wird") }}</legend>
       {% for loc in locations %}

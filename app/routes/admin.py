@@ -38,6 +38,8 @@ def render_dashboard(request: Request, conn, admin: db.Admin, *, errors=None, no
 
 @router.get("/login", response_class=HTMLResponse)
 def login_page(request: Request, conn: DB, next: str = "/admin"):
+    if not auth.login_enabled():
+        raise HTTPException(404)
     if auth.current_admin(request) is not None:
         return RedirectResponse(auth.safe_next(next), status_code=303)
     return templates.TemplateResponse(request, "admin_login.html", {
@@ -49,6 +51,8 @@ def login_page(request: Request, conn: DB, next: str = "/admin"):
 @router.post("/login", response_class=HTMLResponse)
 def login(request: Request, conn: DB, username: Annotated[str, Form()] = "",
           password: Annotated[str, Form()] = "", next: Annotated[str, Form()] = "/admin"):
+    if not auth.login_enabled():
+        raise HTTPException(404)
     username = username.strip()[:100]
     error = None
     if auth.login_locked(username):
@@ -88,6 +92,7 @@ def dashboard(request: Request, conn: DB, admin: AdminUser):
 
 @router.post("/destinations/{destination_id}/approve")
 def approve(request: Request, conn: DB, admin: AdminUser, destination_id: int):
+    auth.require(request, "destination.approve")
     if not db.approve_destination(conn, destination_id, admin.username):
         raise HTTPException(404, translate(get_ui_lang(request), "Ziel nicht gefunden"))
     return RedirectResponse("/admin", status_code=303)

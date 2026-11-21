@@ -124,6 +124,9 @@ ENGLISH: dict[str, str] = {
         "This destination is not approved yet. Until an admin approves it, it can still be "
         "corrected in this browser.",
     "Standorte anlegen und ändern können nur Admins.": "Only admins can create and change locations.",
+    "Betrieb ohne Anmeldung: Alle, die diese Seite öffnen, können alles ändern. Nur auf dem eigenen PC oder in einem vertrauenswürdigen Netz verwenden.":
+        "Running without login: anyone who opens this page can change everything. Only use it "
+        "on your own PC or in a trusted network.",
     # navigation / general
     "Wegbeschreibung": "Directions",
     "Ziele": "Destinations",

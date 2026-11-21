@@ -76,7 +76,8 @@ def render_form(request: Request, conn, *, form: dict, errors=None,
     return templates.TemplateResponse(
         request, "destination_form.html",
         {"form": form, "errors": errors or [], "edit_id": edit_id, "search_query": search_query,
-         "is_admin": auth.current_admin(request) is not None,
+         "can_assign": auth.can(request, "destination.assign_locations"),
+         "creates_pending": auth.creates_pending(request),
          "locations": db.list_locations(conn), "categories": categories.CATEGORIES,
          "category_groups": categories.GROUPS, "name_languages": _name_languages(request)},
         status_code=status_code,
@@ -92,7 +93,7 @@ def destinations_page(request: Request, conn: DB, location_id: str | None = None
     dests = db.list_destinations(conn, filter_id)
     return templates.TemplateResponse(request, "destinations.html", {
         "destinations": dests,
-        "editable": {d.id for d in dests if auth.can_edit_destination(request, conn, d)},
+        "editable": {d.id for d in dests if auth.can(request, "destination.edit", d, conn)},
         "created_pending": request.query_params.get("created") == "pending",
         "locations": locations,
         "location_names": {loc.id: loc.name for loc in locations},
@@ -130,7 +131,7 @@ async def destinations_create(request: Request, conn: DB):
     errors, dest = validate_destination_form(form)
     if errors:
         return render_form(request, conn, form=form, errors=errors, status_code=422)
-    if auth.current_admin(request) is not None:
+    if not auth.creates_pending(request):
         dest_id = db.create_destination(conn, dest)
         db.set_destination_locations(conn, dest_id, form["location_ids"])
         db.set_destination_names(conn, dest_id, form["names"])
@@ -146,13 +147,13 @@ async def destinations_create(request: Request, conn: DB):
     return response
 
 
-def _editable_destination(request: Request, conn, destination_id: int) -> db.Destination:
+def _editable_destination(request: Request, conn, destination_id: int,
+                          action: str = "destination.edit") -> db.Destination:
     """The destination if this browser may change it; 404 if missing, login otherwise."""
     dest = db.get_destination(conn, destination_id)
     if dest is None:
         raise HTTPException(404, translate(get_ui_lang(request), "Ziel nicht gefunden"))
-    if not auth.can_edit_destination(request, conn, dest):
-        auth.require_admin(request)   # raises LoginRequired
+    auth.require(request, action, dest, conn)
     return dest
 
 
@@ -175,7 +176,7 @@ async def destinations_update(request: Request, conn: DB, destination_id: int):
         return render_form(request, conn, form=form, errors=errors, edit_id=destination_id,
                            status_code=422)
     db.update_destination(conn, destination_id, dest)
-    if auth.current_admin(request) is not None:   # creators cannot change the assignment
+    if auth.can(request, "destination.assign_locations"):   # creators cannot change it
         db.set_destination_locations(conn, destination_id, form["location_ids"])
     db.set_destination_names(conn, destination_id, form["names"])
     return RedirectResponse("/destinations", status_code=303)
@@ -183,7 +184,7 @@ async def destinations_update(request: Request, conn: DB, destination_id: int):
 
 @router.post("/{destination_id}/delete")
 def destinations_delete(request: Request, conn: DB, destination_id: int):
-    _editable_destination(request, conn, destination_id)
+    _editable_destination(request, conn, destination_id, "destination.delete")
     db.delete_destination(conn, destination_id)
     back = "/admin" if "/admin" in request.headers.get("referer", "") else "/destinations"
     return RedirectResponse(back, status_code=303)

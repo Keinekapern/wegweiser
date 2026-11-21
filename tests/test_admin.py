@@ -202,3 +202,60 @@ def test_login_page_explains_first_admin(anon_client, tmp_path, monkeypatch):
         conn.execute("DELETE FROM admins")
         conn.commit()
     assert "python -m app.admin_cli create" in anon_client.get("/admin/login").text
+
+
+# --- AUTH_MODE=off: no login, everyone may change everything ---
+
+def test_auth_mode_off_everyone_may_change_everything(client, anon_client, monkeypatch):
+    monkeypatch.setenv("AUTH_MODE", "off")
+    page = anon_client.get("/directions").text
+    assert "Betrieb ohne Anmeldung" in page and "/admin/login" not in page
+    anon_client.post("/locations", data={"name": "EA", "address": "x", "coords": "48.5, 9.0"})
+    anon_client.post("/destinations", data=DEST | {"location_ids": ["1"]})
+    assert _status(1) == "approved"                        # no approval step
+    with db.get_conn() as conn:
+        assert db.get_location(conn, 1).name == "EA"
+        assert db.destination_location_ids(conn)[1] == [1]
+    assert 'name="location_ids"' in anon_client.get("/destinations/1/edit").text
+    anon_client.post("/destinations/1", data=DEST | {"name": "Kinderklinik"})
+    r = anon_client.post("/directions/transit-defaults", data={"max_transfers": "1"},
+                         follow_redirects=False)
+    assert not r.headers.get("location", "").startswith("/admin/login")
+    anon_client.post("/destinations/1/delete")
+    anon_client.post("/locations/1/delete")
+    assert _ids() == []
+    # nothing to administer; an old admin session cookie counts for nothing
+    assert anon_client.get("/admin").status_code == 404
+    assert anon_client.get("/admin/login").status_code == 404
+    assert client.get("/admin").status_code == 404
+
+
+def test_auth_mode_off_refused_behind_tunnel(tmp_path, monkeypatch):
+    monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "t.sqlite"))
+    monkeypatch.setenv("AUTH_MODE", "off")
+    monkeypatch.setenv("CLOUDFLARE_TUNNEL_TOKEN", "secret")
+    from app.main import app
+    with pytest.raises(RuntimeError, match="AUTH_MODE=off"):
+        with TestClient(app):
+            pass
+
+
+def test_invalid_auth_mode(monkeypatch):
+    from app import config
+    monkeypatch.setenv("AUTH_MODE", "users")
+    with pytest.raises(ValueError, match="AUTH_MODE"):
+        config.auth_mode()
+
+
+def test_unknown_action_is_a_bug(client):
+    from starlette.requests import Request
+    with pytest.raises(ValueError, match="unknown action"):
+        auth.can(Request({"type": "http", "headers": [], "query_string": b""}), "everything")
+
+
+def test_auth_mode_off_hides_pending_marks(client, anon_client, monkeypatch):
+    anon_client.post("/destinations", data=DEST)          # pending, created in admin mode
+    monkeypatch.setenv("AUTH_MODE", "off")
+    listing = anon_client.get("/destinations").text
+    assert "pending.svg" not in listing and "unbestätigt" not in listing
+    assert _status(1) == "pending"                         # data unchanged, shows again in admin mode

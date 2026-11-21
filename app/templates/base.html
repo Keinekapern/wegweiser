@@ -29,7 +29,7 @@
     </nav>
     {% if admin %}
     <form method="post" action="/admin/logout" class="logout"><button type="submit" class="link" title="{{ t('Angemeldet als {name}', name=admin.username) }}">{{ t("Abmelden") }}</button></form>
-    {% else %}
+    {% elif login_enabled %}
     <a class="login-link" href="/admin/login?next={{ here|urlencode }}">{{ t("Admin") }}</a>
     {% endif %}
     <button type="button" class="theme-switch" id="theme-switch"
@@ -41,6 +41,9 @@
       {% endfor %}
     </nav>
   </header>
+  {% if not login_enabled %}
+  <p class="open-mode" role="note">{{ t("Betrieb ohne Anmeldung: Alle, die diese Seite öffnen, können alles ändern. Nur auf dem eigenen PC oder in einem vertrauenswürdigen Netz verwenden.") }}</p>
+  {% endif %}
   <main>
     {% block content %}{% endblock %}
   </main>

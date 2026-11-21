@@ -12,6 +12,10 @@ from app.routes import admin, api, destinations, directions, locations, translat
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    # Fail early on a wrong AUTH_MODE, and never run without login behind a public tunnel
+    if config.auth_mode() == "off" and config.tunnel_configured():
+        raise RuntimeError("AUTH_MODE=off together with CLOUDFLARE_TUNNEL_TOKEN: without login "
+                           "everyone reaching the tunnel could change everything. Use AUTH_MODE=admin.")
     db.init_db()
     yield
 

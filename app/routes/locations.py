@@ -4,7 +4,7 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app import categories, db
-from app.deps import DB, AdminUser, templates
+from app.deps import DB, Allowed, templates
 from app.i18n import get_ui_lang, translate
 from app.validation import coordinates_from_form, required_text
 
@@ -48,7 +48,7 @@ def locations_page(request: Request, conn: DB):
 def locations_create(
     request: Request,
     conn: DB,
-    _admin: AdminUser,
+    _: Allowed("location.manage"),
     name: Annotated[str, Form()] = "",
     address: Annotated[str, Form()] = "",
     coords: Annotated[str, Form()] = "",
@@ -64,7 +64,7 @@ def locations_create(
 
 
 @router.get("/{location_id}/edit", response_class=HTMLResponse)
-def locations_edit(request: Request, conn: DB, _admin: AdminUser, location_id: int):
+def locations_edit(request: Request, conn: DB, _: Allowed("location.manage"), location_id: int):
     loc = db.get_location(conn, location_id)
     if loc is None:
         raise HTTPException(404, translate(get_ui_lang(request), "Standort nicht gefunden"))
@@ -76,7 +76,7 @@ def locations_edit(request: Request, conn: DB, _admin: AdminUser, location_id: i
 def locations_update(
     request: Request,
     conn: DB,
-    _admin: AdminUser,
+    _: Allowed("location.manage"),
     location_id: int,
     name: Annotated[str, Form()] = "",
     address: Annotated[str, Form()] = "",
@@ -96,7 +96,7 @@ def locations_update(
 
 
 @router.post("/{location_id}/delete")
-def locations_delete(request: Request, conn: DB, _admin: AdminUser, location_id: int):
+def locations_delete(request: Request, conn: DB, _: Allowed("location.manage"), location_id: int):
     if not db.delete_location(conn, location_id):
         raise HTTPException(404, translate(get_ui_lang(request), "Standort nicht gefunden"))
     return RedirectResponse("/locations", status_code=303)

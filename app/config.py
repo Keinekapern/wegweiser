@@ -90,3 +90,20 @@ def tile_attribution() -> str:
 
 def tile_max_zoom() -> int:
     return int(os.environ.get("TILE_MAX_ZOOM", "").strip() or "19")
+
+
+# Access control: "admin" (default) = anyone may use it and propose destinations, admins
+# approve and edit; "off" = no login, everyone may change everything (own PC or a small
+# trusted network only). See README, "Admins und Rechte".
+AUTH_MODES = ("off", "admin")
+
+
+def auth_mode() -> str:
+    mode = os.environ.get("AUTH_MODE", "").strip().lower() or "admin"
+    if mode not in AUTH_MODES:
+        raise ValueError(f"AUTH_MODE must be one of {', '.join(AUTH_MODES)}, not {mode!r}")
+    return mode
+
+
+def tunnel_configured() -> bool:
+    return bool(os.environ.get("CLOUDFLARE_TUNNEL_TOKEN", "").strip())
