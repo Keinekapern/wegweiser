@@ -154,6 +154,7 @@ body:not(.landscape) .page1.has-insets.details-moved .inset-map { height: 62mm; 
 .leg:last-child { border-bottom: 0; }
 .line-badge {
   flex: none; box-sizing: border-box; width: var(--badge-w); padding: .1rem .4rem; border-radius: 4px; text-align: center;
+  border: .4mm solid transparent;  /* b/w printing colours it black; same size in both modes */
   font-weight: 700; color: var(--line-text, #fff); background: var(--line-color, #1f5fbf);
   overflow-wrap: anywhere;  /* very long labels wrap inside the fixed width */
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
@@ -199,7 +200,7 @@ body:not(.landscape) .page1.has-insets.details-moved .inset-map { height: 62mm; 
 
 /* --- black-and-white printing (toggle in the toolbar) ------------------- */
 .bw .line-badge {
-  background: #fff; color: #000; border: .4mm solid #000;
+  background: #fff; color: #000; border-color: #000;
 }
 .bw .leaflet-marker-pane, .bw .leaflet-tile-pane { filter: grayscale(1); }
 /* category/location symbols: coloured field turns dark, the white motif stays white */
