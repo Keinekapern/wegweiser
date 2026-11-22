@@ -38,7 +38,7 @@ services:
   # Only together with Cloudflare Access (login) - Wegweiser itself has no login.
   # Start with: docker compose --profile tunnel up -d   (setup: README, "Zugriff von außen")
   cloudflared:
-    image: cloudflare/cloudflared:2026.10.7
+    image: cloudflare/cloudflared:2026.11.1
     container_name: wegweiser-cloudflared
     profiles: ["tunnel"]
     restart: unless-stopped
