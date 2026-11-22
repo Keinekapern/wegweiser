@@ -93,7 +93,7 @@ Nicht benötigte Zusätze lässt man weg, indem man den Ordner löscht oder in `
 
 Standorte (Startpunkte) und Ziele werden einmal angelegt und stehen danach per Auswahlliste bereit. Ein neues Ziel sucht man über Name oder Adresse in OpenStreetMap; Adresse, Koordinaten, Telefon, Website, Öffnungszeiten, Kategorie und übersetzte Namen werden vorbefüllt und lassen sich korrigieren. Ziele können einzelnen Standorten zugeordnet werden.
 
-![Liste der Ziele](docs/screenshots/destinations.png)
+![Liste der Ziele, Ansicht ohne Anmeldung](docs/screenshots/destinations.png)
 
 ## Admins und Rechte
 
