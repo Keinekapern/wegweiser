@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
 
   ors:
-    image: openrouteservice/openrouteservice:v10.1.0
+    image: openrouteservice/openrouteservice:v10.1.1
     container_name: wegweiser-ors
     user: "${UID_GID:-1000:1000}"
     ports:
