@@ -7,7 +7,8 @@
 #
 # First run: downloads everything and builds both services. Needs ~8 GB free RAM while
 # building (MOTIS import ~6 GB, ORS build ~5.5 GB, one after the other) and ~6 GB disk.
-# Only touches the containers of this compose project (wegweiser-motis, wegweiser-ors).
+# Only touches the containers of this compose project (wegweiser-motis, wegweiser-ors)
+# and older versions of their images that no container uses.
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -95,6 +96,25 @@ if [ $osm_new = 1 ]; then
 else
   docker compose up -d ors >/dev/null 2>&1
 fi
+
+# Old versions of this project's images (e.g. after a version bump in docker-compose.yml):
+# only the repositories named in our compose file, only versions no container uses
+cleanup_images() {
+  local current repo ref id
+  for current in $(docker compose config --images); do
+    repo=${current%:*}
+    docker images "$repo" --format '{{.Repository}}:{{.Tag}} {{.ID}}' | while read -r ref id; do
+      [ "$ref" = "$current" ] && continue
+      [ -n "$(docker ps -aq --filter "ancestor=$id")" ] && continue
+      if [ "${ref##*:}" = "<none>" ]; then
+        docker image rm "$id" >/dev/null 2>&1 && log "Altes Image entfernt: $repo ($id)"
+      else
+        docker image rm "$ref" >/dev/null 2>&1 && log "Altes Image entfernt: $ref"
+      fi
+    done
+  done
+}
+cleanup_images
 
 # Warn before the timetable runs out (NVBW data usually ends at the next timetable change)
 end=$(python3 - <<'EOF'
