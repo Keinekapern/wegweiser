@@ -131,7 +131,6 @@ select { display: block; width: 100%; margin-top: .25rem; padding: .4rem .5rem; 
 .legs { list-style: none; margin: 0; padding: 0; }
 .leg { display: flex; gap: .75rem; align-items: flex-start; padding: .35rem 0; border-bottom: 1px solid var(--border); }
 .leg:last-child { border-bottom: 0; }
-.leg-icon { width: var(--badge-w); text-align: center; flex: none; }
 .line-badge {
   flex: none; box-sizing: border-box; width: var(--badge-w); padding: .1rem .4rem; border-radius: 4px; text-align: center;
   font-weight: 700; color: var(--line-text, #fff); background: var(--line-color, #1f5fbf);
@@ -349,3 +348,26 @@ a { color: var(--accent); }
 .import-rows td.pick { width: 2rem; }
 .import-rows .old { text-decoration: line-through; color: var(--muted); }
 .import-rows + .buttons, form > .buttons { margin-top: 1rem; }
+
+/* Label arrows with the same outline as the label box: ::before is the outline (1px larger),
+   ::after the white fill on top of it (Leaflet's own arrow is white only) */
+.leaflet-tooltip { --tip-line: #666; border-color: var(--tip-line); box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+.leaflet-tooltip.stop-label { --tip-line: #999; box-shadow: none; }
+.leaflet-container .leaflet-tooltip::after { position: absolute; pointer-events: none; content: ""; border: 6px solid transparent; }
+.leaflet-container .leaflet-tooltip-top::before, .leaflet-container .leaflet-tooltip-bottom::before { border-width: 7px; margin-left: -7px; }
+.leaflet-container .leaflet-tooltip-left::before, .leaflet-container .leaflet-tooltip-right::before { border-width: 7px; margin-top: -7px; }
+.leaflet-container .leaflet-tooltip-top::before { margin-bottom: -14px; border-top-color: var(--tip-line); }
+.leaflet-container .leaflet-tooltip-bottom::before { margin-top: -14px; border-bottom-color: var(--tip-line); }
+.leaflet-container .leaflet-tooltip-left::before { margin-right: -14px; border-left-color: var(--tip-line); }
+.leaflet-container .leaflet-tooltip-right::before { margin-left: -14px; border-right-color: var(--tip-line); }
+.leaflet-container .leaflet-tooltip-top::after { bottom: 0; margin-bottom: -12px; left: calc(50% + var(--arrow-dx, 0px)); margin-left: -6px; border-top-color: #fff; }
+.leaflet-container .leaflet-tooltip-bottom::after { top: 0; margin-top: -12px; left: calc(50% + var(--arrow-dx, 0px)); margin-left: -6px; border-bottom-color: #fff; }
+.leaflet-container .leaflet-tooltip-left::after { right: 0; margin-right: -12px; top: calc(50% + var(--arrow-dy, 0px)); margin-top: -6px; border-left-color: #fff; }
+.leaflet-container .leaflet-tooltip-right::after { left: 0; margin-left: -12px; top: calc(50% + var(--arrow-dy, 0px)); margin-top: -6px; border-right-color: #fff; }
+/* Label text centred on its icon: a block (no baseline strut below it) and a line box
+   only as tall as the font, so the capitals sit in the middle */
+.leaflet-tooltip .dest-label { display: flex; line-height: 1.1; }
+.leaflet-tooltip .dest-label span { position: relative; top: .07em; }
+/* walking legs: a badge as wide as the line badges, with the walking figure */
+.walk-badge { --line-color: #1f5fbf; --line-text: #fff; }
+.walk-badge img { display: block; height: 1.3em; width: auto; }

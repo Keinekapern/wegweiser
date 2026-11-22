@@ -24,7 +24,7 @@
     {% for leg in route.legs %}
     {% if leg.kind == "walk" %}
     <li class="leg walk">
-      <span class="leg-icon" aria-hidden="true"><img class="walk-icon" src="/static/walk.svg" alt=""></span>
+      <span class="line-badge walk-badge" aria-hidden="true"><img src="/static/walk-figure.svg" alt=""></span>
       <span>{% if loop.last %}{{ dt("walk_to_dest") }}{% else %}{{ dt.markup("walk_to_stop", stop=stop_name(leg.to_name, route.legs[loop.index].mode)) }}{% endif %}
         <span class="dur">({{ dt.duration(leg.duration_s) }})</span></span>
     </li>

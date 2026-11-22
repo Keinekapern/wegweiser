@@ -84,7 +84,9 @@
       img.alt = "";
       el.append(img);
     }
-    el.append(document.createTextNode(text));
+    const name = document.createElement("span");
+    name.textContent = text;
+    el.append(name);
     return el;
   };
   let bounds = L.latLngBounds([start, end]);
