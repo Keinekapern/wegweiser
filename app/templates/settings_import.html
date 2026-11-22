@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ t("Import prüfen") }} – {{ app_name }}{% endblock %}
+{% macro rows_table(rows, with_changes=false) -%}
+<table class="list import-rows">
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      {% if with_changes %}<td class="pick"><input type="checkbox" name="update" value="{{ r.kind }}:{{ r.line }}" id="u-{{ r.kind }}-{{ r.line }}" checked></td>{% endif %}
+      <td>{% if with_changes %}<label for="u-{{ r.kind }}-{{ r.line }}">{{ r.label }}</label>{% else %}{{ r.label }}{% endif %}
+        {% if r.values.address %}<div class="hint small">{{ r.values.address }}</div>{% endif %}</td>
+      {% if with_changes %}
+      <td class="small">{% for f, old, new in r.changes %}
+        <div><strong>{{ t(field_label(f)) }}:</strong>
+          {% if f == "category" %}{{ t(category_label(old)) or "–" }} → {{ t(category_label(new)) or "–" }}
+          {% else %}<span class="old">{{ old or "–" }}</span> → {{ new or "–" }}{% endif %}</div>
+      {% endfor %}</td>
+      {% elif r.errors %}
+      <td class="small">{% for e in r.errors %}<div>{{ t(e) }}</div>{% endfor %}</td>
+      {% endif %}
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{%- endmacro %}
+{% block content %}
+<h1>{{ t("Import prüfen") }}</h1>
+<p class="hint">{{ plan.filename }}</p>
+
+<form method="post" action="/settings/data/import/{{ plan.token }}">
+{% for kind, title in [("location", "Standorte"), ("destination", "Ziele")] %}
+  {% set new, same, changed, invalid = plan.of(kind, "new"), plan.of(kind, "same"), plan.of(kind, "changed"), plan.of(kind, "invalid") %}
+  {% if new or same or changed or invalid %}
+  <h2>{{ t(title) }}</h2>
+  {% if new %}<h3>{{ t("Neu: {n} – werden angelegt", n=new|length) }}</h3>{{ rows_table(new) }}{% endif %}
+  {% if changed %}<h3>{{ t("Schon vorhanden, aber abweichend: {n} – angehakte werden aktualisiert", n=changed|length) }}</h3>{{ rows_table(changed, true) }}{% endif %}
+  {% if same %}<details><summary>{{ t("Schon vorhanden und gleich: {n} – bleiben unverändert", n=same|length) }}</summary>{{ rows_table(same) }}</details>{% endif %}
+  {% if invalid %}<h3>{{ t("Fehlerhaft: {n} – werden übersprungen", n=invalid|length) }}</h3>{{ rows_table(invalid) }}{% endif %}
+  {% endif %}
+{% endfor %}
+{% if plan.unknown_locations %}
+<p class="notice warn">{{ t("Diese Standorte aus der Datei gibt es hier nicht; die Zuordnung zu ihnen wird übersprungen:") }} {{ plan.unknown_locations|sort|join(", ") }}</p>
+{% endif %}
+  <div class="buttons">
+    <button type="submit">{{ t("Importieren") }}</button>
+    <a class="button secondary" href="/settings/data">{{ t("Abbrechen") }}</a>
+  </div>
+</form>
+{% endblock %}

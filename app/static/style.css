@@ -346,3 +346,6 @@ a { color: var(--accent); }
 .export-form .dest-checks .dest-icon { margin-inline-start: .2em; }
 #export-count.warn { color: var(--danger); font-weight: 600; }
 .export-status progress { width: 100%; height: 1rem; }
+.import-rows td.pick { width: 2rem; }
+.import-rows .old { text-decoration: line-through; color: var(--muted); }
+.import-rows + .buttons, form > .buttons { margin-top: 1rem; }

@@ -66,6 +66,15 @@ Die vollständige Übersicht liegt in der laufenden App unter `/static/symbol-pr
 
 ![Schwarz-Weiß-Druck](docs/screenshots/print-bw.png)
 
+### Import und Export
+
+Unter „Admin → Einstellungen → Ziele und Standorte importieren und exportieren“ lassen sich die Daten als Datei sichern, in eine andere Wegweiser-Instanz übernehmen oder in Excel bearbeiten:
+
+- **JSON** enthält alles verlustfrei (übersetzte Namen, Kategorien, auf Wunsch Standorte und Zuordnungen) und eignet sich für den Austausch zwischen Instanzen.
+- **CSV** öffnet Excel direkt: Semikolon als Trennzeichen, Koordinaten als „Breite, Länge“ in einer Spalte, übersetzte Namen als Spalten „Name (en)“ usw. Beim Import werden auch englische Spaltennamen, Komma als Trennzeichen und Excels Windows-Zeichensatz erkannt.
+- Standorte (Adressen von Unterkünften) sind nur mit Häkchen im Export enthalten.
+- Vor dem Import zeigt eine **Vorschau**, was neu ist, was es schon gibt (gleiches OpenStreetMap-Objekt, sonst gleicher Name und gleiche Adresse) und was abweicht; abweichende Einträge werden nur aktualisiert, wenn sie angehakt sind. Fehlerhafte Zeilen werden mit Grund übersprungen.
+
 ## Regionale Zusätze
 
 Was nur für eine Stadt oder einen Verkehrsverbund gilt, liegt als Zusatz in `app/regions/<name>/`: eine `region.json` mit Gebiet, Verkehrsmitteln und je Linie Farbe und Bildzeichen, dazu die Symbol-Dateien. Mitgeliefert ist `tuebingen` (TüBus: Bildzeichen wie auf den Busanzeigen, Linienfarben aus dem Liniennetzplan, auch für Linien, die Subunternehmer fahren). Eine Linie bekommt Farbe und Symbol, wenn ihre Einstiegshaltestelle im Gebiet liegt.

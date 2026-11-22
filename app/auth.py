@@ -160,6 +160,7 @@ ACTIONS = (
     "settings.transit_defaults",
     "settings.languages",            # which directions languages are offered
     "settings.backup",               # list, create and download database backups
+    "data.transfer",                 # export and import destinations and locations
     "admin.panel",                   # admin page: approvals, admin accounts
     "export.pdf",                    # a single PDF of a printout
     "export.bulk",                   # ZIP of many PDFs (server load, tile requests)

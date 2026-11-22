@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ t("Import und Export") }} – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>{{ t("Import und Export") }}</h1>
+<p class="hint">{{ t("Ziele und Standorte als Datei sichern, in eine andere Wegweiser-Instanz übernehmen oder in einer Tabellenkalkulation bearbeiten. Zurzeit: {d} Ziele, {l} Standorte.", d=counts.destinations, l=counts.locations) }}</p>
+
+{% if errors %}<ul class="errors" role="alert">{% for e in errors %}<li>{{ t(e) }}</li>{% endfor %}</ul>{% endif %}
+{% if result %}<p class="notice" role="status">{{ t("Import abgeschlossen: {a} neu, {u} aktualisiert, {s} übersprungen.", a=result.added, u=result.updated, s=result.skipped) }}</p>{% endif %}
+
+<section class="card">
+  <h2>{{ t("Export") }}</h2>
+  <form method="get" action="/settings/data/export" class="form">
+    <label class="check"><input type="checkbox" name="locations" value="1"> {{ t("Standorte und Zuordnungen mitexportieren") }}</label>
+    <p class="hint small">{{ t("Standorte sind Adressen von Unterkünften: nur mitexportieren, wenn die Datei in vertrauenswürdigen Händen bleibt.") }}</p>
+    <label class="check"><input type="checkbox" name="pending" value="1"> {{ t("Unbestätigte Ziele mitexportieren") }}</label>
+    <div class="buttons">
+      <button type="submit" name="format" value="json">{{ t("Alles als JSON") }}</button>
+      <button type="submit" name="format" value="csv" class="secondary">{{ t("Ziele als CSV") }}</button>
+      <button type="submit" name="format" value="csv-locations" class="secondary">{{ t("Standorte als CSV") }}</button>
+    </div>
+    <p class="hint small">{{ t("JSON enthält alles verlustfrei und eignet sich für den Austausch zwischen Instanzen. CSV öffnet Excel direkt (Trennzeichen Semikolon, Koordinaten als „Breite, Länge“ in einer Spalte, übersetzte Namen als eigene Spalten).") }}</p>
+  </form>
+</section>
+
+<section class="card">
+  <h2>{{ t("Import") }}</h2>
+  <form method="post" action="/settings/data/import" enctype="multipart/form-data" class="form">
+    <label>{{ t("Datei (JSON oder CSV, höchstens {n} MB)", n=max_mb) }}
+      <input type="file" name="file" accept=".json,.csv,application/json,text/csv" required>
+    </label>
+    <div class="buttons"><button type="submit">{{ t("Datei prüfen") }}</button></div>
+    <p class="hint small">{{ t("Vor dem Import zeigt eine Vorschau, was neu ist, was es schon gibt und was abweicht. Abweichende Einträge werden nur aktualisiert, wenn sie dort angehakt sind. Als vorhanden gilt ein Eintrag mit demselben OpenStreetMap-Objekt, sonst mit gleichem Namen und gleicher Adresse.") }}</p>
+  </form>
+</section>
+{% endblock %}
