@@ -12,6 +12,11 @@ updates:
   - package-ecosystem: "docker"            # base image of the Dockerfile
     directory: "/"
     schedule: { interval: "weekly", day: "monday" }
+    ignore:
+      # a new Python version (3.12 -> 3.13 ...) is done by hand, with a check of the
+      # Chromium libraries in the Dockerfile; Debian/Python patch updates come via rebuild.sh
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
   - package-ecosystem: "docker-compose"    # cloudflared, MOTIS, openrouteservice
     directories: ["/", "/selfhost"]

@@ -177,7 +177,7 @@ Die Oberfläche ist danach unter `http://<host>:${APP_PORT:-8420}/` erreichbar. 
 
 ### Aktualisieren
 
-- **Neue Versionen** von Python-Paketen und Docker-Images (Basis-Image, MOTIS, openrouteservice, cloudflared) schlägt Dependabot wöchentlich als Pull Request vor, Sicherheitsupdates sofort. Jeder Pull Request durchläuft automatisch die Tests (GitHub Actions). Nach dem Übernehmen auf dem Server `git pull` und `./rebuild.sh`.
+- **Neue Versionen** von Python-Paketen und Docker-Images (Basis-Image, MOTIS, openrouteservice, cloudflared) schlägt Dependabot wöchentlich als Pull Request vor, Sicherheitsupdates sofort. Jeder Pull Request durchläuft automatisch die Tests (GitHub Actions); dabei wird auch das Docker-Image gebaut und darin ein PDF erzeugt. Neue Python-Versionen des Basis-Images (3.12 → 3.13 …) schlägt Dependabot nicht vor, die macht man gezielt von Hand. Nach dem Übernehmen auf dem Server `git pull` und `./rebuild.sh`.
 - **Sicherheitsupdates von Debian und Python im Basis-Image** holt `./rebuild.sh`: neu bauen mit `--pull`, neu starten, alte Wegweiser-Images aufräumen (nur diese, erkennbar am Label `org.wegweiser.app`). Am besten wöchentlich per Cron, z. B. `30 4 * * 1 /pfad/zu/wegweiser/rebuild.sh >> /pfad/zu/wegweiser/rebuild.log 2>&1`.
 - Leaflet und die Noto-Schriften liegen fest im Repo (`app/static/vendor/`) und werden von Hand aktualisiert.
 

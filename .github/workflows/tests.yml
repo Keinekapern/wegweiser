@@ -21,3 +21,34 @@ jobs:
       - run: pip install -r requirements-dev.txt
       # no browser needed: the PDF tests use a fake renderer, external APIs are mocked
       - run: python -m pytest -q
+
+  # Builds the Docker image and makes a real PDF in it: catches a base-image or
+  # Playwright update that breaks Chromium. No external requests: no routing key
+  # (no route), tiles from an unreachable address (map without tiles).
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build image
+        run: docker build -t wegweiser-ci .
+      - name: Start container
+        run: |
+          docker run -d --name ww -p 8000:8000 \
+            -e AUTH_MODE=off -e BACKUP_KEEP=0 -e APP_CONTACT=ci@example.org \
+            -e TILE_URL='http://127.0.0.1:9/{z}/{x}/{y}.png' wegweiser-ci
+          for i in $(seq 1 30); do curl -sf http://localhost:8000/healthz && break; sleep 2; done
+      - name: Create a location and a destination
+        run: |
+          curl -sf -o /dev/null -d 'name=Beispiel-Unterkunft&address=Beispielweg 1, 79098 Freiburg&coords=47.995, 7.849' http://localhost:8000/locations
+          curl -sf -o /dev/null -d 'name=Beispielklinik&address=Musterstraße 2, 79106 Freiburg&coords=48.005, 7.835&phone=&website=&opening_hours=&google_maps_url=&note=&osm_type=&osm_id=&category=hospital' http://localhost:8000/destinations
+      - name: Render PDFs (Latin and Arabic script)
+        run: |
+          for lang in de ar; do
+            curl -sf -o out-$lang.pdf "http://localhost:8000/directions/pdf?location_id=1&destination_id=1&profile=foot-walking&lang=$lang"
+            head -c 5 out-$lang.pdf | grep -q '%PDF-'
+            test "$(stat -c %s out-$lang.pdf)" -gt 20000
+            echo "$lang: $(stat -c %s out-$lang.pdf) bytes"
+          done
+      - name: Container log
+        if: always()
+        run: docker logs ww
