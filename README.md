@@ -1,8 +1,16 @@
 # Wegweiser
 
-Wegweiser erstellt **druckfertige Wegbeschreibungen auf A4**: von festen Standorten, zum Beispiel einer Unterkunft für Geflüchtete, zu Krankenhäusern, Arztpraxen, Apotheken oder Behörden in der Umgebung. Der Ausdruck ist für Menschen gedacht, die die Stadt und oft auch die Sprache noch nicht kennen. Er zeigt den Weg auf einer Karte, die Verbindung mit Bus und Bahn, und er lässt sich in viele Sprachen umstellen.
+Wegweiser erstellt **leicht verständliche Wegbeschreibungen zum Ausdrucken**, für Menschen, die wenig Deutsch sprechen oder nicht gut lesen können: zum Beispiel geflüchtete Menschen, die neu in einer Stadt sind und den Weg zum Arzt, zur Apotheke, ins Krankenhaus oder zur Behörde finden müssen. Ziel ist eine barrierearme Hilfe, mit der Mitarbeitende in Unterkünften, Beratungsstellen oder Ehrenamtliche solche Wege schnell und verlässlich mitgeben können.
 
-Das Werkzeug ersetzt einen mühsamen Ablauf: Google-Maps-Druckansicht, Screenshot in eine Word-Vorlage, Überschrift anpassen, QR-Code einfügen. Es läuft selbst gehostet im eigenen Netz, ohne Konto und ohne Tracking.
+Dafür setzt der Ausdruck auf Bilder statt Text, wo immer es geht:
+
+- **Karte** mit dem Weg, Start und Ziel, bei Bus und Bahn zusätzlich vergrößerte Karten der Fußwege zur ersten und von der letzten Haltestelle
+- **Symbole** statt Worte: für die Art der Einrichtung, die Haltestellen, die Verkehrsmittel und, wo es sie gibt, die Bildzeichen der Buslinien
+- **Linienfarben und -nummern** wie an der Haltestelle und auf dem Bus, Takt statt Abfahrtszeiten
+- **in 28 Sprachen**, auch Arabisch, Persisch, Tigrinya, Ukrainisch oder Türkisch; die deutschen Namen von Haltestellen und Einrichtungen bleiben stehen, damit man sie auf den Schildern wiederfindet
+- **QR-Codes**, mit denen sich das Ziel in der eigenen Karten-App öffnen lässt
+
+Wegweiser ist Open Source und läuft selbst gehostet im eigenen Netz, ohne Konto für die Nutzenden und ohne Tracking. An externe Dienste gehen nur Adressen von Einrichtungen, nie Daten über Menschen.
 
 ![Druckansicht: Wegbeschreibung mit Straßenbahn von einer Unterkunft zum Kinder- und Jugendklinikum](docs/screenshots/print.png)
 
