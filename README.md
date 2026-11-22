@@ -175,6 +175,12 @@ Die Oberfläche ist danach unter `http://<host>:${APP_PORT:-8420}/` erreichbar. 
 - Die Zeitzone für Datumsangaben auf dem Ausdruck ist `Europe/Berlin` (über `TZ` änderbar).
 - Nach Änderungen an `.env` den Container neu erzeugen: `docker compose up -d`.
 
+### Aktualisieren
+
+- **Neue Versionen** von Python-Paketen und Docker-Images (Basis-Image, MOTIS, openrouteservice, cloudflared) schlägt Dependabot wöchentlich als Pull Request vor, Sicherheitsupdates sofort. Jeder Pull Request durchläuft automatisch die Tests (GitHub Actions). Nach dem Übernehmen auf dem Server `git pull` und `./rebuild.sh`.
+- **Sicherheitsupdates von Debian und Python im Basis-Image** holt `./rebuild.sh`: neu bauen mit `--pull`, neu starten, alte Wegweiser-Images aufräumen (nur diese, erkennbar am Label `org.wegweiser.app`). Am besten wöchentlich per Cron, z. B. `30 4 * * 1 /pfad/zu/wegweiser/rebuild.sh >> /pfad/zu/wegweiser/rebuild.log 2>&1`.
+- Leaflet und die Noto-Schriften liegen fest im Repo (`app/static/vendor/`) und werden von Hand aktualisiert.
+
 ### Zugriff von außen
 
 Wegweiser hat keine eigene Anmeldung. Für Zugriff von außerhalb des internen Netzes deshalb entweder ein VPN nutzen oder einen Cloudflare Tunnel **zusammen mit Cloudflare Access**: Dann meldet man sich mit einem Code per E-Mail an, nur freigegebene Adressen kommen durch, und am Router wird kein Port geöffnet. Voraussetzung ist eine eigene Domain, deren DNS bei Cloudflare liegt; Cloudflare Zero Trust ist bis 50 Nutzer kostenlos.

@@ -1,5 +1,8 @@
 FROM python:3.12-slim
 
+# rebuild.sh removes old, unused images with this label only (never other images)
+LABEL org.wegweiser.app="wegweiser"
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     DATABASE_PATH=/data/wegweiser.sqlite \

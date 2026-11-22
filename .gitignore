@@ -11,3 +11,4 @@ selfhost/motis/*
 selfhost/ors/
 selfhost/*.log
 backups/
+rebuild.log
