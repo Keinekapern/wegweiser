@@ -199,7 +199,7 @@ def client(tmp_path, monkeypatch, fake_nominatim, fake_ors, fake_transit):
         # Logged in as admin: most tests exercise editing; anon_client is a browser without login
         from app import auth, db
         with db.get_conn() as conn:
-            db.create_admin(conn, ADMIN_USER, auth.hash_password(ADMIN_PASSWORD))
+            db.create_account(conn, ADMIN_USER, auth.hash_password(ADMIN_PASSWORD))
         r = c.post("/admin/login", data={"username": ADMIN_USER, "password": ADMIN_PASSWORD},
                    follow_redirects=False)
         assert r.status_code == 303, r.text

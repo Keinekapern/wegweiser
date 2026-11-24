@@ -1,17 +1,30 @@
 {% extends "base.html" %}
-{% block title %}{{ t("Admin") }} – {{ app_name }}{% endblock %}
+{% block title %}{{ t("Konto") if not me.is_admin else t("Admin") }} – {{ app_name }}{% endblock %}
+{% macro location_list(ids) -%}
+  {%- if ids %}{% for lid in ids %}{{ location_names.get(lid, "?") }}{% if not loop.last %}, {% endif %}{% endfor %}
+  {%- else %}<span class="hint">{{ t("alle") }}</span>{% endif -%}
+{%- endmacro %}
 {% block content %}
 <div class="page-head">
-  <h1>{{ t("Admin") }}</h1>
-  <span class="hint">{{ t("Angemeldet als {name}", name=me.username) }}</span>
+  <h1>{{ t("Konto") if not me.is_admin else t("Admin") }}</h1>
+  <span class="hint">{{ t("Angemeldet als {name}", name=me.username) }}{% if roles_enabled %} · {{ t(role_labels[me.role]) }}{% if me.location_ids %} · {{ location_list(me.location_ids) }}{% endif %}{% endif %}</span>
 </div>
 
 {% if errors %}<ul class="errors" role="alert">{% for e in errors %}<li>{{ t(e) }}</li>{% endfor %}</ul>{% endif %}
-{% if notice %}<p class="notice" role="status">{{ t(notice) }}</p>{% endif %}
+{% if notice %}<p class="notice" role="status">{{ t(notice) }}{% if new_password %} <code class="secret">{{ new_password }}</code>{% endif %}</p>{% endif %}
 
+{% if me.must_change_password %}
+<section class="card">
+  <h2>{{ t("Bitte zuerst ein eigenes Passwort festlegen") }}</h2>
+  <p class="hint">{{ t("Dieses Konto hat noch das Startpasswort. Danach geht es normal weiter.") }}</p>
+  {% include "_password_form.html" %}
+</section>
+{% else %}
+
+{% if may_approve %}
 <h2>{{ t("Neue Ziele zur Bestätigung") }}</h2>
 {% if pending %}
-<p class="hint">{{ t("Diese Ziele wurden ohne Anmeldung angelegt. Sie sind schon nutzbar, werden aber erst nach der Bestätigung dauerhaft. Beim Bestätigen am besten Adresse, Kategorie und Standorte prüfen.") }}</p>
+<p class="hint">{{ t("Diese Ziele wurden vorgeschlagen. Sie sind schon nutzbar, werden aber erst nach der Bestätigung dauerhaft. Beim Bestätigen am besten Adresse, Kategorie und Standorte prüfen.") }}</p>
 <table class="list">
   <thead><tr><th>{{ t("Name") }}</th><th>{{ t("Adresse") }}</th><th>{{ t("Standorte") }}</th><th>{{ t("Angelegt") }}</th><th></th></tr></thead>
   <tbody>
@@ -19,11 +32,7 @@
     <tr>
       <td>{{ d.name }}{% if d.note %}<div class="hint small">{{ d.note }}</div>{% endif %}</td>
       <td>{{ d.address }}</td>
-      <td class="small">
-        {% set assigned = assignments.get(d.id, []) %}
-        {% if assigned %}{% for lid in assigned %}{{ location_names[lid] }}{% if not loop.last %}, {% endif %}{% endfor %}
-        {% else %}<span class="hint">{{ t("alle") }}</span>{% endif %}
-      </td>
+      <td class="small">{{ location_list(assignments.get(d.id, [])) }}</td>
       <td class="small">{{ dt_local(created) }}</td>
       <td class="actions"><div class="row-actions">
         <form method="post" action="/admin/destinations/{{ d.id }}/approve">
@@ -43,51 +52,54 @@
 {% else %}
 <p class="empty">{{ t("Keine Ziele warten auf Bestätigung.") }}</p>
 {% endif %}
+{% if not me.is_admin %}<p class="hint">{{ t("Ziele, die keinem Standort zugeordnet sind (für alle Standorte), bestätigen Admins.") }}</p>{% endif %}
+{% endif %}
 
+{% if can('settings.languages') %}
 <section class="card">
   <h2>{{ t("Einstellungen") }}</h2>
   <p><a href="/settings/languages">{{ t("Sprachen der Wegbeschreibung auswählen") }}</a></p>
   <p><a href="/settings/backup">{{ t("Sicherung der Datenbank") }}</a></p>
   <p><a href="/settings/data">{{ t("Ziele und Standorte importieren und exportieren") }}</a></p>
 </section>
+{% endif %}
 
+{% if can('accounts.manage') %}
 <section class="card">
-  <h2>{{ t("Admins") }}</h2>
+  <h2>{{ t("Konten") if roles_enabled else t("Admins") }}</h2>
   <table class="list">
+    {% if roles_enabled %}<thead><tr><th>{{ t("Benutzername") }}</th><th>{{ t("Rolle") }}</th><th>{{ t("Standorte") }}</th><th></th></tr></thead>{% endif %}
     <tbody>
-    {% for a in admins %}
+    {% for a in accounts %}
       <tr>
-        <td>{{ a.username }}{% if a.id == me.id %} <span class="badge">{{ t("angemeldet") }}</span>{% endif %}</td>
+        <td>{{ a.username }}{% if a.id == me.id %} <span class="badge">{{ t("angemeldet") }}</span>{% endif %}
+          {%- if a.must_change_password %} <span class="badge pending">{{ t("Startpasswort") }}</span>{% endif %}</td>
+        {% if roles_enabled %}
+        <td>{{ t(role_labels[a.role]) }}</td>
+        <td class="small">{% if a.role != "admin" %}{{ location_list(a.location_ids) }}{% endif %}</td>
+        {% endif %}
         <td class="actions"><div class="row-actions">
-          {% if a.id != me.id %}
-          <form method="post" action="/admin/users/{{ a.id }}/delete"
-                data-confirm="{{ t('Admin „{name}“ wirklich löschen?', name=a.username) }}"
-                onsubmit="return confirm(this.dataset.confirm);">
-            <button type="submit" class="danger">{{ t("Löschen") }}</button>
-          </form>
-          {% endif %}
-      </div></td>
+          {% if a.id != me.id %}<a class="button secondary" href="/admin/users/{{ a.id }}">{{ t("Bearbeiten") }}</a>{% endif %}
+        </div></td>
       </tr>
     {% endfor %}
     </tbody>
   </table>
-  <h3>{{ t("Admin hinzufügen") }}</h3>
+  <h3>{{ t("Konto hinzufügen") if roles_enabled else t("Admin hinzufügen") }}</h3>
   <form method="post" action="/admin/users" class="form">
-    <label>{{ t("Benutzername") }}<input name="username" required autocomplete="off"></label>
-    <label>{{ t("Passwort") }}<input name="password" type="password" required minlength="{{ min_password }}" autocomplete="new-password"></label>
-    <label>{{ t("Passwort wiederholen") }}<input name="repeat" type="password" required minlength="{{ min_password }}" autocomplete="new-password"></label>
+    <label>{{ t("Benutzername") }}<input name="username" required autocomplete="off" value="{{ form.username or '' }}"></label>
+    {% if roles_enabled %}{% include "_role_fields.html" %}{% endif %}
+    <label>{{ t("Startpasswort") }}<input name="password" autocomplete="off" minlength="{{ min_password }}"
+           placeholder="{{ t('leer lassen: wird erzeugt') }}"></label>
+    <p class="hint">{{ t("Das Startpasswort muss beim ersten Anmelden geändert werden.") }}</p>
     <div class="buttons"><button type="submit">{{ t("Anlegen") }}</button></div>
   </form>
 </section>
+{% endif %}
 
 <section class="card">
   <h2>{{ t("Eigenes Passwort ändern") }}</h2>
-  <form method="post" action="/admin/password" class="form">
-    <label>{{ t("Bisheriges Passwort") }}<input name="current" type="password" required autocomplete="current-password"></label>
-    <label>{{ t("Neues Passwort") }}<input name="password" type="password" required minlength="{{ min_password }}" autocomplete="new-password"></label>
-    <label>{{ t("Passwort wiederholen") }}<input name="repeat" type="password" required minlength="{{ min_password }}" autocomplete="new-password"></label>
-    <div class="buttons"><button type="submit">{{ t("Passwort ändern") }}</button></div>
-  </form>
-  <p class="hint">{{ t("Nach dem Ändern werden alle anderen Anmeldungen dieses Kontos beendet.") }}</p>
+  {% include "_password_form.html" %}
 </section>
+{% endif %}
 {% endblock %}

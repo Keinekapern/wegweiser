@@ -1,9 +1,11 @@
-"""Manage admin accounts on the server (the first one cannot be created in the browser).
+"""Manage accounts on the server (the first admin cannot be created in the browser).
 
-    python -m app.admin_cli create <username>     asks for the password
-    python -m app.admin_cli password <username>   new password, ends that admin's sessions
+    python -m app.admin_cli create <username>     new admin, asks for the password
+    python -m app.admin_cli password <username>   new password, ends that account's sessions
     python -m app.admin_cli delete <username>
-    python -m app.admin_cli list
+    python -m app.admin_cli list                  all accounts with their role
+
+Further accounts (with roles in AUTH_MODE=users) are created on the admin page.
 
 In Docker: docker compose exec -u appuser wegweiser python -m app.admin_cli create <username>
 """
@@ -34,27 +36,27 @@ def main(argv: list[str]) -> int:
     command, name = argv[0], (argv[1].strip() if len(argv) > 1 else "")
     with db.get_conn() as conn:
         db.migrate(conn)
-        found = db.get_admin_credentials(conn, name) if name else None
+        found = db.get_account_credentials(conn, name) if name else None
         if command == "list":
-            for admin in db.list_admins(conn):
-                print(admin.username)
+            for account in db.list_accounts(conn):
+                print(f"{account.username}\t{account.role}")
             return 0
         if command == "create":
             if found:
-                print(f"Admin „{name}“ gibt es schon.")
+                print(f"Konto „{name}“ gibt es schon.")
                 return 1
-            db.create_admin(conn, name, auth.hash_password(_ask_password()))
+            db.create_account(conn, name, auth.hash_password(_ask_password()))
             print(f"Admin „{name}“ angelegt.")
             return 0
         if not found:
-            print(f"Admin „{name}“ nicht gefunden.")
+            print(f"Konto „{name}“ nicht gefunden.")
             return 1
         if command == "password":
-            db.set_admin_password(conn, found[0].id, auth.hash_password(_ask_password()))
+            db.set_account_password(conn, found[0].id, auth.hash_password(_ask_password()))
             print("Passwort geändert, bestehende Anmeldungen beendet.")
         else:
-            db.delete_admin(conn, found[0].id)
-            print(f"Admin „{name}“ gelöscht.")
+            db.delete_account(conn, found[0].id)
+            print(f"Konto „{name}“ gelöscht.")
     return 0
 
 

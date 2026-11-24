@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import config, db
+from app import auth
 from app.auth import LoginRequired, login_url
 from app.services import backup
 from app.deps import BASE_DIR
@@ -27,6 +28,18 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title=config.APP_NAME, lifespan=lifespan)
+
+
+@app.middleware("http")
+async def access_gate(request: Request, call_next):
+    """AUTH_MODE=users: login page only until logged in; start passwords must be changed
+    first (see auth.gate)."""
+    target = auth.gate(request)
+    if target is None:
+        return await call_next(request)
+    if request.url.path.startswith("/api/"):
+        return JSONResponse({"detail": "login required"}, status_code=401)
+    return RedirectResponse(target, status_code=303)
 
 
 @app.exception_handler(LoginRequired)

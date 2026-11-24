@@ -204,6 +204,18 @@ MIGRATIONS: list[str] = [
     DROP TABLE line_symbols;
     DROP TABLE line_symbol_sets;
     """,
+    # 13: accounts get a role and locations (AUTH_MODE=users, see app/auth.py). The tables
+    # keep their old names "admins"/"admin_sessions"; existing accounts become admins.
+    """
+    ALTER TABLE admins ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'
+        CHECK (role IN ('admin', 'manager', 'staff'));
+    ALTER TABLE admins ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0;
+    CREATE TABLE admin_locations (
+        admin_id    INTEGER NOT NULL REFERENCES admins(id) ON DELETE CASCADE,
+        location_id INTEGER NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
+        PRIMARY KEY (admin_id, location_id)
+    );
+    """,
 ]
 
 
@@ -370,6 +382,12 @@ def destination_location_ids(conn: sqlite3.Connection) -> dict[int, list[int]]:
     return result
 
 
+def locations_of_destination(conn: sqlite3.Connection, destination_id: int) -> list[int]:
+    return [r[0] for r in conn.execute("SELECT location_id FROM destination_locations"
+                                       " WHERE destination_id = ? ORDER BY location_id",
+                                       (destination_id,))]
+
+
 def set_destination_locations(conn: sqlite3.Connection, destination_id: int,
                               location_ids: list[int]) -> None:
     with conn:
@@ -457,60 +475,119 @@ def count_pending_destinations(conn: sqlite3.Connection) -> int:
     return conn.execute("SELECT COUNT(*) FROM destinations WHERE status = 'pending'").fetchone()[0]
 
 
-# --- admins ---
+# --- accounts (table "admins") ---
+
+ROLES = ("admin", "manager", "staff")
+
 
 @dataclass
-class Admin:
+class Account:
     id: int
     username: str
+    role: str = "admin"
+    location_ids: tuple[int, ...] = ()
+    must_change_password: bool = False
+
+    @property
+    def is_admin(self) -> bool:
+        return self.role == "admin"
 
 
-def admin_count(conn: sqlite3.Connection) -> int:
+_ACCOUNT_SELECT = "a.id, a.username, a.role, a.must_change_password"
+
+
+def _accounts(conn: sqlite3.Connection, rows) -> list[Account]:
+    rows = list(rows)
+    locs: dict[int, list[int]] = {}
+    if rows:
+        ids = [r["id"] for r in rows]
+        for r in conn.execute(
+                f"SELECT admin_id, location_id FROM admin_locations WHERE admin_id IN"
+                f" ({', '.join('?' for _ in ids)}) ORDER BY location_id", ids):
+            locs.setdefault(r["admin_id"], []).append(r["location_id"])
+    return [Account(r["id"], r["username"], r["role"], tuple(locs.get(r["id"], [])),
+                    bool(r["must_change_password"])) for r in rows]
+
+
+def account_count(conn: sqlite3.Connection) -> int:
     return conn.execute("SELECT COUNT(*) FROM admins").fetchone()[0]
 
 
-def list_admins(conn: sqlite3.Connection) -> list[Admin]:
-    rows = conn.execute("SELECT id, username FROM admins ORDER BY username COLLATE NOCASE")
-    return [Admin(r["id"], r["username"]) for r in rows]
+def admin_count(conn: sqlite3.Connection) -> int:
+    return conn.execute("SELECT COUNT(*) FROM admins WHERE role = 'admin'").fetchone()[0]
 
 
-def get_admin_credentials(conn: sqlite3.Connection, username: str) -> tuple[Admin, str] | None:
-    row = conn.execute("SELECT id, username, password_hash FROM admins WHERE username = ?",
+def list_accounts(conn: sqlite3.Connection) -> list[Account]:
+    return _accounts(conn, conn.execute(
+        f"SELECT {_ACCOUNT_SELECT} FROM admins a ORDER BY a.username COLLATE NOCASE"))
+
+
+def get_account(conn: sqlite3.Connection, account_id: int) -> Account | None:
+    found = _accounts(conn, conn.execute(f"SELECT {_ACCOUNT_SELECT} FROM admins a WHERE a.id = ?",
+                                         (account_id,)))
+    return found[0] if found else None
+
+
+def get_account_credentials(conn: sqlite3.Connection, username: str) -> tuple[Account, str] | None:
+    row = conn.execute(f"SELECT {_ACCOUNT_SELECT}, a.password_hash FROM admins a WHERE a.username = ?",
                        (username,)).fetchone()
-    return (Admin(row["id"], row["username"]), row["password_hash"]) if row else None
+    return (_accounts(conn, [row])[0], row["password_hash"]) if row else None
 
 
-def create_admin(conn: sqlite3.Connection, username: str, password_hash: str) -> int:
+def create_account(conn: sqlite3.Connection, username: str, password_hash: str, *,
+                   role: str = "admin", location_ids: list[int] = (),
+                   must_change_password: bool = False) -> int:
     with conn:
-        cur = conn.execute("INSERT INTO admins (username, password_hash) VALUES (?, ?)",
-                           (username, password_hash))
+        cur = conn.execute("INSERT INTO admins (username, password_hash, role, must_change_password)"
+                           " VALUES (?, ?, ?, ?)",
+                           (username, password_hash, role, int(must_change_password)))
+        _set_account_locations(conn, cur.lastrowid, location_ids)
     return cur.lastrowid
 
 
-def set_admin_password(conn: sqlite3.Connection, admin_id: int, password_hash: str) -> None:
-    with conn:
-        conn.execute("UPDATE admins SET password_hash = ? WHERE id = ?", (password_hash, admin_id))
-        conn.execute("DELETE FROM admin_sessions WHERE admin_id = ?", (admin_id,))
+def _set_account_locations(conn: sqlite3.Connection, account_id: int, location_ids) -> None:
+    conn.execute("DELETE FROM admin_locations WHERE admin_id = ?", (account_id,))
+    conn.executemany("INSERT OR IGNORE INTO admin_locations (admin_id, location_id)"
+                     " SELECT ?, id FROM locations WHERE id = ?",
+                     [(account_id, i) for i in location_ids])
 
 
-def delete_admin(conn: sqlite3.Connection, admin_id: int) -> bool:
+def update_account(conn: sqlite3.Connection, account_id: int, role: str,
+                   location_ids: list[int]) -> bool:
     with conn:
-        cur = conn.execute("DELETE FROM admins WHERE id = ?", (admin_id,))
+        cur = conn.execute("UPDATE admins SET role = ? WHERE id = ?", (role, account_id))
+        if cur.rowcount:
+            _set_account_locations(conn, account_id, location_ids)
     return cur.rowcount > 0
 
 
-def create_session(conn: sqlite3.Connection, token_hash: str, admin_id: int, hours: int) -> None:
+def set_account_password(conn: sqlite3.Connection, account_id: int, password_hash: str, *,
+                         must_change: bool = False) -> None:
+    """New password; ends all sessions of the account."""
+    with conn:
+        conn.execute("UPDATE admins SET password_hash = ?, must_change_password = ? WHERE id = ?",
+                     (password_hash, int(must_change), account_id))
+        conn.execute("DELETE FROM admin_sessions WHERE admin_id = ?", (account_id,))
+
+
+def delete_account(conn: sqlite3.Connection, account_id: int) -> bool:
+    with conn:
+        cur = conn.execute("DELETE FROM admins WHERE id = ?", (account_id,))
+    return cur.rowcount > 0
+
+
+def create_session(conn: sqlite3.Connection, token_hash: str, account_id: int, hours: int) -> None:
     with conn:
         conn.execute("DELETE FROM admin_sessions WHERE expires_at < datetime('now')")
         conn.execute("INSERT INTO admin_sessions (token_hash, admin_id, expires_at)"
-                     " VALUES (?, ?, datetime('now', ?))", (token_hash, admin_id, f"+{hours} hours"))
+                     " VALUES (?, ?, datetime('now', ?))", (token_hash, account_id, f"+{hours} hours"))
 
 
-def session_admin(conn: sqlite3.Connection, token_hash: str) -> Admin | None:
-    row = conn.execute(
-        "SELECT a.id, a.username FROM admin_sessions s JOIN admins a ON a.id = s.admin_id"
-        " WHERE s.token_hash = ? AND s.expires_at > datetime('now')", (token_hash,)).fetchone()
-    return Admin(row["id"], row["username"]) if row else None
+def session_account(conn: sqlite3.Connection, token_hash: str) -> Account | None:
+    found = _accounts(conn, conn.execute(
+        f"SELECT {_ACCOUNT_SELECT} FROM admin_sessions s JOIN admins a ON a.id = s.admin_id"
+        " WHERE s.token_hash = ? AND s.expires_at > datetime('now')", (token_hash,)))
+    return found[0] if found else None
 
 
 def delete_session(conn: sqlite3.Connection, token_hash: str) -> None:

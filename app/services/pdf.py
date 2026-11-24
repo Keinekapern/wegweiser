@@ -20,7 +20,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
-from app import config
+from app import auth, config
 
 log = logging.getLogger(__name__)
 
@@ -145,6 +145,10 @@ class Renderer:
         """PDF of a page of the app -> (pdf, "ok"|"errors", error text shown on the page)."""
         page = self._browser.new_page()
         try:
+            # AUTH_MODE=users: the print view needs a login; this cookie stands in for it
+            # (only sent to the app itself, see auth.render_token)
+            page.context.add_cookies([{"name": auth.RENDER_COOKIE, "value": auth.render_token(),
+                                       "url": self.base_url}])
             page.route(self._tile_re, self._serve_tile)
             page.route(_PRINT_CSS, self._print_css)
             resp = page.goto(self.base_url + path_and_query, wait_until="load")

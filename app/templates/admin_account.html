@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ account.username }} – {{ app_name }}{% endblock %}
+{% block content %}
+<p><a href="/admin">← {{ t("Zurück") }}</a></p>
+<h1>{{ t("Konto „{name}“", name=account.username) }}</h1>
+
+{% if errors %}<ul class="errors" role="alert">{% for e in errors %}<li>{{ t(e) }}</li>{% endfor %}</ul>{% endif %}
+{% if notice %}<p class="notice" role="status">{{ t(notice) }}{% if new_password %} <code class="secret">{{ new_password }}</code>{% endif %}</p>{% endif %}
+
+{% if roles_enabled %}
+<section class="card">
+  <h2>{{ t("Rolle und Standorte") }}</h2>
+  <form method="post" action="/admin/users/{{ account.id }}" class="form">
+    {% set form = {"role": account.role, "location_ids": account.location_ids} %}
+    {% include "_role_fields.html" %}
+    <div class="buttons"><button type="submit">{{ t("Speichern") }}</button></div>
+  </form>
+</section>
+{% endif %}
+
+<section class="card">
+  <h2>{{ t("Passwort zurücksetzen") }}</h2>
+  <p class="hint">{{ t("Erzeugt ein neues Startpasswort und beendet alle Anmeldungen dieses Kontos.") }}</p>
+  <form method="post" action="/admin/users/{{ account.id }}/password">
+    <button type="submit" class="secondary">{{ t("Neues Startpasswort erzeugen") }}</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>{{ t("Konto löschen") }}</h2>
+  <form method="post" action="/admin/users/{{ account.id }}/delete"
+        data-confirm="{{ t('Konto „{name}“ wirklich löschen?', name=account.username) }}"
+        onsubmit="return confirm(this.dataset.confirm);">
+    <button type="submit" class="danger">{{ t("Löschen") }}</button>
+  </form>
+</section>
+{% endblock %}

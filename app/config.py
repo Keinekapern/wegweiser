@@ -95,7 +95,7 @@ def tile_max_zoom() -> int:
 # Access control: "admin" (default) = anyone may use it and propose destinations, admins
 # approve and edit; "off" = no login, everyone may change everything (own PC or a small
 # trusted network only). See README, "Admins und Rechte".
-AUTH_MODES = ("off", "admin")
+AUTH_MODES = ("off", "admin", "users")
 
 
 def auth_mode() -> str:

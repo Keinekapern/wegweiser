@@ -6,7 +6,7 @@
 <p><a href="/destinations">{{ t("← Zurück zur Zielliste") }}</a></p>
 <h1>{{ heading }}</h1>
 {% if creates_pending %}
-<p class="hint">{% if edit_id %}{{ t("Dieses Ziel ist noch unbestätigt. Bis zur Bestätigung durch einen Admin lässt es sich in diesem Browser noch korrigieren.") }}{% else %}{{ t("Neue Ziele sind sofort nutzbar und werden dauerhaft, sobald ein Admin sie bestätigt.") }}{% endif %}</p>
+<p class="hint">{% if edit_id %}{{ t("Dieses Ziel ist noch unbestätigt. Bis zur Bestätigung lässt es sich in diesem Browser noch korrigieren.") }}{% else %}{{ t("Neue Ziele sind sofort nutzbar und werden dauerhaft, sobald sie bestätigt sind.") }}{% endif %}</p>
 {% endif %}
 
 <section class="card">
@@ -77,16 +77,16 @@
         {% endfor %}
       </div>
     </details>
-    {% if locations and can_assign %}
+    {% if assign_locations and can_assign %}
     <fieldset class="location-checks">
       <legend>{{ t("Standorte, für die das Ziel angeboten wird") }}</legend>
-      {% for loc in locations %}
+      {% for loc in assign_locations %}
       <label class="check"><input type="checkbox" name="location_ids" value="{{ loc.id }}" {% if loc.id in (form.location_ids or []) %}checked{% endif %}> {{ loc.name }}</label>
       {% endfor %}
-      <span class="hint small">{{ t("Ohne Häkchen erscheint das Ziel bei allen Standorten.") }}</span>
+      <span class="hint small">{% if assign_all %}{{ t("Ohne Häkchen erscheint das Ziel bei allen Standorten.") }}{% else %}{{ t("Ohne Häkchen erscheint das Ziel bei allen eigenen Standorten.") }}{% endif %}</span>
     </fieldset>
     {% elif not edit_id %}
-    {# Without login: only the location the form was opened from (see _creator_locations) #}
+    {# Proposals: only the location the form was opened from (see _creator_locations) #}
     {% for lid in (form.location_ids or [])[:1] %}<input type="hidden" name="location_ids" value="{{ lid }}">{% endfor %}
     {% endif %}
     <label>{{ t("Notiz (intern, keine Patientendaten)") }}

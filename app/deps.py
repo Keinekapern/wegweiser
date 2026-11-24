@@ -14,16 +14,24 @@ from app.services.transit import same_place_names, stop_icon
 
 BASE_DIR = Path(__file__).parent
 def auth_context(request: Request) -> dict:
-    """Jinja2 context processor: logged-in admin and the number of destinations awaiting
-    approval (shown in the navigation)."""
+    """Jinja2 context processor: logged-in account and the number of destinations it can
+    approve (shown in the navigation)."""
     from app import auth
-    admin = auth.current_admin(request)
+    user = auth.current_user(request)
     pending = 0
-    if admin is not None:
+    if user is not None:
         with db.get_conn() as conn:
-            pending = db.count_pending_destinations(conn)
-    return {"admin": admin, "pending_count": pending, "login_enabled": auth.login_enabled(),
+            pending = len(approvable_pending(request, conn))
+    return {"user": user, "pending_count": pending, "login_enabled": auth.login_enabled(),
+            "login_required": auth.login_required(),
             "can": lambda action, obj=None: auth.can(request, action, obj)}
+
+
+def approvable_pending(request: Request, conn) -> list[tuple[db.Destination, str]]:
+    """Pending destinations the current account may approve, with their creation time."""
+    from app import auth
+    return [(d, created) for d, created in db.list_pending_destinations(conn)
+            if auth.can(request, "destination.approve", d, conn)]
 
 
 templates = Jinja2Templates(directory=BASE_DIR / "templates",
@@ -68,12 +76,12 @@ def get_db() -> Iterator[Connection]:
 DB = Annotated[Connection, Depends(get_db)]
 
 
-def _require_admin(request: Request):
-    from app.auth import require_admin
-    return require_admin(request)
+def _require_login(request: Request):
+    from app.auth import require_login
+    return require_login(request)
 
 
-AdminUser = Annotated[db.Admin, Depends(_require_admin)]
+LoggedIn = Annotated[db.Account, Depends(_require_login)]
 
 
 def Allowed(action: str):

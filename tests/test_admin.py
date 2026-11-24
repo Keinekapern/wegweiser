@@ -156,19 +156,57 @@ def test_anonymous_cannot_save_transit_defaults(client, anon_client):
     assert "Als Standard speichern" in client.get("/directions", params=params).text
 
 
-def test_manage_admins(client):
-    r = client.post("/admin/users", data={"username": "zwei", "password": "kurz", "repeat": "kurz"})
+def test_manage_admins(client, anon_client):
+    r = client.post("/admin/users", data={"username": "zwei", "password": "kurz"})
     assert r.status_code == 422 and "mindestens 10 Zeichen" in r.text
-    r = client.post("/admin/users", data={"username": "ADMIN", "password": "x" * 12,
-                                          "repeat": "x" * 12})
+    r = client.post("/admin/users", data={"username": "ADMIN", "password": "x" * 12})
     assert "Diesen Benutzernamen gibt es schon." in r.text
     r = client.post("/admin/users", data={"username": "zwei", "password": "x" * 12,
-                                          "repeat": "x" * 12})
-    assert "Admin „zwei“ angelegt." in r.text
+                                          "role": "staff"})     # no roles in AUTH_MODE=admin
+    assert "Konto „zwei“ angelegt." in r.text and "x" * 12 in r.text
+    with db.get_conn() as conn:
+        zwei = db.get_account(conn, 2)
+        assert zwei.role == "admin" and zwei.must_change_password
+    # an empty start password is generated and shown once
+    r = client.post("/admin/users", data={"username": "drei"})
+    generated = r.text.split('<code class="secret">')[1].split("<")[0]
+    assert len(generated) == 12
+    assert anon_client.post("/admin/login", data={"username": "drei", "password": generated},
+                            follow_redirects=False).headers["location"] == "/admin"
     assert "Das eigene Konto kann nicht gelöscht werden." in client.post("/admin/users/1/delete").text
     client.post("/admin/users/2/delete")
+    client.post("/admin/users/3/delete")
     with db.get_conn() as conn:
-        assert [a.username for a in db.list_admins(conn)] == [ADMIN_USER]
+        assert [a.username for a in db.list_accounts(conn)] == [ADMIN_USER]
+
+
+def test_start_password_must_be_changed_first(client, anon_client):
+    client.post("/admin/users", data={"username": "neu", "password": "start passwort"})
+    r = anon_client.post("/admin/login", data={"username": "neu", "password": "start passwort",
+                                               "next": "/locations"}, follow_redirects=False)
+    assert r.headers["location"] == "/admin"
+    for url in ("/directions", "/locations", "/settings/languages"):
+        assert anon_client.get(url, follow_redirects=False).headers["location"] == "/admin"
+    page = anon_client.get("/admin").text
+    assert "Bitte zuerst ein eigenes Passwort festlegen" in page and "Konten" not in page
+    r = anon_client.post("/admin/password", data={"current": "start passwort",
+                                                  "password": "start passwort", "repeat": "start passwort"})
+    assert "nicht das bisherige" in r.text
+    anon_client.post("/admin/password", data={"current": "start passwort",
+                                              "password": "eigenes passwort", "repeat": "eigenes passwort"})
+    assert anon_client.get("/directions").status_code == 200
+
+
+def test_reset_password_of_another_account(client, anon_client):
+    client.post("/admin/users", data={"username": "zwei", "password": "x" * 12})
+    anon_client.post("/admin/login", data={"username": "zwei", "password": "x" * 12})
+    assert anon_client.get("/admin", follow_redirects=False).status_code == 200
+    page = client.post("/admin/users/2/password").text
+    new = page.split('<code class="secret">')[1].split("<")[0]
+    assert anon_client.get("/admin", follow_redirects=False).status_code == 303   # session ended
+    with db.get_conn() as conn:
+        assert auth.authenticate(conn, "zwei", new) is not None
+    assert client.post("/admin/users/1/password").status_code == 404           # not the own
 
 
 def test_password_change_ends_other_sessions(client, anon_client):
@@ -242,7 +280,7 @@ def test_auth_mode_off_refused_behind_tunnel(tmp_path, monkeypatch):
 
 def test_invalid_auth_mode(monkeypatch):
     from app import config
-    monkeypatch.setenv("AUTH_MODE", "users")
+    monkeypatch.setenv("AUTH_MODE", "everyone")
     with pytest.raises(ValueError, match="AUTH_MODE"):
         config.auth_mode()
 

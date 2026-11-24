@@ -1,0 +1,18 @@
+    {# role and locations of an account; `form` has role and location_ids #}
+    <fieldset class="roles">
+      <legend>{{ t("Rolle") }}</legend>
+      <label class="check"><input type="radio" name="role" value="staff" {% if form.role == "staff" %}checked{% endif %}>
+        {{ t("Mitarbeitend") }} <span class="hint">– {{ t("Wegbeschreibungen und PDFs erstellen, Ziele vorschlagen") }}</span></label>
+      <label class="check"><input type="radio" name="role" value="manager" {% if form.role == "manager" %}checked{% endif %}>
+        {{ t("Standortverantwortlich") }} <span class="hint">– {{ t("dazu Ziele der eigenen Standorte bearbeiten, löschen und bestätigen") }}</span></label>
+      <label class="check"><input type="radio" name="role" value="admin" {% if form.role == "admin" %}checked{% endif %}>
+        {{ t("Admin") }} <span class="hint">– {{ t("alles, auch Konten, Standorte und Einstellungen") }}</span></label>
+    </fieldset>
+    <fieldset class="roles">
+      <legend>{{ t("Standorte") }} <span class="hint">({{ t("nicht für Admins") }})</span></legend>
+      {% for loc in locations %}
+      <label class="check"><input type="checkbox" name="location_ids" value="{{ loc.id }}" {% if loc.id in form.location_ids %}checked{% endif %}> {{ loc.name }}</label>
+      {% else %}
+      <p class="hint">{{ t("Noch keine Standorte angelegt.") }}</p>
+      {% endfor %}
+    </fieldset>

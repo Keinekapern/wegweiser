@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app import categories, config, db, languages
+from app import auth, categories, config, db, languages
 from app.category_names import category_name
 from app.deps import DB, Allowed, templates
 from app.i18n import (DirectionsText, Msg, directions_language_options, get_ui_lang,
@@ -56,8 +56,10 @@ def transit_settings_from_request(request: Request, conn: Connection,
 
 def build_context(conn: Connection, router_: OrsClient, transit: TransitousClient,
                   transit_settings: TransitSettings, location_id: str | None,
-                  destination_id: str | None, profile: str, lang: str | None) -> dict:
-    """Selection, route and map data shared by the directions page and the print view."""
+                  destination_id: str | None, profile: str, lang: str | None,
+                  home: tuple[int, ...] = ()) -> dict:
+    """Selection, route and map data shared by the directions page and the print view.
+    home = locations of the logged-in account, preselected when none is chosen."""
     locations = db.list_locations(conn)
     loc_id, dest_id = _int_or_none(location_id), _int_or_none(destination_id)
     assignments = db.destination_location_ids(conn)
@@ -66,6 +68,9 @@ def build_context(conn: Connection, router_: OrsClient, transit: TransitousClien
     elif loc_id is None and dest_id is not None and len(assignments.get(dest_id, [])) == 1:
         # e.g. "Route" button in the destination list: start at the destination's location
         loc_id = assignments[dest_id][0]
+    elif loc_id is None and home:
+        offered = assignments.get(dest_id, []) if dest_id is not None else []
+        loc_id = next((i for i in home if not offered or i in offered), home[0])
     if profile not in UI_PROFILES:
         profile = "auto"
     doc_lang = languages.normalize(conn, lang)
@@ -285,7 +290,7 @@ def directions_page(
     errors: list[Msg] = []
     settings = transit_settings_from_request(request, conn, errors)
     ctx = build_context(conn, router_, transit, settings, location_id, destination_id,
-                        profile, lang)
+                        profile, lang, home=auth.home_locations(request))
     ctx["option_errors"] = errors
     ctx["saved"] = request.query_params.get("saved") == "1"
     return templates.TemplateResponse(request, "directions.html", ctx | selection_options(conn, request))

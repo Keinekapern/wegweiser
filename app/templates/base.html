@@ -26,11 +26,11 @@
       <a href="/destinations" {% if request.url.path.startswith('/destinations') %}aria-current="page"{% endif %}>{{ t("Ziele") }}</a>
       <a href="/locations" {% if request.url.path.startswith('/locations') %}aria-current="page"{% endif %}>{{ t("Standorte") }}</a>
       {% if can('export.bulk') %}<a href="/export" {% if request.url.path.startswith('/export') %}aria-current="page"{% endif %}>{{ t("Export") }}</a>{% endif %}
-      {% if admin %}<a href="/admin" {% if request.url.path.startswith('/admin') %}aria-current="page"{% endif %}>{{ t("Admin") }}{% if pending_count %} <span class="count" title="{{ t('Neue Ziele zur Bestätigung') }}">{{ pending_count }}</span>{% endif %}</a>{% endif %}
+      {% if user %}<a href="/admin" {% if request.url.path.startswith('/admin') %}aria-current="page"{% endif %}>{{ t("Admin") if user.is_admin else t("Konto") }}{% if pending_count %} <span class="count" title="{{ t('Neue Ziele zur Bestätigung') }}">{{ pending_count }}</span>{% endif %}</a>{% endif %}
     </nav>
-    {% if admin %}
-    <form method="post" action="/admin/logout" class="logout"><button type="submit" class="link" title="{{ t('Angemeldet als {name}', name=admin.username) }}">{{ t("Abmelden") }}</button></form>
-    {% elif login_enabled %}
+    {% if user %}
+    <form method="post" action="/admin/logout" class="logout"><button type="submit" class="link" title="{{ t('Angemeldet als {name}', name=user.username) }}">{{ t("Abmelden") }}</button></form>
+    {% elif login_enabled and not login_required %}
     <a class="login-link" href="/admin/login?next={{ here|urlencode }}">{{ t("Admin") }}</a>
     {% endif %}
     <button type="button" class="theme-switch" id="theme-switch"

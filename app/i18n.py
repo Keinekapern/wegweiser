@@ -217,8 +217,44 @@ ENGLISH: dict[str, str] = {
     "Nach dem Ändern werden alle anderen Anmeldungen dieses Kontos beendet.":
         "Changing it ends all other sessions of this account.",
     "Admin hinzufügen": "Add admin",
-    "Admin „{name}“ angelegt.": "Admin “{name}” created.",
-    "Admin „{name}“ wirklich löschen?": "Really delete admin “{name}”?",
+    "Anmeldung": "Log in",
+    "Bitte ein neues Passwort wählen, nicht das bisherige.": "Please choose a new password, not the previous one.",
+    "Bitte mit dem Konto anmelden, das ein Admin angelegt hat.": "Please log in with the account an admin created for you.",
+    "Bitte zuerst ein eigenes Passwort festlegen": "Please set your own password first",
+    "Das Startpasswort muss beim ersten Anmelden geändert werden.": "The start password must be changed at the first login.",
+    "Die eigene Rolle kann nicht geändert werden.": "You cannot change your own role.",
+    "Diese Ziele wurden vorgeschlagen. Sie sind schon nutzbar, werden aber erst nach der Bestätigung dauerhaft. Beim Bestätigen am besten Adresse, Kategorie und Standorte prüfen.":
+        "These destinations were proposed. They can already be used but only become permanent once approved. When approving, best check address, category and locations.",
+    "Dieses Konto hat noch das Startpasswort. Danach geht es normal weiter.": "This account still has its start password. After that, everything works as usual.",
+    "Dieses Ziel ist noch unbestätigt. Bis zur Bestätigung lässt es sich in diesem Browser noch korrigieren.":
+        "This destination is not approved yet. Until it is, it can still be corrected in this browser.",
+    "Erzeugt ein neues Startpasswort und beendet alle Anmeldungen dieses Kontos.": "Creates a new start password and ends all sessions of this account.",
+    "Es muss mindestens ein Admin-Konto geben.": "There must be at least one admin account.",
+    "Konten": "Accounts",
+    "Konto": "Account",
+    "Konto hinzufügen": "Add account",
+    "Konto löschen": "Delete account",
+    "Konto „{name}“": "Account “{name}”",
+    "Konto „{name}“ angelegt. Startpasswort (bitte weitergeben, wird beim ersten Anmelden geändert):":
+        "Account “{name}” created. Start password (pass it on; it is changed at the first login):",
+    "Konto „{name}“ wirklich löschen?": "Really delete account “{name}”?",
+    "Mitarbeitend": "Staff",
+    "Neue Ziele sind sofort nutzbar und werden dauerhaft, sobald sie bestätigt sind.": "New destinations can be used right away and become permanent once approved.",
+    "Neues Startpasswort (bitte weitergeben, wird beim ersten Anmelden geändert):": "New start password (pass it on; it is changed at the first login):",
+    "Neues Startpasswort erzeugen": "Create new start password",
+    "Ohne Häkchen erscheint das Ziel bei allen eigenen Standorten.": "Without a tick, the destination is offered at all of your own locations.",
+    "Passwort zurücksetzen": "Reset password",
+    "Rolle": "Role",
+    "Rolle und Standorte": "Role and locations",
+    "Standortverantwortlich": "Location manager",
+    "Startpasswort": "Start password",
+    "Wegbeschreibungen und PDFs erstellen, Ziele vorschlagen": "create directions and PDFs, propose destinations",
+    "Ziele, die keinem Standort zugeordnet sind (für alle Standorte), bestätigen Admins.": "Destinations not assigned to any location (offered everywhere) are approved by admins.",
+    "Zurück": "Back",
+    "alles, auch Konten, Standorte und Einstellungen": "everything, incl. accounts, locations and settings",
+    "dazu Ziele der eigenen Standorte bearbeiten, löschen und bestätigen": "also edit, delete and approve destinations of their own locations",
+    "leer lassen: wird erzeugt": "leave empty to generate one",
+    "nicht für Admins": "not for admins",
     "Benutzername oder Passwort ist falsch.": "Wrong username or password.",
     "Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen.":
         "Too many failed attempts. Please try again in 15 minutes.",
@@ -236,9 +272,6 @@ ENGLISH: dict[str, str] = {
         "is reserved for admins. Anyone can create new destinations.",
     "Neue Ziele zur Bestätigung": "New destinations to approve",
     "Keine Ziele warten auf Bestätigung.": "No destinations are waiting for approval.",
-    "Diese Ziele wurden ohne Anmeldung angelegt. Sie sind schon nutzbar, werden aber erst nach der Bestätigung dauerhaft. Beim Bestätigen am besten Adresse, Kategorie und Standorte prüfen.":
-        "These destinations were created without login. They can already be used but only "
-        "become permanent once approved. Best check address, category and locations when approving.",
     "Angelegt": "Created",
     "Bestätigen": "Approve",
     "Ablehnen": "Reject",
@@ -247,11 +280,6 @@ ENGLISH: dict[str, str] = {
     "Wartet auf Bestätigung durch einen Admin": "Waiting for approval by an admin",
     "Ziel angelegt. Es ist sofort nutzbar und wird dauerhaft, sobald ein Admin es bestätigt.":
         "Destination created. It can be used right away and becomes permanent once an admin approves it.",
-    "Neue Ziele sind sofort nutzbar und werden dauerhaft, sobald ein Admin sie bestätigt.":
-        "New destinations can be used right away and become permanent once an admin approves them.",
-    "Dieses Ziel ist noch unbestätigt. Bis zur Bestätigung durch einen Admin lässt es sich in diesem Browser noch korrigieren.":
-        "This destination is not approved yet. Until an admin approves it, it can still be "
-        "corrected in this browser.",
     "Standorte anlegen und ändern können nur Admins.": "Only admins can create and change locations.",
     "Betrieb ohne Anmeldung: Alle, die diese Seite öffnen, können alles ändern. Nur auf dem eigenen PC oder in einem vertrauenswürdigen Netz verwenden.":
         "Running without login: anyone who opens this page can change everything. Only use it "

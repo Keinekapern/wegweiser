@@ -39,7 +39,7 @@
         <div class="name-cell">
         <img class="dest-icon" src="{{ url_for('static', path=icon) }}" alt="{{ icon_label }}" title="{{ icon_label }}">
         <span class="name">{{ d.name }}
-        {% if d.pending and login_enabled %}{% if can('admin.panel') %}<a href="/admin" class="badge pending" title="{{ t('Wartet auf Bestätigung durch einen Admin') }}">{{ t("unbestätigt") }}</a>{% else %}<span class="badge pending" title="{{ t('Wartet auf Bestätigung durch einen Admin') }}">{{ t("unbestätigt") }}</span>{% endif %}{% endif %}</span>
+        {% if d.pending and login_enabled %}{% if can('destination.approve', d) %}<a href="/admin" class="badge pending" title="{{ t('Wartet auf Bestätigung durch einen Admin') }}">{{ t("unbestätigt") }}</a>{% else %}<span class="badge pending" title="{{ t('Wartet auf Bestätigung durch einen Admin') }}">{{ t("unbestätigt") }}</span>{% endif %}{% endif %}</span>
         {% if d.note %}<div class="hint small note">{{ d.note }}</div>{% endif %}
         </div>
       </td>

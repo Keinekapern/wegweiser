@@ -1,18 +1,25 @@
-"""Admin login and who may change what.
+"""Login and who may change what.
 
-All permission checks go through can() / require(), so a later mode with user accounts
-and roles per location only has to change this module and the database.
+All permission checks go through can() / require(); routes and templates never look at
+roles themselves.
 
-Modes (AUTH_MODE): "admin" (default, described below) and "off" (no login at all,
-everyone may do everything; for a single PC or a small trusted network).
+Modes (AUTH_MODE):
+- "off": no login at all, everyone may do everything (a single PC or a small trusted network).
+- "admin" (default): without login anyone may create directions and destinations; new
+  destinations stay "pending" until an admin approves them. The creating browser gets a
+  random creator cookie, so it can still correct its own pending destinations.
+- "users": everyone logs in. Roles (db.ROLES):
+    admin    everything, incl. accounts, locations and settings
+    manager  edit, delete and approve the destinations of their own locations (those
+             assigned only to locations of this account; destinations for all locations
+             are left to admins); their new destinations are approved at once
+    staff    directions, PDFs, propose destinations (pending, assigned to their locations)
+  Everybody sees all locations and destinations; their own location is preselected.
 
-- Admins log in with username + password (scrypt hash, stdlib only). The session is a
-  random token in an HttpOnly cookie; only its SHA-256 is stored (admin_sessions).
-- Without login anyone may create destinations; they stay "pending" until an admin
-  approves them. The creating browser gets a random creator cookie, so it can still
-  correct its own pending destinations.
-- Cookies are SameSite=Lax and every change is a POST, so other sites cannot trigger
-  changes in a logged-in browser.
+Accounts log in with username + password (scrypt hash, stdlib only). The session is a
+random token in an HttpOnly cookie; only its SHA-256 is stored (admin_sessions). Cookies
+are SameSite=Lax and every change is a POST, so other sites cannot trigger changes in a
+logged-in browser. New accounts get a start password that must be changed at first login.
 """
 
 import hashlib
@@ -28,6 +35,7 @@ from app import config, db
 
 SESSION_COOKIE = "wegweiser_admin"
 CREATOR_COOKIE = "wegweiser_creator"
+RENDER_COOKIE = "wegweiser_render"
 SESSION_HOURS = 12
 CREATOR_COOKIE_DAYS = 365
 MIN_PASSWORD_LENGTH = 10
@@ -38,7 +46,7 @@ _MAXMEM = 64 * 1024 * 1024
 
 
 class LoginRequired(Exception):
-    """Raised by require_admin; main.py turns it into a redirect to the login page."""
+    """Raised by require_login; main.py turns it into a redirect to the login page."""
 
     def __init__(self, next_url: str = "/admin"):
         self.next_url = next_url
@@ -92,8 +100,8 @@ def clear_failures(username: str) -> None:
     _failures.pop(username.lower(), None)
 
 
-def authenticate(conn: sqlite3.Connection, username: str, password: str) -> db.Admin | None:
-    found = db.get_admin_credentials(conn, username.strip())
+def authenticate(conn: sqlite3.Connection, username: str, password: str) -> db.Account | None:
+    found = db.get_account_credentials(conn, username.strip())
     if found is None:
         verify_password(password, _DUMMY_HASH)
         return None
@@ -101,33 +109,73 @@ def authenticate(conn: sqlite3.Connection, username: str, password: str) -> db.A
     return admin if verify_password(password, stored) else None
 
 
-# --- current admin / creator ---
+# --- current account / creator / PDF renderer ---
 
-def current_admin(request: Request) -> db.Admin | None:
-    """Logged-in admin of this request (cached on request.state); never one without login."""
-    if hasattr(request.state, "admin"):
-        return request.state.admin
-    admin = None
+def current_user(request: Request) -> db.Account | None:
+    """Logged-in account of this request (cached on request.state); never one without login."""
+    if hasattr(request.state, "user"):
+        return request.state.user
+    user = None
     token = request.cookies.get(SESSION_COOKIE)
     if token and login_enabled():
         with db.get_conn() as conn:
-            admin = db.session_admin(conn, token_hash(token))
-    request.state.admin = admin
-    return admin
+            user = db.session_account(conn, token_hash(token))
+    request.state.user = user
+    return user
 
 
-def require_admin(request: Request) -> db.Admin:
-    """FastAPI dependency: the logged-in admin, otherwise redirect to the login page
+def require_login(request: Request) -> db.Account:
+    """FastAPI dependency: the logged-in account, otherwise redirect to the login page
     (404 when login is switched off)."""
     if not login_enabled():
         raise HTTPException(404)
-    admin = current_admin(request)
-    if admin is None:
-        next_url = request.url.path if request.method == "GET" else "/admin"
-        if request.method == "GET" and request.url.query:
-            next_url += "?" + request.url.query
-        raise LoginRequired(next_url)
-    return admin
+    user = current_user(request)
+    if user is None:
+        raise LoginRequired(_here(request))
+    return user
+
+
+def _here(request: Request) -> str:
+    if request.method != "GET":
+        return "/admin"
+    return request.url.path + ("?" + request.url.query if request.url.query else "")
+
+
+# The server-side PDF renderer (app/services/pdf.py) opens the print view without a login;
+# in AUTH_MODE=users it presents this per-process secret as a cookie instead.
+_RENDER_TOKEN = secrets.token_urlsafe(32)
+
+
+def render_token() -> str:
+    return _RENDER_TOKEN
+
+
+def is_renderer(request: Request) -> bool:
+    return hmac.compare_digest(request.cookies.get(RENDER_COOKIE, ""), _RENDER_TOKEN)
+
+
+# Pages that work without login in AUTH_MODE=users and during a forced password change
+_OPEN_PREFIXES = ("/static/", "/regions/")
+_OPEN_PATHS = {"/admin/login", "/admin/logout", "/healthz", "/favicon.ico", "/ui-language/de",
+               "/ui-language/en"}
+_PASSWORD_PATHS = {"/admin", "/admin/password", "/admin/logout"}
+
+
+def gate(request: Request) -> str | None:
+    """Called for every request (main.py): where to send the browser instead, or None.
+    AUTH_MODE=users: only the login page without login; any mode: an account with a start
+    password may only change it."""
+    path = request.url.path
+    if not login_enabled() or path.startswith(_OPEN_PREFIXES) or path in _OPEN_PATHS:
+        return None
+    user = current_user(request)
+    if user is None:
+        if login_required() and not (request.method == "GET" and is_renderer(request)):
+            return login_url(_here(request))
+        return None
+    if user.must_change_password and path not in _PASSWORD_PATHS:
+        return "/admin"
+    return None
 
 
 def login_url(next_url: str) -> str:
@@ -161,7 +209,8 @@ ACTIONS = (
     "settings.languages",            # which directions languages are offered
     "settings.backup",               # list, create and download database backups
     "data.transfer",                 # export and import destinations and locations
-    "admin.panel",                   # admin page: approvals, admin accounts
+    "admin.panel",                   # account page: own password, approvals
+    "accounts.manage",               # create, change and delete accounts
     "export.pdf",                    # a single PDF of a printout
     "export.bulk",                   # ZIP of many PDFs (server load, tile requests)
 )
@@ -169,6 +218,17 @@ ACTIONS = (
 
 def login_enabled() -> bool:
     return config.auth_mode() != "off"
+
+
+def login_required() -> bool:
+    return config.auth_mode() == "users"
+
+
+def _dest_locations(conn: sqlite3.Connection | None, dest: db.Destination) -> list[int]:
+    if conn is None:
+        with db.get_conn() as c:
+            return db.locations_of_destination(c, dest.id)
+    return db.locations_of_destination(conn, dest.id)
 
 
 def _own_pending(request: Request, conn: sqlite3.Connection | None, dest: db.Destination) -> bool:
@@ -185,18 +245,39 @@ def _own_pending(request: Request, conn: sqlite3.Connection | None, dest: db.Des
     return bool(stored and hmac.compare_digest(mine, stored))
 
 
+def manages(user: db.Account | None, location_ids) -> bool:
+    """Is this a manager of all these locations (at least one; "all locations" = admins)?"""
+    return (user is not None and user.role == "manager" and bool(location_ids)
+            and set(location_ids) <= set(user.location_ids))
+
+
 def can(request: Request, action: str, obj=None, conn: sqlite3.Connection | None = None) -> bool:
     """May the current browser do this? The single place that decides."""
     if action not in ACTIONS:
         raise ValueError(f"unknown action {action!r}")
     if not login_enabled():
-        return action != "admin.panel"   # nothing to administer without accounts
-    if action in ("destination.create", "export.pdf"):
+        return action not in ("admin.panel", "accounts.manage")   # no accounts without login
+    user = current_user(request)
+    if user is None:
+        if login_required():
+            return False
+        if action in ("destination.create", "export.pdf"):
+            return True
+        if action in ("destination.edit", "destination.delete"):
+            return obj is not None and _own_pending(request, conn, obj)
+        return False
+    if user.is_admin:
         return True
-    if current_admin(request) is not None:
+    if action in ("destination.create", "export.pdf", "admin.panel"):
         return True
-    if action in ("destination.edit", "destination.delete"):
-        return obj is not None and _own_pending(request, conn, obj)
+    if action in ("destination.edit", "destination.delete", "destination.approve"):
+        if obj is None:
+            return False
+        if manages(user, _dest_locations(conn, obj)):
+            return True
+        return action != "destination.approve" and _own_pending(request, conn, obj)
+    if action == "destination.assign_locations":
+        return user.role == "manager"
     return False
 
 
@@ -204,14 +285,31 @@ def require(request: Request, action: str, obj=None, conn: sqlite3.Connection | 
     """Raise unless allowed: login page if logging in could help, otherwise 404."""
     if can(request, action, obj, conn):
         return
-    if login_enabled() and current_admin(request) is None:
-        require_admin(request)            # raises LoginRequired
+    if login_enabled() and current_user(request) is None:
+        require_login(request)            # raises LoginRequired
     raise HTTPException(404)
 
 
 def creates_pending(request: Request) -> bool:
-    """New destinations from this browser wait for approval."""
-    return login_enabled() and current_admin(request) is None
+    """New destinations from this browser wait for approval (not for admins and managers)."""
+    if not login_enabled():
+        return False
+    user = current_user(request)
+    return user is None or user.role == "staff"
+
+
+def assignable_locations(request: Request) -> set[int] | None:
+    """Locations this browser may assign destinations to: None = any, otherwise these."""
+    user = current_user(request)
+    if not login_enabled() or (user is not None and user.is_admin):
+        return None
+    return set(user.location_ids) if user is not None else set()
+
+
+def home_locations(request: Request) -> tuple[int, ...]:
+    """Locations of the logged-in account (preselected in the location menus)."""
+    user = current_user(request)
+    return user.location_ids if user is not None else ()
 
 
 def secure_cookies(request: Request) -> bool:

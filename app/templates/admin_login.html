@@ -1,8 +1,12 @@
 {% extends "base.html" %}
-{% block title %}{{ t("Admin-Anmeldung") }} – {{ app_name }}{% endblock %}
+{% block title %}{{ t("Anmeldung") if login_required else t("Admin-Anmeldung") }} – {{ app_name }}{% endblock %}
 {% block content %}
-<h1>{{ t("Admin-Anmeldung") }}</h1>
+<h1>{{ t("Anmeldung") if login_required else t("Admin-Anmeldung") }}</h1>
+{% if login_required %}
+<p class="hint">{{ t("Bitte mit dem Konto anmelden, das ein Admin angelegt hat.") }}</p>
+{% else %}
 <p class="hint">{{ t("Bearbeiten und Löschen von Zielen und Standorten sowie das Bestätigen neuer Ziele sind Admins vorbehalten. Neue Ziele kann jede Person anlegen.") }}</p>
+{% endif %}
 
 <section class="card narrow">
   {% if error %}<ul class="errors" role="alert"><li>{{ t(error) }}</li></ul>{% endif %}

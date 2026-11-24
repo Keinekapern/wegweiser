@@ -95,20 +95,31 @@ Standorte (Startpunkte) und Ziele werden einmal angelegt und stehen danach per A
 
 ![Liste der Ziele, Ansicht ohne Anmeldung](docs/screenshots/destinations.png)
 
-## Admins und Rechte
+## Konten und Rechte
 
 Wie viel Rechteverwaltung nötig ist, hängt vom Betrieb ab. Die Betriebsart wird in `.env` mit `AUTH_MODE` gewählt:
 
 | `AUTH_MODE` | Gedacht für | Rechte |
 |---|---|---|
 | `admin` (Standard) | eine Einrichtung oder ein Träger mit gemeinsamer Instanz, auch über Tunnel | Alle erstellen Wegbeschreibungen und schlagen Ziele vor; Admins bestätigen und verwalten (siehe unten) |
+| `users` | mehrere Standorte eines Trägers | Alle melden sich an; Rollen je Standort (siehe unten) |
 | `off` | den eigenen PC oder ein kleines, vertrauenswürdiges Büronetz | Keine Anmeldung, alle dürfen alles, neue Ziele sind sofort dauerhaft. Die Oberfläche weist darauf hin. Zusammen mit `CLOUDFLARE_TUNNEL_TOKEN` startet Wegweiser nicht. |
 
-Mehrere Organisationen betreiben am besten je eine eigene Instanz (eigener Container, eigene Datenbank); die selbst gehosteten Dienste für Routen und Fahrpläne können sie sich teilen. Benutzerkonten mit Rollen je Standort für größere Träger sind vorbereitet, aber noch nicht umgesetzt.
+Mehrere Organisationen betreiben am besten je eine eigene Instanz (eigener Container, eigene Datenbank); die selbst gehosteten Dienste für Routen und Fahrpläne können sie sich teilen. Ziele lassen sich zwischen Instanzen über Export und Import austauschen.
 
 In der Betriebsart `admin` kann ohne Anmeldung jede Person Wegbeschreibungen erstellen und neue Ziele anlegen. Neue Ziele sind sofort nutzbar, tragen aber den Vermerk „unbestätigt“, bis ein Admin sie auf der Admin-Seite bestätigt oder ablehnt. Bis dahin lassen sie sich im selben Browser noch korrigieren.
 
 Nur Admins können bestehende Ziele und Standorte bearbeiten oder löschen, Standorte anlegen, Ziele bestimmten Standorten zuordnen, die ÖPNV-Standardwerte speichern und festlegen, welche Sprachen der Wegbeschreibung zur Auswahl stehen (Admin-Seite → Einstellungen; Deutsch ist immer dabei). Weitere Admins und das eigene Passwort verwaltet man auf der Admin-Seite.
+
+In der Betriebsart `users` sieht ohne Anmeldung niemand etwas außer der Anmeldeseite. Admins legen die Konten auf der Admin-Seite an und wählen Rolle und Standorte:
+
+| Rolle | Darf |
+|---|---|
+| Mitarbeitend | Wegbeschreibungen und PDFs erstellen, Ziele vorschlagen. Vorschläge werden den eigenen Standorten zugeordnet und warten auf Bestätigung. |
+| Standortverantwortlich | dazu Ziele der eigenen Standorte bearbeiten, löschen und bestätigen; neue Ziele sind sofort bestätigt. Ziele, die auch anderen Standorten oder allen Standorten zugeordnet sind, bleiben den Admins vorbehalten. |
+| Admin | alles, auch Konten, Standorte, Einstellungen, Export und Import |
+
+Alle sehen alle Standorte und Ziele; der eigene Standort ist in der Wegbeschreibung vorausgewählt. Neue Konten bekommen ein Startpasswort (selbst gewählt oder erzeugt), das beim ersten Anmelden geändert werden muss; auf der Seite eines Kontos lässt sich ein neues Startpasswort erzeugen. Rollen gelten auch, wenn man später zur Betriebsart `admin` zurückwechselt.
 
 Das erste Admin-Konto wird auf dem Server angelegt (fragt nach dem Passwort):
 

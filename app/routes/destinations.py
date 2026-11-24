@@ -80,6 +80,8 @@ def render_form(request: Request, conn, *, form: dict, errors=None,
         request, "destination_form.html",
         {"form": form, "errors": errors or [], "edit_id": edit_id, "search_query": search_query,
          "can_assign": auth.can(request, "destination.assign_locations"),
+         "assign_locations": _assignable(request, conn),
+         "assign_all": auth.assignable_locations(request) is None,
          "creates_pending": auth.creates_pending(request),
          "locations": db.list_locations(conn), "categories": categories.CATEGORIES,
          "category_groups": categories.GROUPS, "name_languages": _name_languages(request, conn)},
@@ -116,14 +118,36 @@ def destinations_new(request: Request, conn: DB, location_id: str | None = None,
     preselect = _int_or_none(location_id)
     if preselect is None and len(locations) == 1:
         preselect = locations[0].id
+    if preselect is None and auth.home_locations(request):
+        preselect = auth.home_locations(request)[0]
     name = (name or "").strip()[:200]
     form = {"location_ids": [preselect] if preselect else [], "name": name}
     return render_form(request, conn, form=form, search_query=name)
 
 
-def _creator_locations(conn, location_ids: list[int]) -> list[int]:
-    """Without login, assigning destinations to locations is not allowed; only the location
-    the form was opened from is kept, so the new destination shows up there."""
+def _assignable(request: Request, conn) -> list[db.Location]:
+    """Locations offered as checkboxes in the form (managers: only their own)."""
+    allowed = auth.assignable_locations(request)
+    return [loc for loc in db.list_locations(conn) if allowed is None or loc.id in allowed]
+
+
+def _assigned(request: Request, conn, location_ids: list[int]) -> list[int]:
+    """Locations to store for a destination created or changed with assignment rights.
+    Managers may only use their own; none ticked = all of their own (a destination for
+    all locations is up to the admins)."""
+    allowed = auth.assignable_locations(request)
+    if allowed is None:
+        return location_ids
+    return [i for i in location_ids if i in allowed] or sorted(allowed)
+
+
+def _creator_locations(request: Request, conn, location_ids: list[int]) -> list[int]:
+    """Proposals cannot choose locations: staff proposals go to their own locations (to
+    the one the form was opened from, if it is theirs), so their managers can approve
+    them; without login only the location the form was opened from is kept."""
+    home = auth.home_locations(request)
+    if home:
+        return [i for i in location_ids if i in home][:1] or list(home)
     known = {loc.id for loc in db.list_locations(conn)}
     return [i for i in location_ids if i in known][:1]
 
@@ -136,12 +160,12 @@ async def destinations_create(request: Request, conn: DB):
         return render_form(request, conn, form=form, errors=errors, status_code=422)
     if not auth.creates_pending(request):
         dest_id = db.create_destination(conn, dest)
-        db.set_destination_locations(conn, dest_id, form["location_ids"])
+        db.set_destination_locations(conn, dest_id, _assigned(request, conn, form["location_ids"]))
         db.set_destination_names(conn, dest_id, form["names"])
         return RedirectResponse("/destinations", status_code=303)
     creator, new_cookie = auth.ensure_creator_token(request)
     dest_id = db.create_destination(conn, dest, pending=True, creator_token=creator)
-    db.set_destination_locations(conn, dest_id, _creator_locations(conn, form["location_ids"]))
+    db.set_destination_locations(conn, dest_id, _creator_locations(request, conn, form["location_ids"]))
     db.set_destination_names(conn, dest_id, form["names"])
     response = RedirectResponse("/destinations?created=pending", status_code=303)
     if new_cookie:
@@ -180,7 +204,8 @@ async def destinations_update(request: Request, conn: DB, destination_id: int):
                            status_code=422)
     db.update_destination(conn, destination_id, dest)
     if auth.can(request, "destination.assign_locations"):   # creators cannot change it
-        db.set_destination_locations(conn, destination_id, form["location_ids"])
+        db.set_destination_locations(conn, destination_id,
+                                     _assigned(request, conn, form["location_ids"]))
     db.set_destination_names(conn, destination_id, form["names"])
     return RedirectResponse("/destinations", status_code=303)
 
