@@ -121,6 +121,8 @@ In der Betriebsart `users` sieht ohne Anmeldung niemand etwas außer der Anmelde
 
 Alle sehen alle Standorte und Ziele; der eigene Standort ist in der Wegbeschreibung vorausgewählt. Neue Konten bekommen ein Startpasswort (selbst gewählt oder erzeugt), das beim ersten Anmelden geändert werden muss; auf der Seite eines Kontos lässt sich ein neues Startpasswort erzeugen. Rollen gelten auch, wenn man später zur Betriebsart `admin` zurückwechselt.
 
+![Kontoverwaltung in der Betriebsart users: Konten mit Rolle und Standorten, Formular für ein neues Konto](docs/screenshots/accounts.png)
+
 Das erste Admin-Konto wird auf dem Server angelegt (fragt nach dem Passwort):
 
 ```sh
