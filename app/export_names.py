@@ -1,9 +1,9 @@
 """Folder and file names in the PDF export (ZIP).
 
-    Wegweiser_2026-11-21_EA-Tübingen.zip          one location: destinations at the top
-    Wegweiser_2026-11-21_3-Standorte.zip          several: one folder per location first
+    Wegweiser_2026-11-21_Unterkunft-Nord.zip  one location: destinations at the top
+    Wegweiser_2026-11-21_3-Standorte.zip      several: one folder per location first
       Übersicht.pdf
-      EA Tübingen/CRONA-Kliniken/CRONA-Kliniken – Arabisch.pdf
+      Unterkunft Nord/Augenklinik/Augenklinik – Arabisch.pdf
 
 File name = "<destination> – <language>[ – <mode>].pdf": the destination is in the file
 name too, so a single file sent or printed on its own is still clear. Languages, modes

@@ -12,8 +12,8 @@ BASE = {"phone": "", "website": "", "opening_hours": "", "google_maps_url": "", 
 
 
 def _setup(client):
-    client.post("/locations", data={"name": "EA Tübingen", "address": "Beispielweg 1", "coords": "48.5, 9.0"})
-    client.post("/locations", data={"name": "NUK", "address": "Musterstraße 2", "coords": "48.7, 9.0"})
+    client.post("/locations", data={"name": "Unterkunft Nord", "address": "Beispielweg 1", "coords": "48.5, 9.0"})
+    client.post("/locations", data={"name": "Unterkunft Süd", "address": "Musterstraße 2", "coords": "48.7, 9.0"})
     client.post("/destinations", data=BASE | {
         "name": "Kinderklinik", "address": "Hoppe-Seyler-Str. 1, 72076 Tübingen",
         "coords": "48.53, 9.04", "phone": "07071 29-83781", "category": "hospital",
@@ -41,8 +41,8 @@ def test_json_export_without_and_with_locations(client):
     r = client.get("/settings/data/export", params={"format": "json", "locations": "1"})
     assert "filename*=UTF-8''Wegweiser_Daten_" in r.headers["content-disposition"]
     data = r.json()
-    assert [l["name"] for l in data["locations"]] == ["EA Tübingen", "NUK"]
-    assert next(d for d in data["destinations"] if d["name"] == "Kinderklinik")["locations"] == ["EA Tübingen"]
+    assert [l["name"] for l in data["locations"]] == ["Unterkunft Nord", "Unterkunft Süd"]
+    assert next(d for d in data["destinations"] if d["name"] == "Kinderklinik")["locations"] == ["Unterkunft Nord"]
 
 
 def test_pending_destinations_only_on_request(client, anon_client):
@@ -63,7 +63,7 @@ def test_csv_export_for_excel(client):
     with_locs = client.get("/settings/data/export", params={"format": "csv", "locations": "1"}).text
     assert ";Standorte;" in with_locs.splitlines()[0]
     locs = client.get("/settings/data/export", params={"format": "csv-locations"}).text
-    assert locs.splitlines()[1] == "EA Tübingen;Beispielweg 1;48.5, 9.0"
+    assert locs.splitlines()[1] == "Unterkunft Nord;Beispielweg 1;48.5, 9.0"
 
 
 def test_roundtrip_into_an_empty_instance(client, tmp_path, monkeypatch):
@@ -82,7 +82,7 @@ def test_roundtrip_into_an_empty_instance(client, tmp_path, monkeypatch):
         assert kinder.category == "hospital" and kinder.osm_id == 123 and kinder.status == "approved"
         assert db.get_destination_names(conn, kinder.id)["ar"] == "مستشفى الأطفال"
         locs = {l.id: l.name for l in db.list_locations(conn)}
-        assert [locs[i] for i in db.destination_location_ids(conn)[kinder.id]] == ["EA Tübingen"]
+        assert [locs[i] for i in db.destination_location_ids(conn)[kinder.id]] == ["Unterkunft Nord"]
 
 
 def test_duplicates_preview_and_update_choice(client):
@@ -116,11 +116,11 @@ def test_duplicates_preview_and_update_choice(client):
 def test_csv_import_english_headers_excel_encoding(client):
     _setup(client)
     text = ("Name,Address,Coordinates,Phone,Category,Locations,Name (fa)\r\n"
-            "Zahnarzt Müller,\"Weg 3, 72070 Tübingen\",\"48.51, 9.06\",07071 555,Zahnarzt,EA Tübingen | Sindelfingen,دندانپزشک\r\n"
+            "Zahnarzt Müller,\"Weg 3, 72070 Tübingen\",\"48.51, 9.06\",07071 555,Zahnarzt,Unterkunft Nord | Unterkunft West,دندانپزشک\r\n"
             "Kaputt,Weg 4,abc,,,,\r\n")
     preview = _upload(client, "liste.csv", text.encode("utf-8")).text
     assert "Neu: 1" in preview and "Fehlerhaft: 1" in preview
-    assert "Diese Standorte aus der Datei gibt es hier nicht" in preview and "Sindelfingen" in preview
+    assert "Diese Standorte aus der Datei gibt es hier nicht" in preview and "Unterkunft West" in preview
     client.post(f"/settings/data/import/{_token(preview)}")
     with db.get_conn() as conn:
         z = next(d for d in db.list_destinations(conn) if d.name == "Zahnarzt Müller")

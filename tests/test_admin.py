@@ -82,7 +82,7 @@ def test_admin_creates_approved_destination(client):
 
 def test_anonymous_destination_is_pending_and_usable(client, anon_client):
     client.post("/locations", data={"name": "EA", "address": "x", "coords": "48.5, 9.0"})
-    client.post("/locations", data={"name": "NUK", "address": "y", "coords": "48.7, 9.0"})
+    client.post("/locations", data={"name": "Unterkunft Süd", "address": "y", "coords": "48.7, 9.0"})
     r = anon_client.post("/destinations", data=DEST | {"location_ids": ["2", "1"]},
                          follow_redirects=False)
     assert r.headers["location"] == "/destinations?created=pending"

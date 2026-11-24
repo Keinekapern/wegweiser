@@ -52,13 +52,13 @@ def fake(monkeypatch):
 
 
 def _setup(client):
-    client.post("/locations", data={"name": "EA Tübingen", "address": "x", "coords": "48.52, 9.05"})
-    client.post("/locations", data={"name": "NUK Sindelfingen", "address": "y", "coords": "48.7, 9.0"})
+    client.post("/locations", data={"name": "Unterkunft Nord", "address": "x", "coords": "48.52, 9.05"})
+    client.post("/locations", data={"name": "Unterkunft Süd", "address": "y", "coords": "48.7, 9.0"})
     base = {"address": "Weg 1", "phone": "", "website": "", "opening_hours": "",
             "google_maps_url": "", "note": "", "osm_type": "", "osm_id": "", "category": ""}
-    client.post("/destinations", data=base | {"name": "CRONA-Kliniken", "lat": "48.53", "lon": "9.04",
+    client.post("/destinations", data=base | {"name": "Augenklinik", "lat": "48.53", "lon": "9.04",
                                                "location_ids": ["1"]})
-    client.post("/destinations", data=base | {"name": "Kliniken Böblingen", "lat": "48.68", "lon": "9.0",
+    client.post("/destinations", data=base | {"name": "Kreisklinikum", "lat": "48.68", "lon": "9.0",
                                                "location_ids": ["2"]})
     client.post("/destinations", data=base | {"name": "Apotheke: am Markt?", "lat": "48.6", "lon": "9.0"})
 
@@ -85,12 +85,12 @@ def test_destination_folders_unique():
 
 
 def test_file_and_zip_names():
-    assert export_names.pdf_name("CRONA-Kliniken", "ar") == "CRONA-Kliniken – Arabisch.pdf"
-    assert export_names.pdf_name("CRONA-Kliniken", "fa", "transit") == \
-        "CRONA-Kliniken – Persisch (Farsi) – ÖPNV.pdf"
+    assert export_names.pdf_name("Augenklinik", "ar") == "Augenklinik – Arabisch.pdf"
+    assert export_names.pdf_name("Augenklinik", "fa", "transit") == \
+        "Augenklinik – Persisch (Farsi) – ÖPNV.pdf"
     loc = lambda i, n: db.Location(i, n, "", 0, 0)
     day = date(2026, 11, 21)
-    assert export_names.zip_name([loc(1, "EA Tübingen")], day) == "Wegweiser_2026-11-21_EA-Tübingen.zip"
+    assert export_names.zip_name([loc(1, "Unterkunft Nord")], day) == "Wegweiser_2026-11-21_Unterkunft-Nord.zip"
     assert export_names.zip_name([loc(1, "A"), loc(2, "B"), loc(3, "C")], day) == \
         "Wegweiser_2026-11-21_3-Standorte.zip"
 
@@ -101,13 +101,13 @@ def test_plan_one_location(client):
     _setup(client)
     with db.get_conn() as conn:
         items, name = export.plan(conn, export.ExportRequest([1], [1, 2, 3], ["de", "ar"], ["transit"]))
-    # Kliniken Böblingen is only offered at Sindelfingen; unassigned destinations everywhere
+    # Kreisklinikum is only offered at Unterkunft Süd; unassigned destinations everywhere
     assert [it.path for it in items] == [
         "Apotheke- am Markt-/Apotheke- am Markt- – Arabisch.pdf",
         "Apotheke- am Markt-/Apotheke- am Markt- – Deutsch.pdf",
-        "CRONA-Kliniken/CRONA-Kliniken – Arabisch.pdf",
-        "CRONA-Kliniken/CRONA-Kliniken – Deutsch.pdf"]
-    assert name.endswith("_EA-Tübingen.zip")
+        "Augenklinik/Augenklinik – Arabisch.pdf",
+        "Augenklinik/Augenklinik – Deutsch.pdf"]
+    assert name.endswith("_Unterkunft-Nord.zip")
     q = parse_qs(urlsplit(items[2].print_url(export.ExportRequest([1], [1], ["ar"], ["transit"],
                                                                   "landscape", True))).query)
     assert q == {"location_id": ["1"], "destination_id": ["1"], "profile": ["transit"],
@@ -120,10 +120,10 @@ def test_plan_several_locations_and_modes(client):
         items, name = export.plan(conn, export.ExportRequest([1, 2], [1, 2], ["de"],
                                                              ["transit", "foot-walking"]))
     assert [it.path for it in items] == [
-        "EA Tübingen/CRONA-Kliniken/CRONA-Kliniken – Deutsch – ÖPNV.pdf",
-        "EA Tübingen/CRONA-Kliniken/CRONA-Kliniken – Deutsch – zu Fuß.pdf",
-        "NUK Sindelfingen/Kliniken Böblingen/Kliniken Böblingen – Deutsch – ÖPNV.pdf",
-        "NUK Sindelfingen/Kliniken Böblingen/Kliniken Böblingen – Deutsch – zu Fuß.pdf"]
+        "Unterkunft Nord/Augenklinik/Augenklinik – Deutsch – ÖPNV.pdf",
+        "Unterkunft Nord/Augenklinik/Augenklinik – Deutsch – zu Fuß.pdf",
+        "Unterkunft Süd/Kreisklinikum/Kreisklinikum – Deutsch – ÖPNV.pdf",
+        "Unterkunft Süd/Kreisklinikum/Kreisklinikum – Deutsch – zu Fuß.pdf"]
     assert name.endswith("_2-Standorte.zip")
 
 
@@ -133,7 +133,7 @@ def test_bulk_export_zip(client, fake):
     _setup(client)
     fake.fail_dest = 2
     page = client.get("/export").text
-    assert "Export starten" in page and "CRONA-Kliniken" in page
+    assert "Export starten" in page and "Augenklinik" in page
     r = client.post("/export", data={"location_ids": ["1", "2"], "destination_ids": ["1", "2"],
                                      "langs": ["de", "ar"], "modes": ["auto"],
                                      "orientation": "portrait"}, follow_redirects=False)
@@ -146,11 +146,11 @@ def test_bulk_export_zip(client, fake):
     assert dl.headers["content-type"] == "application/zip"
     assert "filename*=UTF-8''Wegweiser_" in dl.headers["content-disposition"]
     names = zipfile.ZipFile(io.BytesIO(dl.content)).namelist()
-    assert names == ["EA Tübingen/CRONA-Kliniken/CRONA-Kliniken – Arabisch.pdf",
-                     "EA Tübingen/CRONA-Kliniken/CRONA-Kliniken – Deutsch.pdf",
+    assert names == ["Unterkunft Nord/Augenklinik/Augenklinik – Arabisch.pdf",
+                     "Unterkunft Nord/Augenklinik/Augenklinik – Deutsch.pdf",
                      "Übersicht.pdf"]
     assert "Keine ÖPNV-Verbindung gefunden." in fake.overview      # listed as not created
-    assert "Kliniken Böblingen" in fake.overview and "2 von 4" in fake.overview
+    assert "Kreisklinikum" in fake.overview and "2 von 4" in fake.overview
 
 
 def test_bulk_export_validation(client, fake, monkeypatch):
@@ -181,7 +181,7 @@ def test_single_pdf(client, anon_client, fake):
     r = anon_client.get("/directions/pdf", params={"location_id": 1, "destination_id": 1,
                                                    "profile": "transit", "lang": "ar", "bw": "1"})
     assert r.status_code == 200 and r.headers["content-type"] == "application/pdf"
-    assert "filename*=UTF-8''CRONA-Kliniken%20%E2%80%93%20Arabisch.pdf" in r.headers["content-disposition"]
+    assert "filename*=UTF-8''Augenklinik%20%E2%80%93%20Arabisch.pdf" in r.headers["content-disposition"]
     assert fake.urls[-1].startswith("/directions/print?") and "bw=1" in fake.urls[-1]
     assert "pdf-button" in anon_client.get("/directions/print", params={"location_id": 1,
                                                                         "destination_id": 1}).text
@@ -228,14 +228,14 @@ def test_names_follow_the_ui_language(client, fake):
     with db.get_conn() as conn:
         items, name = export.plan(conn, export.ExportRequest([1, 2], [1, 2], ["de", "fa"],
                                                              ["transit", "foot-walking"], ui_lang="en"))
-    assert items[0].path == "EA Tübingen/CRONA-Kliniken/CRONA-Kliniken – German – public transport.pdf"
-    assert items[3].path == "EA Tübingen/CRONA-Kliniken/CRONA-Kliniken – Persian (Farsi) – on foot.pdf"
+    assert items[0].path == "Unterkunft Nord/Augenklinik/Augenklinik – German – public transport.pdf"
+    assert items[3].path == "Unterkunft Nord/Augenklinik/Augenklinik – Persian (Farsi) – on foot.pdf"
     assert name.endswith("_2-locations.zip")
     assert export_names.overview_name("en") == "Overview.pdf"
     client.cookies.set("ui_lang", "en")
     r = client.get("/directions/pdf", params={"location_id": 1, "destination_id": 1, "lang": "ar"})
-    assert "CRONA-Kliniken%20%E2%80%93%20Arabic.pdf" in r.headers["content-disposition"]
+    assert "Augenklinik%20%E2%80%93%20Arabic.pdf" in r.headers["content-disposition"]
     r = client.post("/export", data={"location_ids": ["1"], "destination_ids": ["1"], "langs": ["de"],
                                      "modes": ["auto"]}, follow_redirects=False)
     names = zipfile.ZipFile(io.BytesIO(client.get(r.headers["location"] + "/download").content)).namelist()
-    assert names == ["CRONA-Kliniken/CRONA-Kliniken – German.pdf", "Overview.pdf"]
+    assert names == ["Augenklinik/Augenklinik – German.pdf", "Overview.pdf"]

@@ -34,12 +34,12 @@ Unter „Export“ (nur Admins) erstellt Wegweiser die Wegbeschreibungen für au
 ```
 Wegweiser_2026-11-21_2-Standorte.zip
 ├── Übersicht.pdf                      Inhalt, Optionen, was nicht erstellt werden konnte
-├── EA Tübingen/                       Standort-Ebene nur bei mehreren Standorten
-│   └── CRONA-Kliniken/
-│       ├── CRONA-Kliniken – Arabisch.pdf
-│       ├── CRONA-Kliniken – Deutsch.pdf
-│       └── CRONA-Kliniken – Persisch (Farsi).pdf
-└── NUK Sindelfingen/
+├── Unterkunft Nord/                   Standort-Ebene nur bei mehreren Standorten
+│   └── Universitätsklinikum/
+│       ├── Universitätsklinikum – Arabisch.pdf
+│       ├── Universitätsklinikum – Deutsch.pdf
+│       └── Universitätsklinikum – Persisch (Farsi).pdf
+└── Unterkunft Süd/
     └── …
 ```
 
