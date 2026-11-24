@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app import auth, categories, config, db, languages
+from app import auth, categories, config, db, languages, print_options
 from app.category_names import category_name
 from app.deps import DB, Allowed, templates
 from app.i18n import (DirectionsText, Msg, directions_language_options, get_ui_lang,
@@ -315,6 +315,7 @@ def directions_print(
         return templates.TemplateResponse(request, "directions.html",
                                           ctx | selection_options(conn, request), status_code=404)
     ctx["map_links"] = map_links(ctx["destination"], ctx["dt"]("apple_maps"))
+    ctx["credit"] = print_options.credit_text() if print_options.credit_enabled(conn) else None
     return templates.TemplateResponse(request, "print.html", ctx)
 
 

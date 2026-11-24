@@ -5,7 +5,7 @@ import json
 from fastapi import APIRouter, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, Response
 
-from app import categories, config, db, languages
+from app import categories, config, db, languages, print_options
 from app.services import backup, data_transfer
 from app.deps import DB, Allowed, templates
 from app.i18n import DEFAULT_DIRECTIONS_LANG, Msg, directions_language_options, get_ui_lang
@@ -33,6 +33,28 @@ async def languages_save(request: Request, conn: DB, _: Allowed("settings.langua
     chosen = languages.set_enabled(conn, form.getlist("langs"))
     return _render(request, conn, notice=Msg("Gespeichert: {n} Sprachen stehen zur Auswahl.",
                                              n=len(chosen)))
+
+
+# --- printout ---
+
+def _render_print(request: Request, conn, notice=None):
+    return templates.TemplateResponse(request, "settings_print.html", {
+        "credit": print_options.credit_enabled(conn),
+        "credit_text": print_options.credit_text(),
+        "notice": notice,
+    })
+
+
+@router.get("/print", response_class=HTMLResponse)
+def print_page(request: Request, conn: DB, _: Allowed("settings.print")):
+    return _render_print(request, conn)
+
+
+@router.post("/print", response_class=HTMLResponse)
+async def print_save(request: Request, conn: DB, _: Allowed("settings.print")):
+    form = await request.form()
+    print_options.set_credit(conn, form.get("credit") == "1")
+    return _render_print(request, conn, notice=Msg("Gespeichert."))
 
 
 # --- database backups ---

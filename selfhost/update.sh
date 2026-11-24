@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Downloads timetable (GTFS) and map data (OSM) and rebuilds MOTIS / openrouteservice.
 #
-#   ./update.sh            new timetable? -> MOTIS re-import (~2 min downtime for public transport)
+#   ./update.sh            new timetable? -> MOTIS re-import (~2-6 min downtime for public transport)
 #   ./update.sh --osm      also new map data -> MOTIS re-import and ORS graph rebuild (~15 min)
 #   ./update.sh --force    re-import even if nothing changed
 #
@@ -74,7 +74,11 @@ fi
 if [ $gtfs_new = 1 ] || [ $osm_new = 1 ] || [ $force = 1 ]; then
   log "MOTIS: Import"
   docker compose stop motis >/dev/null 2>&1 || true
-  MOTIS_MEM_LIMIT=7g docker compose run --rm --no-deps motis /motis import >/dev/null
+  if ! MOTIS_MEM_LIMIT=7g docker compose run --rm --no-deps motis /motis import >/dev/null; then
+    docker compose up -d motis >/dev/null 2>&1 || true   # keep public transport available
+    log "FEHLER: MOTIS-Import fehlgeschlagen (Ausgabe: docker compose run --rm motis /motis import)"
+    exit 1
+  fi
   docker compose up -d motis
   log "MOTIS: läuft wieder"
 else

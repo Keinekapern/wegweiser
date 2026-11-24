@@ -297,3 +297,17 @@ def test_auth_mode_off_hides_pending_marks(client, anon_client, monkeypatch):
     listing = anon_client.get("/destinations").text
     assert "pending.svg" not in listing and "unbestätigt" not in listing
     assert _status(1) == "pending"                         # data unchanged, shows again in admin mode
+
+
+def test_print_credit_can_be_switched_off(client, anon_client):
+    client.post("/locations", data={"name": "EA", "address": "x", "coords": "48.5, 9.0"})
+    client.post("/destinations", data=DEST)
+    url = "/directions/print?location_id=1&destination_id=1&profile=foot-walking"
+    assert 'class="credit">Wegweiser (github.com/Keinekapern/wegweiser)' in client.get(url).text
+    assert anon_client.get("/settings/print", follow_redirects=False).headers["location"].startswith("/admin/login")
+    assert "/settings/print" in client.get("/admin").text
+    page = client.post("/settings/print", data={}).text
+    assert "Gespeichert." in page and "checked" not in page.split('name="credit"')[1].split(">")[0]
+    assert 'class="credit"' not in client.get(url).text
+    client.post("/settings/print", data={"credit": "1"})
+    assert 'class="credit"' in client.get(url + "&lang=ar").text

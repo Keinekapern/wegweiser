@@ -88,7 +88,7 @@
         {{ dt("sources") }}: {{ dt("osm") }} (ODbL) ·
         {% if route and route.profile == "transit" %}{{ dt("timetable_data") }}: {{ transit_source }} ({{ transit_sources_url|replace("https://", "")|replace("http://", "")|trim("/") }}){% for c in symbol_credits %} · {{ c }}{% endfor %}
         {%- else %}{{ route_source }}{% endif %}
-        · {{ dt("created", date=dt.date(today)) }}
+        · {{ dt("created", date=dt.date(today)) }}{% if credit %} · <span class="credit">{{ credit }}</span>{% endif %}
       </p>
 
       <div class="details" id="details">

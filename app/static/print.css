@@ -300,3 +300,4 @@ body:not(.landscape) .page1.has-insets.details-moved .inset-map { height: 62mm; 
 .walk-badge { --line-color: #1f5fbf; --line-text: #fff; }
 .walk-badge img { display: block; height: 5mm; width: auto; }
 .bw .walk-badge { background: #000; }
+.sources .credit { white-space: nowrap; }  /* "Wegweiser (github.com/…)" stays on one line */

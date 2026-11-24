@@ -11,7 +11,7 @@ Andere Regionen gehen genauso: `GTFS_URL` und `OSM_URL` auf andere Daten setzen,
 
 | | Aufbau (einmalig bzw. bei neuen Daten) | Betrieb |
 |---|---|---|
-| MOTIS | ca. 1,5 Min., bis 6 GB RAM | ca. 0,5 GB RAM |
+| MOTIS | ca. 6 Min. (davon 4–5 Min. Busverläufe; spätere Importe schneller), bis 6 GB RAM | ca. 0,5 GB RAM |
 | openrouteservice | ca. 15 Min., bis 5,5 GB RAM | ca. 1,6 GB RAM |
 | Speicherplatz | ca. 6 GB inkl. Rohdaten | |
 
@@ -42,7 +42,7 @@ ROUTE_ATTRIBUTION=openrouteservice
 Der NVBW-Fahrplan gilt jeweils nur bis zum nächsten Fahrplanwechsel (Mitte Dezember, oft auch im Juni). Das Skript lädt nur, was sich geändert hat, und warnt, wenn der Fahrplan in weniger als 14 Tagen abläuft.
 
 ```sh
-./update.sh          # neuer Fahrplan? -> MOTIS neu importieren (ÖPNV ca. 2 Min. nicht verfügbar)
+./update.sh          # neuer Fahrplan? -> MOTIS neu importieren (ÖPNV ca. 2–6 Min. nicht verfügbar)
 ./update.sh --osm    # zusätzlich neue Kartendaten -> auch openrouteservice neu bauen
 ```
 
@@ -64,5 +64,6 @@ Wegweiser speichert Verbindungen einige Tage zwischen (`TRANSIT_CACHE_DAYS`). Na
 
 ## Bekannte Einschränkungen
 
+- Die Linienverläufe im NVBW-Fahrplan springen oft in gerader Linie von Haltestelle zu Haltestelle (Stand November 2026 bei rund der Hälfte aller Verläufe mindestens ein Sprung über 300 m), etwa quer über Bahnhofsgleise. Für Busse berechnet MOTIS die Verläufe deshalb selbst aus OpenStreetMap (`route_shapes` in `motis/config.yml`, Busprofil mit Busspuren und Busschleusen); Straßenbahn und Bahn behalten die Verläufe aus dem Fahrplan. Die berechneten Verläufe landen in einem Zwischenspeicher, spätere Importe rechnen nur Geändertes neu.
 - Der NVBW-Fahrplan enthält keine Linienfarben. `update.sh` ergänzt sie aus der Sammlung [Traewelling/line-colors](https://github.com/Traewelling/line-colors) (CC0). Die Betreiber heißen dort anders als bei der NVBW und werden deshalb über ihre Liniennummern zugeordnet, nur bei eindeutigem Ergebnis (Stand November 2026: rund 1.700 von 3.800 Linien, darunter alle großen Stadtverkehre). Linien ohne Farbe erscheinen in der Standardfarbe. Falsche oder fehlende Zuordnungen lassen sich in `line-colors-aliases.csv` korrigieren; fehlende Farben am besten direkt bei Traewelling ergänzen, dann profitieren alle davon.
 - Keine Echtzeitdaten (Verspätungen); für Wegbeschreibungen mit Takt ist das nicht nötig.

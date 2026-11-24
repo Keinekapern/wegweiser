@@ -3,6 +3,8 @@ from pathlib import Path
 
 APP_NAME = "Wegweiser"
 APP_VERSION = "0.1.0"
+# Shown on printouts (can be switched off: Admin → Einstellungen → Ausdruck)
+PROJECT_URL = "https://github.com/Keinekapern/wegweiser"
 
 
 def database_path() -> Path:

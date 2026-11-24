@@ -20,6 +20,29 @@ timetable:
   default_transfer_time: 2
   max_matching_distance: 25.000000
   preprocess_max_matching_distance: 250.000000
+  # Bus routes: the NVBW shapes often jump in straight lines between stops (e.g. across
+  # station tracks), so MOTIS computes bus shapes from OpenStreetMap (bus profile, knows
+  # bus lanes and bus gates). Other modes keep the shapes from the timetable.
+  route_shapes:         # clasz names as in nigiri to_clasz (LONGDISTANCE, AERIALLIFT without "_")
+    mode: all
+    clasz:
+      BUS: true
+      AIR: false
+      HIGHSPEED: false
+      LONGDISTANCE: false
+      COACH: false
+      NIGHT: false
+      RIDE_SHARING: false
+      REGIONAL: false
+      SUBURBAN: false
+      SUBWAY: false
+      TRAM: false
+      SHIP: false
+      ODM: false
+      FUNICULAR: false
+      AERIALLIFT: false
+      OTHER: false
+    n_threads: 6        # leave some cores to the other services on the server
   datasets:
     gtfs:
       path: /downloads/timetable.gtfs.zip

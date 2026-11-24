@@ -207,6 +207,7 @@ ACTIONS = (
     "location.manage",               # create, edit, delete locations
     "settings.transit_defaults",
     "settings.languages",            # which directions languages are offered
+    "settings.print",                # printout options (e.g. the Wegweiser credit)
     "settings.backup",               # list, create and download database backups
     "data.transfer",                 # export and import destinations and locations
     "admin.panel",                   # account page: own password, approvals
