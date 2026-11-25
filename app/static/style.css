@@ -371,3 +371,10 @@ a { color: var(--accent); }
 /* walking legs: a badge as wide as the line badges, with the walking figure */
 .walk-badge { --line-color: #1f5fbf; --line-text: #fff; }
 .walk-badge img { display: block; height: 1.3em; width: auto; }
+
+/* Bulk entry of destinations */
+.bulk-table td { vertical-align: top; }
+.bulk-table select, .bulk-table td > input:not([type=checkbox]) { width: 100%; min-width: 8rem; }
+.bulk-table td:nth-child(2) { width: 45%; }
+.bulk-table td:nth-child(3) { min-width: 12rem; }
+.bulk-result ul { margin: .25rem 0 0; }

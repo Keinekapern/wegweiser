@@ -3,7 +3,10 @@
 {% block content %}
 <div class="page-head">
   <h1>{{ t("Ziele") }}</h1>
-  <a class="button" href="/destinations/new{% if filter_id %}?location_id={{ filter_id }}{% endif %}">{{ t("Neues Ziel") }}</a>
+  <div class="buttons">
+    <a class="button secondary" href="/destinations/bulk{% if filter_id %}?location_id={{ filter_id }}{% endif %}">{{ t("Mehrere Ziele auf einmal") }}</a>
+    <a class="button" href="/destinations/new{% if filter_id %}?location_id={{ filter_id }}{% endif %}">{{ t("Neues Ziel") }}</a>
+  </div>
 </div>
 <p class="hint">{{ t("Einrichtungen, zu denen Wegbeschreibungen erstellt werden.") }}</p>
 {% if created_pending %}<p class="notice" role="status">{{ t("Ziel angelegt. Es ist sofort nutzbar und wird dauerhaft, sobald ein Admin es bestätigt.") }}</p>{% endif %}

@@ -4,7 +4,11 @@
 {% macro val(key) %}{{ form[key] if form[key] is not none else '' }}{% endmacro %}
 {% block content %}
 <p><a href="/destinations">{{ t("← Zurück zur Zielliste") }}</a></p>
-<h1>{{ heading }}</h1>
+<div class="page-head">
+  <h1>{{ heading }}</h1>
+  {% if not edit_id %}<a class="button secondary" href="/destinations/bulk{% for lid in form.location_ids or [] %}{{ '?' if loop.first else '&' }}location_id={{ lid }}{% endfor %}">{{ t("Mehrere Ziele auf einmal") }}</a>{% endif %}
+</div>
+{% if saved %}<p class="notice" role="status">{{ t("„{name}“ angelegt. Jetzt das nächste Ziel eingeben.", name=saved.name) }}</p>{% endif %}
 {% if creates_pending %}
 <p class="hint">{% if edit_id %}{{ t("Dieses Ziel ist noch unbestätigt. Bis zur Bestätigung lässt es sich in diesem Browser noch korrigieren.") }}{% else %}{{ t("Neue Ziele sind sofort nutzbar und werden dauerhaft, sobald sie bestätigt sind.") }}{% endif %}</p>
 {% endif %}
@@ -77,18 +81,7 @@
         {% endfor %}
       </div>
     </details>
-    {% if assign_locations and can_assign %}
-    <fieldset class="location-checks">
-      <legend>{{ t("Standorte, für die das Ziel angeboten wird") }}</legend>
-      {% for loc in assign_locations %}
-      <label class="check"><input type="checkbox" name="location_ids" value="{{ loc.id }}" {% if loc.id in (form.location_ids or []) %}checked{% endif %}> {{ loc.name }}</label>
-      {% endfor %}
-      <span class="hint small">{% if assign_all %}{{ t("Ohne Häkchen erscheint das Ziel bei allen Standorten.") }}{% else %}{{ t("Ohne Häkchen erscheint das Ziel bei allen eigenen Standorten.") }}{% endif %}</span>
-    </fieldset>
-    {% elif not edit_id %}
-    {# Proposals: only the location the form was opened from (see _creator_locations) #}
-    {% for lid in (form.location_ids or [])[:1] %}<input type="hidden" name="location_ids" value="{{ lid }}">{% endfor %}
-    {% endif %}
+    {% include "_location_fields.html" %}
     <label>{{ t("Notiz (intern, keine Patientendaten)") }}
       <textarea name="note" rows="3">{{ val('note') }}</textarea>
     </label>
@@ -101,6 +94,7 @@
     </p>
     <div class="buttons">
       <button type="submit">{% if edit_id %}{{ t("Speichern") }}{% else %}{{ t("Anlegen") }}{% endif %}</button>
+      {% if not edit_id %}<button type="submit" name="next" value="1" class="secondary">{{ t("Anlegen und nächstes Ziel") }}</button>{% endif %}
       <a class="button secondary" href="/destinations">{{ t("Abbrechen") }}</a>
     </div>
   </form>

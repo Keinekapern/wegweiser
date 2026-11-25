@@ -324,6 +324,35 @@ ENGLISH: dict[str, str] = {
     "Einrichtungen, zu denen Wegbeschreibungen erstellt werden.":
         "Facilities that directions are created for.",
     "Neues Ziel": "New destination",
+    "Mehrere Ziele auf einmal": "Several destinations at once",
+    "„{name}“ angelegt. Jetzt das nächste Ziel eingeben.": "“{name}” created. Now enter the next destination.",
+    "Anlegen und nächstes Ziel": "Create and add another",
+    "{n} Ziele angelegt.": "{n} destinations created.",
+    "Ein Ziel angelegt.": "One destination created.",
+    "Nicht angelegt:": "Not created:",
+    "einzeln anlegen": "create individually",
+    "Ziele, eines pro Zeile (Name mit Ort oder Adresse)": "Destinations, one per line (name with town, or address)",
+    "Rathaus Musterstadt": "Town hall Sampletown",
+    "Kinderarztpraxis, Hauptstraße 5, Musterstadt": "Paediatrician, Hauptstraße 5, Sampletown",
+    "Hauptstraße 1, 12345 Musterstadt": "Hauptstraße 1, 12345 Sampletown",
+    "Höchstens {n} Zeilen. Jede Zeile wird einzeln in OpenStreetMap gesucht, das dauert etwa eine Sekunde pro Zeile. Danach für jede Zeile den passenden Treffer wählen und alle ausgewählten auf einmal anlegen.":
+        "At most {n} lines. Each line is looked up in OpenStreetMap separately, which takes about one second per line. Then choose the right result for each line and create all selected ones at once.",
+    "Diese Seite braucht JavaScript. Ohne JavaScript Ziele bitte einzeln anlegen.":
+        "This page needs JavaScript. Without JavaScript, please create destinations one by one.",
+    "Eingabe und Treffer": "Input and result",
+    "Telefon, Website und Öffnungszeiten werden aus OpenStreetMap übernommen und lassen sich danach in der Zielliste prüfen und ergänzen.":
+        "Phone, website and opening hours are taken from OpenStreetMap; check and complete them afterwards in the destination list.",
+    "Ausgewählte anlegen": "Create selected",
+    "Treffer": "Result",
+    "Keine Treffer.": "No results.",
+    "Schon in der Zielliste: „{name}“": "Already in the destination list: “{name}”",
+    "Doppelt in dieser Liste": "Duplicate in this list",
+    "Ohne Adresse – bitte einzeln anlegen.": "No address – please create individually.",
+    "Bitte höchstens {n} Zeilen eingeben.": "Please enter at most {n} lines.",
+    "Suche {i} von {n} …": "Searching {i} of {n} …",
+    "{found} von {n} Zeilen gefunden. Treffer prüfen, dann „Ausgewählte anlegen“.":
+        "{found} of {n} lines found. Check the results, then “Create selected”.",
+    "Keine Zeile ausgewählt.": "No line selected.",
     "Ziel bearbeiten": "Edit destination",
     "Noch keine Ziele angelegt.": "No destinations yet.",
     "Ziel „{name}“ wirklich löschen?": "Really delete destination “{name}”?",
@@ -540,6 +569,13 @@ JS_MSGIDS = [
     "Die Suche ist fehlgeschlagen (keine Verbindung zum Server).",
     "auf Karte prüfen",
     "OSM-Objekt",
+    # destination-bulk.js
+    "Anlegen", "Name", "Kategorie", "Treffer", "Keine Treffer.", "einzeln anlegen",
+    "Schon in der Zielliste: „{name}“", "Doppelt in dieser Liste",
+    "Ohne Adresse – bitte einzeln anlegen.", "Bitte höchstens {n} Zeilen eingeben.",
+    "Suche {i} von {n} …",
+    "{found} von {n} Zeilen gefunden. Treffer prüfen, dann „Ausgewählte anlegen“.",
+    "Keine Zeile ausgewählt.",
 ]
 
 

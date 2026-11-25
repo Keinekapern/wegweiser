@@ -1,0 +1,13 @@
+{# Locations of a new or edited destination (form, bulk entry). #}
+    {% if assign_locations and can_assign %}
+    <fieldset class="location-checks">
+      <legend>{{ t("Standorte, für die das Ziel angeboten wird") }}</legend>
+      {% for loc in assign_locations %}
+      <label class="check"><input type="checkbox" name="location_ids" value="{{ loc.id }}" {% if loc.id in (form.location_ids or []) %}checked{% endif %}> {{ loc.name }}</label>
+      {% endfor %}
+      <span class="hint small">{% if assign_all %}{{ t("Ohne Häkchen erscheint das Ziel bei allen Standorten.") }}{% else %}{{ t("Ohne Häkchen erscheint das Ziel bei allen eigenen Standorten.") }}{% endif %}</span>
+    </fieldset>
+    {% elif not edit_id %}
+    {# Proposals: only the location the form was opened from (see _creator_locations) #}
+    {% for lid in (form.location_ids or [])[:1] %}<input type="hidden" name="location_ids" value="{{ lid }}">{% endfor %}
+    {% endif %}

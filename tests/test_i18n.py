@@ -35,7 +35,8 @@ def _python_msgids() -> set[str]:
 
 
 def _js_msgids() -> set[str]:
-    return set(re.findall(r'\bt\("((?:[^"\\]|\\.)*)"', (APP / "static/geosearch.js").read_text()))
+    return {m for name in ("geosearch.js", "destination-bulk.js")
+            for m in re.findall(r'\bt\("((?:[^"\\]|\\.)*)"', (APP / "static" / name).read_text())}
 
 
 def test_all_ui_msgids_have_english_translation():

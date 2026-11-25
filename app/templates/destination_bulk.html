@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ t("Mehrere Ziele auf einmal") }} – {{ app_name }}{% endblock %}
+{% block content %}
+<p><a href="/destinations">{{ t("← Zurück zur Zielliste") }}</a></p>
+<h1>{{ t("Mehrere Ziele auf einmal") }}</h1>
+
+{% if created or skipped %}
+<section class="card bulk-result" role="status">
+  {% if created %}
+  <p class="notice" style="margin-top:0">{% if created|length == 1 %}{{ t("Ein Ziel angelegt.") }}{% else %}{{ t("{n} Ziele angelegt.", n=created|length) }}{% endif %}{% if creates_pending %} {{ t("Neue Ziele sind sofort nutzbar und werden dauerhaft, sobald sie bestätigt sind.") }}{% endif %}</p>
+  <ul class="small">{% for id, name in created %}<li><a href="/destinations/{{ id }}/edit">{{ name }}</a></li>{% endfor %}</ul>
+  {% endif %}
+  {% if skipped %}
+  <p class="errors">{{ t("Nicht angelegt:") }}</p>
+  <ul class="small">{% for name, errors in skipped %}
+    <li>{{ name }}: {% for e in errors %}{{ t(e) }}{% if not loop.last %}, {% endif %}{% endfor %}
+      – <a href="/destinations/new?name={{ name|urlencode }}">{{ t("einzeln anlegen") }}</a></li>
+  {% endfor %}</ul>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="card">
+  <form id="bulk-search" class="form">
+    <label>{{ t("Ziele, eines pro Zeile (Name mit Ort oder Adresse)") }}
+      <textarea name="lines" rows="8" required
+                placeholder="{{ t('Rathaus Musterstadt') }}&#10;{{ t('Kinderarztpraxis, Hauptstraße 5, Musterstadt') }}&#10;{{ t('Hauptstraße 1, 12345 Musterstadt') }}"></textarea>
+    </label>
+    <p class="hint small">{{ t("Höchstens {n} Zeilen. Jede Zeile wird einzeln in OpenStreetMap gesucht, das dauert etwa eine Sekunde pro Zeile. Danach für jede Zeile den passenden Treffer wählen und alle ausgewählten auf einmal anlegen.", n=max_lines) }}</p>
+    <div class="buttons"><button type="submit">{{ t("Suchen") }}</button></div>
+  </form>
+  <noscript><p class="errors">{{ t("Diese Seite braucht JavaScript. Ohne JavaScript Ziele bitte einzeln anlegen.") }}</p></noscript>
+  <p class="bulk-status" aria-live="polite"></p>
+
+  <form id="bulk-save" method="post" action="/destinations/bulk" class="form" hidden>
+    <table class="list bulk-table">
+      <thead><tr><th>{{ t("Anlegen") }}</th><th>{{ t("Eingabe und Treffer") }}</th><th>{{ t("Name (Überschrift auf dem Ausdruck)") }}</th><th>{{ t("Kategorie") }}</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <p class="hint small">{{ t("Telefon, Website und Öffnungszeiten werden aus OpenStreetMap übernommen und lassen sich danach in der Zielliste prüfen und ergänzen.") }}</p>
+    {% include "_location_fields.html" %}
+    <p class="bulk-attribution hint small"></p>
+    <div class="buttons">
+      <button type="submit">{{ t("Ausgewählte anlegen") }}</button>
+      <a class="button secondary" href="/destinations">{{ t("Abbrechen") }}</a>
+    </div>
+  </form>
+</section>
+
+<template id="bulk-category">
+  <select>
+    <option value="">{{ t("– keine –") }}</option>
+    {% for group in category_groups %}
+    <optgroup label="{{ t(group) }}">
+      {% for c in categories if c.group == group %}<option value="{{ c.key }}">{{ t(c.label) }}</option>{% endfor %}
+    </optgroup>
+    {% endfor %}
+  </select>
+</template>
+<script id="bulk-data" type="application/json">{{ {"max": max_lines, "existing": existing}|tojson }}</script>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', path='destination-bulk.js') }}"></script>{% endblock %}
