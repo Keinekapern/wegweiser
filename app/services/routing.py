@@ -28,7 +28,6 @@ ATTRIBUTION = "Route: openrouteservice.org (HeiGIT) | Daten © OpenStreetMap-Mit
 PROFILES = {
     "driving-car": "Auto",          # not offered in the UI any more, kept for old links
     "foot-walking": "Zu Fuß",
-    "cycling-regular": "Fahrrad",
 }
 
 

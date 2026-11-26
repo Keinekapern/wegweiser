@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Downloads timetable (GTFS) and map data (OSM) and rebuilds MOTIS / openrouteservice.
 #
-#   ./update.sh            new timetable? -> MOTIS re-import (~2-6 min downtime for public transport)
-#   ./update.sh --osm      also new map data -> MOTIS re-import and ORS graph rebuild (~15 min)
+#   ./update.sh            new timetable? -> MOTIS re-import (~1-6 min downtime for public transport)
+#   ./update.sh --osm      also new map data -> MOTIS re-import and ORS graph rebuild (~2 min)
 #   ./update.sh --force    re-import even if nothing changed
 #
-# First run: downloads everything and builds both services. Needs ~8 GB free RAM while
-# building (MOTIS import ~6 GB, ORS build ~5.5 GB, one after the other) and ~6 GB disk.
+# First run: downloads everything and builds both services. Needs ~5 GB free RAM while
+# building (MOTIS import ~4.7 GB, ORS build ~2.5 GB, one after the other) and ~5 GB disk.
 # Only touches the containers of this compose project (wegweiser-motis, wegweiser-ors)
 # and older versions of their images that no container uses.
 set -euo pipefail
@@ -54,6 +54,11 @@ if [ $want_osm = 1 ] || [ ! -s downloads/region.osm.pbf ]; then
   if download "$OSM_URL" downloads/region.osm.pbf; then osm_new=1; log "neue Kartendaten geladen"; fi
 fi
 [ -d motis/data ] || force=1
+# The import covers 30 days from the import day (num_days in motis/config.yml):
+# renew it after 14 days even if the timetable did not change.
+if [ -f motis/data/tt.bin ] && [ -n "$(find motis/data/tt.bin -mtime +13)" ]; then
+  force=1; log "Fahrplanfenster erneuern (letzter Import vor mehr als 13 Tagen)"
+fi
 
 # Line colours (the NVBW timetable has none): regenerate the MOTIS import script and
 # re-import if it changed. A failed download keeps the previous colours.
@@ -88,7 +93,7 @@ fi
 
 if [ $osm_new = 1 ]; then
   log "openrouteservice: Graphen neu bauen (dauert etwa 15 Minuten)"
-  ORS_REBUILD=True ORS_XMX=5g ORS_MEM_LIMIT=6g docker compose up -d --force-recreate ors
+  ORS_REBUILD=True ORS_XMX=3g ORS_MEM_LIMIT=4g docker compose up -d --force-recreate ors
   for _ in $(seq 1 360); do
     curl -s -m 5 "http://localhost:${ORS_PORT:-8422}/ors/v2/health" | grep -q '"status":"ready"' && break
     sleep 10

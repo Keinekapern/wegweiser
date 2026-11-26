@@ -441,7 +441,6 @@ ENGLISH: dict[str, str] = {
     "Verkehrsmittel": "Mode of transport",
     "Auto": "Car",
     "Zu Fuß": "On foot",
-    "Fahrrad": "Bicycle",
     "Automatisch": "Automatic",
     "Automatische Wahl: zu Fuß bis (Min.)": "Automatic choice: walk up to (min)",
     "Automatisch gewählt: zu Fuß – der Fußweg dauert nur {walk} Min. (Grenze: {limit} Min.).":
@@ -951,21 +950,10 @@ _DOC_TRANSIT: dict[str, tuple[str, ...]] = {
            "መድረኽ {platform}", "ኣውቶቡስ {line}", "ትራም {line}", "ካልኦት ኣማራጺታት"),
 }
 
-# Mode label for bicycle routes
-_DOC_BIKE: dict[str, str] = {
-    "de": "Mit dem Fahrrad", "en": "By bike", "cs": "Na kole", "da": "På cykel",
-    "es": "En bicicleta", "fi": "Pyörällä", "fr": "À vélo", "gr": "Με ποδήλατο",
-    "he": "באופניים", "hu": "Kerékpárral", "id": "Dengan sepeda", "it": "In bicicletta",
-    "ja": "自転車で", "nl": "Met de fiets", "nb": "Med sykkel", "pl": "Rowerem",
-    "pt": "De bicicleta", "ro": "Cu bicicleta", "ru": "На велосипеде", "tr": "Bisikletle",
-    "ua": "Велосипедом", "vi": "Bằng xe đạp", "zh": "骑自行车", "ar": "بالدراجة",
-    "fa": "با دوچرخه", "ta": "சைக்கிளில்", "so": "Baaskiil", "ti": "ብብሽክለታ",
-}
-
-DOC_KEYS = DOC_KEYS + DOC_EXTRA_KEYS + DOC_TRANSIT_KEYS + ("bike",)
+DOC_KEYS = DOC_KEYS + DOC_EXTRA_KEYS + DOC_TRANSIT_KEYS
 
 DOC_STRINGS: dict[str, dict[str, str]] = {
-    lang: dict(zip(DOC_KEYS, values + _DOC_EXTRA[lang] + _DOC_TRANSIT[lang] + (_DOC_BIKE[lang],),
+    lang: dict(zip(DOC_KEYS, values + _DOC_EXTRA[lang] + _DOC_TRANSIT[lang],
                    strict=True))
     for lang, values in _DOC_TABLE.items()
 }
@@ -1019,8 +1007,7 @@ def ors_language(lang: str) -> str:
     """Language to request from openrouteservice (English data for generated languages)."""
     return lang if lang in ORS_LANGUAGES else "en"
 
-PROFILE_KEYS = {"driving-car": "car", "foot-walking": "foot", "transit": "transit",
-                "cycling-regular": "bike"}
+PROFILE_KEYS = {"driving-car": "car", "foot-walking": "foot", "transit": "transit"}
 
 
 PINNED_LANGUAGES = ("de", "en")

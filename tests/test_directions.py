@@ -195,7 +195,7 @@ def test_modes_offered(client):
     _setup(client)
     page = client.get("/directions").text
     assert '<option value="auto" selected>Automatisch</option>' in page
-    assert ">Fahrrad</option>" in page and ">Auto</option>" not in page
+    assert ">Fahrrad</option>" not in page and ">Auto</option>" not in page
 
 
 def test_auto_short_walk(client, fake_ors, fake_transit):
@@ -241,10 +241,9 @@ def test_auto_no_transit_connection(client, fake_ors, fake_transit):
     assert "<dt>Zu Fuß</dt>" in page
 
 
-def test_bicycle_is_manual_only(client, fake_ors):
+def test_bicycle_falls_back_to_auto(client, fake_ors):
     _setup(client)
     page = client.get("/directions", params={"location_id": 1, "destination_id": 1,
                                              "profile": "cycling-regular"}).text
-    assert "/cycling-regular/" in str(fake_ors.requests[-1].url)
-    assert "<dt>Mit dem Fahrrad</dt>" in page
-    assert "Automatisch gewählt" not in page
+    assert all("/cycling-regular/" not in str(r.url) for r in fake_ors.requests)
+    assert '<option value="auto" selected>' in page

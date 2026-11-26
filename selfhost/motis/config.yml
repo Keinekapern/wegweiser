@@ -3,7 +3,7 @@
 osm: /downloads/region.osm.pbf
 timetable:
   first_day: TODAY
-  num_days: 120
+  num_days: 30          # update.sh re-imports at least every 14 days
   tb: false
   railviz: false
   with_shapes: true

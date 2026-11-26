@@ -18,7 +18,7 @@ Open-Source-Projekt (EUPL-1.2). Jede Organisation betreibt ihre eigene Instanz; 
 1. **Standorte verwalten**: feste Startpunkte (Name, Adresse, Koordinaten), auswählbar per Dropdown
 2. **Ziele verwalten**: gespeicherte Zielliste (Name, Adresse, Koordinaten, Telefon, Website, Öffnungszeiten, geprüfter Google-Maps-Link, Notiz)
    - Neues Ziel per Suche (Name oder Adresse) → Treffer auswählen → Daten aus OSM vorbefüllen → manuell korrigieren → speichern
-3. **Route berechnen** (Auto und/oder zu Fuß) und auf einer Karte darstellen
+3. **Route berechnen** (zu Fuß oder ÖPNV; Auto und Fahrrad bewusst nicht) und auf einer Karte darstellen
 4. **Druckansicht A4**:
    - Überschrift = Name des Ziels
    - Karte mit Route, Start- und Zielmarker
@@ -58,7 +58,7 @@ Die Person, die den Ausdruck bekommt, soll ihren Kartenanbieter selbst wählen k
 |---|---|---|
 | Kartenkacheln | OSM-Standardkacheln (tile.openstreetmap.org) oder alternativer Anbieter | Attribution „© OpenStreetMap-Mitwirkende“ sichtbar, auch auf dem Ausdruck; gültiger Referer/User-Agent; **kein Vorab-/Massendownload** |
 | Geocoding | Nominatim (öffentlich) oder openrouteservice/Pelias | Nominatim: max. 1 Anfrage/s, aussagekräftiger User-Agent, nur nutzerausgelöst, **Ergebnisse cachen** |
-| Auto-/Fußrouten | openrouteservice (HeiGIT), kostenloser Standard-Plan | API-Key nur serverseitig; Tageslimits beachten (ca. 2.000 Routen, 1.000 Geocodings); **aktuelle Basis-URL prüfen** (alte api.openrouteservice.org wird laut Drittquelle abgeschaltet, neu vermutlich api.heigit.org) |
+| Fußrouten | openrouteservice (HeiGIT), kostenloser Standard-Plan | API-Key nur serverseitig; Tageslimits beachten (ca. 2.000 Routen, 1.000 Geocodings); **aktuelle Basis-URL prüfen** (alte api.openrouteservice.org wird laut Drittquelle abgeschaltet, neu vermutlich api.heigit.org) |
 | ÖPNV | Transitous (öffentliche MOTIS-2-API, `https://api.transitous.org/api/`) | Nur nicht-kommerziell; User-Agent mit App-Name, Version und Kontakt; > 720 `/plan`-Anfragen pro Tag nur nach Absprache; Antworten cachen; aktuelle API-Version aus der OpenAPI-Spezifikation nehmen |
 | ÖPNV (selbst gehostet) | NVBW-GTFS „bwgesamt“ mit MOTIS | Datenlizenz Deutschland – Namensnennung 2.0: „Datensatz der NVBW GmbH“ mit Link auf https://www.nvbw.de/open-data; Fahrplan gilt jeweils nur bis zum nächsten Fahrplanwechsel |
 

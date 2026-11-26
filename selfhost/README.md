@@ -3,7 +3,7 @@
 Wegweiser nutzt standardmäßig öffentliche Dienste (Transitous, openrouteservice von HeiGIT). Für kommerzielle oder größere Nutzung sind diese nicht gedacht. Dieses Verzeichnis enthält eine Vorlage, mit der man beide Dienste selbst betreibt:
 
 - **MOTIS 2** für Bus und Bahn, mit den Fahrplandaten der NVBW für Baden-Württemberg
-- **openrouteservice** für Fußwege (und Auto), mit dem OpenStreetMap-Auszug von Geofabrik
+- **openrouteservice** für Fußwege, mit dem OpenStreetMap-Auszug von Geofabrik
 
 Andere Regionen gehen genauso: `GTFS_URL` und `OSM_URL` auf andere Daten setzen, etwa DELFI-GTFS für Deutschland.
 
@@ -11,11 +11,28 @@ Andere Regionen gehen genauso: `GTFS_URL` und `OSM_URL` auf andere Daten setzen,
 
 | | Aufbau (einmalig bzw. bei neuen Daten) | Betrieb |
 |---|---|---|
-| MOTIS | ca. 6 Min. (davon 4–5 Min. Busverläufe; spätere Importe schneller), bis 6 GB RAM | ca. 0,5 GB RAM |
-| openrouteservice | ca. 15 Min., bis 5,5 GB RAM | ca. 1,6 GB RAM |
-| Speicherplatz | ca. 6 GB inkl. Rohdaten | |
+| MOTIS | ca. 6 Min. beim ersten Import (davon 4–5 Min. Busverläufe), danach ca. 1 Min.; bis 4,7 GB RAM | ca. 0,6 GB RAM |
+| openrouteservice | ca. 2 Min., bis 2,5 GB RAM | ca. 0,65 GB RAM |
+| Speicherplatz | ca. 4,5 GB inkl. Rohdaten (MOTIS 2,8 GB, openrouteservice 0,3 GB, Rohdaten 1,3 GB) | |
 
-Für den Betrieb reichen also 4 GB RAM, für den Aufbau sind 8 GB freier Arbeitsspeicher nötig. Beide Aufbauschritte laufen nacheinander.
+Für den Betrieb reichen also 2 GB RAM, für den Aufbau sind 5 GB freier Arbeitsspeicher nötig. Beide Aufbauschritte laufen nacheinander.
+
+Die Einstellungen sind auf Wegweiser zugeschnitten (Fußwege innerhalb von Orten, wenige Anfragen):
+
+- openrouteservice baut nur das Profil zu Fuß, ohne Höhendaten und ohne Beschleunigungsstrukturen (Landmarks). Die Graphen bleiben auf der Platte (`graphs_data_access: MMAP`); im Arbeitsspeicher landet nur, was Anfragen tatsächlich lesen, also die Umgebung der Standorte und Ziele. Fußwege antworten in 20–30 ms (3 km) bzw. ca. 90 ms (12 km).
+- MOTIS importiert den Fahrplan für 30 Tage ab dem Importtag; `update.sh` importiert deshalb spätestens alle 14 Tage neu, auch ohne neuen Fahrplan.
+- Fernverkehr lässt sich in Wegweiser abwählen (ÖPNV-Einstellungen), er muss dafür nicht aus den Daten entfernt werden.
+
+### Ganz Deutschland (Test November 2026)
+
+Mit denselben Einstellungen, auf einem Server mit 4 Kernen und höchstens 5 GB RAM für den Aufbau:
+
+| | Aufbau | Betrieb |
+|---|---|---|
+| openrouteservice (Geofabrik `germany-latest`, 4,9 GB) | ca. 63 Min. bei 5 GB RAM (mit mehr Speicher schneller) | ca. 1–1,3 GB RAM, 1,9 GB Platte; Fußwege 15–130 ms |
+| MOTIS (gtfs.de Nahverkehr) | Test läuft noch | |
+
+Für Deutschland kann man den Aufbau auch auf einem größeren Rechner machen und die Verzeichnisse `ors/graphs` und `motis/data` auf den Server kopieren.
 
 ## Einrichten
 

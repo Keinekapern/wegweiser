@@ -25,10 +25,8 @@ router = APIRouter(prefix="/directions")
 Router = Annotated[OrsClient, Depends(get_router)]
 Transit = Annotated[TransitousClient, Depends(get_transit)]
 
-# Modes offered in the UI (German msgids). "auto" picks walking or public transport;
-# the bicycle is never chosen automatically.
-UI_PROFILES = {"auto": "Automatisch", "foot-walking": "Zu Fuß", "transit": "ÖPNV",
-               "cycling-regular": PROFILES["cycling-regular"]}
+# Modes offered in the UI (German msgids). "auto" picks walking or public transport.
+UI_PROFILES = {"auto": "Automatisch", "foot-walking": "Zu Fuß", "transit": "ÖPNV"}
 
 
 SETTING_FIELDS = ("max_transfers", "walk_start_min", "walk_end_min", "weekday", "time",

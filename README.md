@@ -138,7 +138,7 @@ Alle externen Dienste werden nur vom Server aus aufgerufen, gedrosselt und in SQ
 | Zweck | Quelle | Hinweise |
 |---|---|---|
 | Suche (Geocoding) | [Nominatim](https://nominatim.org/) (OpenStreetMap) | max. 1 Anfrage/s, [Nutzungsrichtlinie](https://operations.osmfoundation.org/policies/nominatim/) |
-| Auto- und Fußrouten, Abbiegehinweise | [openrouteservice](https://openrouteservice.org/) (HeiGIT) | API-Schlüssel nötig; Tageszähler stoppt bei `ORS_DAILY_LIMIT` |
+| Fußrouten, Abbiegehinweise | [openrouteservice](https://openrouteservice.org/) (HeiGIT) | API-Schlüssel nötig; Tageszähler stoppt bei `ORS_DAILY_LIMIT` |
 | Bus und Bahn | [Transitous](https://transitous.org/) (MOTIS 2) | nur nicht-kommerziell, Kontakt im User-Agent; Tageszähler stoppt bei `TRANSITOUS_DAILY_LIMIT` ([Nutzungsrichtlinie](https://transitous.org/api/)) |
 | Kartenkacheln | tile.openstreetmap.org | lädt der Browser bei Bedarf, kein Vorab-Download; Quellenangabe auf Karte und Ausdruck |
 
@@ -161,7 +161,7 @@ Wegweiser ist Software zum Selbstbetrieb. Es gibt keinen zentralen Dienst: Jede 
 - Routen über ein selbst betriebenes [openrouteservice](https://github.com/GIScience/openrouteservice) (`ORS_BASE_URL`) oder einen kommerziellen Plan bei HeiGIT.
 - Kartenkacheln von einem kommerziellen Anbieter oder einem eigenen Kachelserver.
 
-Für ein eigenes openrouteservice bleibt `ORS_API_KEY` leer. Getestet ist das für ganz Baden-Württemberg (MOTIS 2.11 mit NVBW-GTFS, openrouteservice 10.1, Profile Auto und zu Fuß): Der einmalige Import dauert rund 15 Minuten und braucht kurzzeitig etwa 6 GB Arbeitsspeicher. Im Betrieb brauchen beide Dienste zusammen gut 2 GB und rund 5 GB Speicherplatz. Die Ergebnisse stimmten in Stichproben mit Transitous und HeiGIT überein. Quellenangaben und Kartenkacheln lassen sich in `.env` anpassen (`TRANSIT_ATTRIBUTION`, `ROUTE_ATTRIBUTION`, `TILE_URL` usw., Beispiele in `.env.example`). Die NVBW-Fahrpläne stehen unter der Datenlizenz Deutschland – Namensnennung 2.0 und verlangen den Hinweis „Datensatz der NVBW GmbH“ mit Link auf [nvbw.de/open-data](https://www.nvbw.de/open-data). Linienfarben ergänzt das Update-Skript aus einer freien Sammlung. Anleitung: [selfhost/README.md](selfhost/README.md).
+Für ein eigenes openrouteservice bleibt `ORS_API_KEY` leer. Getestet ist das für ganz Baden-Württemberg (MOTIS 2.11 mit NVBW-GTFS, openrouteservice 10.1, nur Fußwege): Der einmalige Aufbau dauert rund 8 Minuten und braucht kurzzeitig knapp 5 GB Arbeitsspeicher. Im Betrieb brauchen beide Dienste zusammen gut 1,2 GB und rund 4,5 GB Speicherplatz. Die Ergebnisse stimmten in Stichproben mit Transitous und HeiGIT überein. Quellenangaben und Kartenkacheln lassen sich in `.env` anpassen (`TRANSIT_ATTRIBUTION`, `ROUTE_ATTRIBUTION`, `TILE_URL` usw., Beispiele in `.env.example`). Die NVBW-Fahrpläne stehen unter der Datenlizenz Deutschland – Namensnennung 2.0 und verlangen den Hinweis „Datensatz der NVBW GmbH“ mit Link auf [nvbw.de/open-data](https://www.nvbw.de/open-data). Linienfarben ergänzt das Update-Skript aus einer freien Sammlung. Anleitung: [selfhost/README.md](selfhost/README.md).
 
 **Datenschutz:**
 
