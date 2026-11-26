@@ -30,9 +30,9 @@ Mit denselben Einstellungen, auf einem Server mit 4 Kernen und höchstens 5 GB R
 | | Aufbau | Betrieb |
 |---|---|---|
 | openrouteservice (Geofabrik `germany-latest`, 4,9 GB) | ca. 63 Min. bei 5 GB RAM (mit mehr Speicher schneller) | ca. 1–1,3 GB RAM, 1,9 GB Platte; Fußwege 15–130 ms |
-| MOTIS (gtfs.de Nahverkehr) | Test läuft noch | |
+| MOTIS (gtfs.de Nahverkehr) | mit 4 GB RAM nicht möglich: schon das Einlesen der Wege stockt (Daten werden ständig von der Platte nachgeladen); geschätzt 8–12 GB nötig, ungetestet | ungetestet |
 
-Für Deutschland kann man den Aufbau auch auf einem größeren Rechner machen und die Verzeichnisse `ors/graphs` und `motis/data` auf den Server kopieren.
+Für Deutschland braucht der Aufbau also einen Rechner mit mindestens 16 GB, besser 32 GB RAM. Er kann auch nur zum Aufbauen dienen: die Verzeichnisse `ors/graphs` und `motis/data` danach auf den Server kopieren.
 
 ## Einrichten
 
